@@ -18,6 +18,8 @@ by [贰拾壹](https://github.com/er10yi )
 
 2. 如果部署在生产环境，请参考使用说明配置防火墙
 
+3. 前端项目见 MagiCude-admin
+
 ## 要求
 
 1. 所有内容编码均为utf-8
