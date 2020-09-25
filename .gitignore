@@ -1,0 +1,14 @@
+.idea
+*.iml
+out
+gen
+*.log
+*.class
+.DS_Store
+agent/target/
+agent/logs/
+center/target/
+center/logs/
+common/target/
+eureka/target
+plugin/target

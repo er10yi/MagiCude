@@ -1,0 +1,88 @@
+server:
+  port: 9001
+  servlet:
+    context-path: /center
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+  application:
+    name: center
+
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      master:
+        driverClassName: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://127.0.0.1:3306/magicude?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+        username: root
+        password: 8TAQRc9EOkV607qm
+        jpa:
+          hibernate:
+            dialect: org.hibernate.dialect.MySQL8Dialect
+        filters: stat,wall
+
+      initial-size: 2
+      max-active: 40
+      min-idle: 5
+      max-wait: 60000
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      timeBetweenEvictionRunsMillis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1 FROM DUAL
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /monitor/druid/* # nginx反代后，应该访问不到这个
+        login-username: magicude
+        login-password: 9L4GH0XagHTR8HqS
+        allow: 127.0.0.1
+
+  rabbitmq:
+    host: 127.0.0.1
+    username: magicude
+    password: vpUNx2TpULV1kB7l
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: snclGVwsAywx1G2R
+  quartz:
+    properties:
+      jobStore:
+        class: org.quartz.simpl.RAMJobStore
+      threadPool:
+        class: org.quartz.simpl.SimpleThreadPool
+        threadCount: 20
+        threadPriority: 5
+  mail: 
+    host: test # 不需要修改
+    username: test # 不需要修改
+    password: test # 不需要修改
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          timeout: 10000 # 10秒
+          connectiontimeout: 10000
+          writetimeout: 10000
+
+eureka:
+  user:
+    name: magicude
+    password: xJjbahN2c1hOgV5d
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://${eureka.user.name}:${eureka.user.password}@127.0.0.1:8686/eureka
+  instance:
+    prefer-ip-address: true
+
+jwt:
+  config:
+    key: DVi2y9KGJy3uz57AaWmY7FJH
+    ttl: 3600000 # 当前有效期1小时，也可以设置成2小时，7200000

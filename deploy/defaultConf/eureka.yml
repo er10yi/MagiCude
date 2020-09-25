@@ -1,0 +1,16 @@
+server:
+  port: 8686
+spring:
+  application:
+    name: eureka
+  security:
+    user:
+      name: magicude
+      password: xJjbahN2c1hOgV5d
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@127.0.0.1:${server.port}/eureka

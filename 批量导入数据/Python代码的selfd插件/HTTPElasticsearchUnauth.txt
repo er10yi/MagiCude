@@ -1,0 +1,6 @@
+HTTPElasticsearchUnauth||高危|selfd||0|http|Elasticsearch|count|默认|
+{
+    "protocol":"http",
+    "method":"get", 
+    "url":"/_cat"
+}

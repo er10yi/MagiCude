@@ -1,0 +1,14 @@
+redis
+ftp
+ssh
+telnet
+snmp
+mysql
+oracle-tns
+ms-sql-s
+ms-wbt-server
+microsoft-ds
+netbios-ssn
+memcached
+X11
+postgresql

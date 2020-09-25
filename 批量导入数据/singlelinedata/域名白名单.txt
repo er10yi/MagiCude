@@ -1,0 +1,11 @@
+microsoft.com
+centos.org
+apache.org
+qq.com
+github.com
+nginx.net
+baidu.com
+google.com
+firefox.com
+gitlab.com
+vmware.com

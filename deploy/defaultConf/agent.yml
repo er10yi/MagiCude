@@ -1,0 +1,38 @@
+server:
+  port: 9991
+task:
+  name: agent1 # 多agent部署时task name需要唯一
+spring:
+  application:
+    name: agent
+  rabbitmq:
+    host: 127.0.0.1 # 需要修改成部署centerapp.jar服务器的ip
+    username: magicude
+    password: vpUNx2TpULV1kB7l
+  redis:
+    host: 127.0.0.1 # 需要修改成部署centerapp.jar服务器的ip
+    port: 6379
+    password: snclGVwsAywx1G2R
+
+eureka:
+  user:
+    name: magicude
+    password: xJjbahN2c1hOgV5d
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://${eureka.user.name}:${eureka.user.password}@127.0.0.1:8686/eureka # 127.0.0.1需要改成部署eurekaapp.jar服务器的ip
+  instance:
+    prefer-ip-address: true
+nmap:
+#  path: C:\Program Files (x86)\Nmap\nmap.exe
+  path: nmap
+mass:
+#  path: D:\Tools\bin\masscan.exe
+  path: masscan
+jep: # jep的绝对路径，mac下后缀为jnilib，linux为so，Windows为dll
+  absolutePath: /usr/local/python3/lib/python3.8/site-packages/jep/libjep.so
+center:
+  httpValidateApi: http://127.0.0.1:9001/center/pluginchecker # 需要修改成部署centerapp.jar服务器的ip
+  dnsValidateIp: 127.0.0.1 # 需要修改成部署centerapp.jar服务器的ip

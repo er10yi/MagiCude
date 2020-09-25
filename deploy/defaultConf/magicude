@@ -1,0 +1,143 @@
+#!/bin/bash
+# @author 贰拾壹
+# https://github.com/er10yi
+
+jarStatus(){
+    echo "check MagiCude service status"
+    jarNameArrays=("eurekaapp" "centerapp" "agentapp")
+    for jarName in ${jarNameArrays[@]} ; do
+        existFlag=`ps -ef|grep $jarName|grep -v grep|wc -L`
+        if [ $existFlag -eq 0 ] ;then
+            echo "!!!!!!!!!! magicude service $jarName not started. !!!!!!!!!!"
+            echo "!!!!!!!!!! please run magicude start !!!!!!!!!!"
+        else echo "magicude service $jarName already started."
+        fi
+    done
+}
+
+dockerStatus()
+{
+    echo "check docker images status"
+    dockerNameArrays=("nginxApp" "magicude_mysql" "magicude_redis" "magicude_rabbitmq")
+    for imageName in ${dockerNameArrays[@]} ; do
+        existFlag=`docker ps | grep $imageName |wc -L`
+        if [ $existFlag -eq 0 ] ;then
+            echo "!!!!!!!!!! docker $imageName not started. !!!!!!!!!!"
+            echo "!!!!!!!!!! please run magicude start !!!!!!!!!!"
+        else echo "docker $imageName already started."
+        fi
+    done
+}
+
+dockerStatusAndStart()
+{
+    systemctl start docker
+    echo "check docker images status and start images"
+    dockerNameArrays=("nginxApp" "magicude_mysql" "magicude_redis" "magicude_rabbitmq")
+    for imageName in ${dockerNameArrays[@]} ; do
+        existFlag=`docker ps | grep $imageName |wc -L`
+        if [ $existFlag -eq 0 ] ;then
+            echo "$imageName not started, starting $imageName now"
+            temp=`docker start $imageName`
+            echo "docker start $imageName done."
+        else echo "$imageName already started."
+        fi
+    done
+}
+
+statusAndStart()
+{
+    setenforce 0
+    echo "check MagiCude service status and run jar"
+    jarNameArrays=("eurekaapp" "centerapp" "agentapp")
+    for jarName in ${jarNameArrays[@]} ; do
+        existFlag=`ps -ef|grep $jarName|grep -v grep|wc -L`
+        if [ $existFlag -eq 0 ] ;then
+            echo "service $jarName not started. starting $jarName now"
+            temp=$jarName
+            nohup java -jar "$jarName.jar" --spring.config.location="${temp/app/}".yml  > /dev/null 2>&1 &
+            echo "magicude start $jarName done."
+        else echo "service $jarName already started."
+        fi
+    done
+}
+
+
+status()
+{
+    echo "********************************"
+    dockerStatus
+    echo "********************************"
+    jarStatus
+    echo "********************************"
+    exit 0;
+}
+
+start()
+{
+    setenforce 0
+    echo "********************************"
+    dockerStatusAndStart
+    echo "********************************"
+    statusAndStart
+    echo "********************************"
+    exit 0;
+}
+
+stop()
+{
+    echo "********************************"
+    echo "kill center all jar"
+    jarNameArrays=("eurekaapp" "centerapp" "agentapp")
+    for jarName in ${jarNameArrays[@]} ; do
+        tempPid=`ps -ef|grep $jarName|grep -v grep|cut -c 9-15`
+        if [ $tempPid ] ;then
+            kill -9 $tempPid
+        fi
+    done
+    echo "done."
+    echo "kill nmap masscan"
+    existFlag=`ps -ef|grep nmap|grep -v grep|cut -c 9-15`
+    if [ $existFlag ] ;then
+
+        kill -9 $(pidof nmap)
+    fi
+    existFlag=`ps -ef|grep masscan|grep -v grep|cut -c 9-15`
+    if [ $existFlag ] ;then
+        kill -9 $(pidof masscan)
+    fi
+    echo "done."
+    echo "docker stop container"
+    dockerNameArrays=("nginxApp" "magicude_mysql" "magicude_redis" "magicude_rabbitmq")
+    for imageName in ${dockerNameArrays[@]} ; do
+        existFlag=`docker ps | grep $imageName |wc -L`
+        if [ $existFlag -ne 0 ] ;then
+            temp=`docker stop $imageName`
+        fi
+    done
+    echo "done."
+    echo "********************************"
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    status)
+        status
+        ;;
+    *)
+    echo "魔方-MagiCude操作脚本"
+    echo "@author 贰拾壹"
+    echo "https://github.com/er10yi"
+    echo
+    echo "usage: $0 start|stop|restart|status"
+    exit 0;
+esac
