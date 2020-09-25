@@ -95,7 +95,8 @@ center:
 密码：见newPass.txt
 ```
 
-任务信息-Agent![agent在线](./使用说明图1/agent在线.png)
+### 任务信息-Agent
+![agent在线](./使用说明图1/agent在线.png)
 
 ## 微信讨论组
 
