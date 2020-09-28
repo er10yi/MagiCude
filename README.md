@@ -40,7 +40,7 @@ deploy目录下双击```GenPass.bat```（Windows下，*uinx/mac直接执行```Ge
 
 需要修改```MagiCude\dist\static\js\app.*.js```，* 指的是类似ea5c35e2这样一串字符
 
-将baseURL:```"http://127.0.0 .1:9001/"```中的ip改成实际部署服务器的ip
+将baseURL:```"http://127.0.0.1:9001/"```中的ip改成实际部署服务器的ip
 
 如 ```baseURL:"http://192.168.12.128:9001/"```
 
@@ -58,7 +58,7 @@ center:
 
 如 ```dnsValidateIp: 192.168.12.128```
 
-### 3.将MagiCude上传到服务器root目录下
+### 3.将deploy目录下的MagiCude上传到服务器root目录下
 
 ### 4.初始化环境并运行系统
 
@@ -90,7 +90,7 @@ center:
 
 ### 确认agent已在线（可能需要稍等几分钟才能看到）
 
-访问服务器ip并登录，当前是http://192.168.12.128/
+访问服务器ip，使用admin（后台管理员）密码登录，当前是http://192.168.12.128/
 
 ```
 账号：MagiCude
