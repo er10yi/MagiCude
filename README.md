@@ -32,7 +32,7 @@ by [贰拾壹](https://github.com/er10yi )
 
 ### 1.生成配置文件
 
-下载部署包（Release页面）解压后，deploy目录下双击```GenPass.bat```（Windows下，*uinx/mac直接执行```GenPass.bat```里面的内容就行了），将在当前目录生成newPass.txt，新的配置文件和初始化脚本会自动复制到MagiCude目录下
+下载部署包（Releases页面）解压后，deploy目录下双击```GenPass.bat```（Windows下，*uinx/mac直接执行```GenPass.bat```里面的内容就行了），将在当前目录生成newPass.txt，新的配置文件和初始化脚本会自动复制到MagiCude目录下
 
 ### 2.修改前端api接口地址及agent.yml
 
