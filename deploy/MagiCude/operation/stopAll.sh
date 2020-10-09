@@ -1,45 +1,47 @@
 #!/bin/bash
 # @author 贰拾壹
 # https://github.com/er10yi
+source /root/MagiCude/util.sh
 
-echo "stopAll.sh将执行以下操作"
-echo "kill nmap和masscan"
-echo "停止docker中的容器：magicude_mysql magicude_redis magicude_rabbitmqnginxApp"
-echo "停止center所有服务：eurekaapp.jar centerapp.jar agentapp.jar"
-echo "如果部署了多个agent，请到agent服务器手动执行 stopAgent.sh"
+logInfo "$0 将执行以下操作"
+logInfo "停止nmap和masscan"
+logInfo "停止docker中的容器：magicude_mysql magicude_redis magicude_rabbitmqnginxApp"
+logInfo "停止center所有服务：eurekaapp.jar centerapp.jar agentapp.jar"
+logInfo "如果部署了多个agent，请到agent服务器手动执行 stopAgent.sh"
 echo -n "是否继续(10秒后默认N)? [y/N]: "
 read -t 10 checkYes
 
 if [[ $checkYes = "y" ]] ; then
+    logInfo "停止 MagiCude 所有服务"
     # kill jar
     jarNameArrays=("eurekaapp" "centerapp" "agentapp")
     for jarName in ${jarNameArrays[@]} ; do
         tempPid=`ps -ef|grep $jarName|grep -v grep|cut -c 9-15`
         if [ $tempPid ] ;then
-            echo "kill $jarName jar"
+            logInfo "停止 $jarName"
             kill -9 $tempPid
-            echo "done."
         fi
     done
+    logInfo "完成"
+    logInfo "停止 nmap和masscan"
     # kill nmap masscan
     existFlag=`ps -ef|grep nmap|grep -v grep|cut -c 9-15`
     if [ $existFlag ] ;then
-        echo "kill nmap"
+        logInfo "停止 nmap"
         kill -9 $(pidof nmap)
-        echo "done."
     fi
     existFlag=`ps -ef|grep masscan|grep -v grep|cut -c 9-15`
     if [ $existFlag ] ;then
-        echo "kill masscan"
+        logInfo "停止 masscan"
         kill -9 $(pidof masscan)
-        echo "done."
     fi
-    echo "docker stop container"
-    temp=`docker stop magicude_mysql`
-    temp=`docker stop magicude_redis`
-    temp=`docker stop magicude_rabbitmq`
-    temp=`docker stop nginxApp`
-    echo "done."
+    logInfo "完成"
+    logInfo "docker停止容器"
+    docker stop magicude_mysql > /dev/null 2>&1 &
+    docker stop magicude_redis > /dev/null 2>&1 &
+    docker stop magicude_rabbitmq > /dev/null 2>&1 &
+    docker stop nginxApp > /dev/null 2>&1 &
+    logInfo "完成"
 else
     echo 
     exit 1  

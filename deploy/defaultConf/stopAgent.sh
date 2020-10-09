@@ -2,11 +2,12 @@
 # 停止agent
 # @author 贰拾壹
 # https://github.com/er10yi
+source /root/MagiCude/util.sh
 
-echo "**********停止agentapp.jar**********"
+logInfo "停止agentapp.jar"
 # kill agentapp
 tempPid=`ps -ef|grep agentapp|grep -v grep|cut -c 9-15`
 if [ $tempPid ] ;then
     kill -9 $tempPid
 fi
-echo "done."
+logInfo "完成"

@@ -1,30 +1,29 @@
 #!/bin/bash
 # @author 贰拾壹
 # https://github.com/er10yi
+source /root/MagiCude/util.sh
 
 jarStatus(){
-    echo "check MagiCude service status"
+    logInfo "检查 MagiCude 服务状态"
     jarNameArrays=("eurekaapp" "centerapp" "agentapp")
     for jarName in ${jarNameArrays[@]} ; do
         existFlag=`ps -ef|grep $jarName|grep -v grep|wc -L`
         if [ $existFlag -eq 0 ] ;then
-            echo "!!!!!!!!!! magicude service $jarName not started. !!!!!!!!!!"
-            echo "!!!!!!!!!! please run magicude start !!!!!!!!!!"
-        else echo "magicude service $jarName already started."
+            logErrorNotExit "$jarName 未启动，请手动执行 magicude start"
+        else logInfo "$jarName 已启动"
         fi
     done
 }
 
 dockerStatus()
 {
-    echo "check docker images status"
+    logInfo "检查 docker 容器状态"
     dockerNameArrays=("nginxApp" "magicude_mysql" "magicude_redis" "magicude_rabbitmq")
     for imageName in ${dockerNameArrays[@]} ; do
         existFlag=`docker ps | grep $imageName |wc -L`
         if [ $existFlag -eq 0 ] ;then
-            echo "!!!!!!!!!! docker $imageName not started. !!!!!!!!!!"
-            echo "!!!!!!!!!! please run magicude start !!!!!!!!!!"
-        else echo "docker $imageName already started."
+            logErrorNotExit "$imageName 未启动，请手动执行 magicude start"
+        else logInfo "$imageName 已启动"
         fi
     done
 }
@@ -32,15 +31,15 @@ dockerStatus()
 dockerStatusAndStart()
 {
     systemctl start docker
-    echo "check docker images status and start images"
+    logInfo "检查 docker 容器状态并启动容器"
     dockerNameArrays=("nginxApp" "magicude_mysql" "magicude_redis" "magicude_rabbitmq")
     for imageName in ${dockerNameArrays[@]} ; do
         existFlag=`docker ps | grep $imageName |wc -L`
         if [ $existFlag -eq 0 ] ;then
-            echo "$imageName not started, starting $imageName now"
-            temp=`docker start $imageName`
-            echo "docker start $imageName done."
-        else echo "$imageName already started."
+            logInfo "$imageName 未启动, 正在启动 $imageName"
+            docker start $imageName >/dev/null 2>&1
+            logInfo "$imageName 启动完成"
+        else logInfo "$imageName 已启动"
         fi
     done
 }
@@ -48,16 +47,16 @@ dockerStatusAndStart()
 statusAndStart()
 {
     setenforce 0
-    echo "check MagiCude service status and run jar"
+    logInfo "检查 MagiCude 服务状态并启动 jar"
     jarNameArrays=("eurekaapp" "centerapp" "agentapp")
     for jarName in ${jarNameArrays[@]} ; do
         existFlag=`ps -ef|grep $jarName|grep -v grep|wc -L`
         if [ $existFlag -eq 0 ] ;then
-            echo "service $jarName not started. starting $jarName now"
+            logInfo "$jarName 未启动，正在启动 $jarName"
             temp=$jarName
             nohup java -jar "$jarName.jar" --spring.config.location="${temp/app/}".yml  > /dev/null 2>&1 &
-            echo "magicude start $jarName done."
-        else echo "service $jarName already started."
+            logInfo "$jarName 启动完成"
+        else logInfo "$jarName 已启动"
         fi
     done
 }
@@ -65,29 +64,22 @@ statusAndStart()
 
 status()
 {
-    echo "********************************"
     dockerStatus
-    echo "********************************"
     jarStatus
-    echo "********************************"
     exit 0;
 }
 
 start()
 {
     setenforce 0
-    echo "********************************"
     dockerStatusAndStart
-    echo "********************************"
     statusAndStart
-    echo "********************************"
     exit 0;
 }
 
 stop()
 {
-    echo "********************************"
-    echo "kill center all jar"
+    logInfo "停止 MagiCude 所有服务"
     jarNameArrays=("eurekaapp" "centerapp" "agentapp")
     for jarName in ${jarNameArrays[@]} ; do
         tempPid=`ps -ef|grep $jarName|grep -v grep|cut -c 9-15`
@@ -95,28 +87,26 @@ stop()
             kill -9 $tempPid
         fi
     done
-    echo "done."
-    echo "kill nmap masscan"
+    logInfo "完成"
+    logInfo "停止 nmap和masscan"
     existFlag=`ps -ef|grep nmap|grep -v grep|cut -c 9-15`
     if [ $existFlag ] ;then
-
         kill -9 $(pidof nmap)
     fi
     existFlag=`ps -ef|grep masscan|grep -v grep|cut -c 9-15`
     if [ $existFlag ] ;then
         kill -9 $(pidof masscan)
     fi
-    echo "done."
-    echo "docker stop container"
+    logInfo "完成"
+    logInfo "停止 docker 容器"
     dockerNameArrays=("nginxApp" "magicude_mysql" "magicude_redis" "magicude_rabbitmq")
     for imageName in ${dockerNameArrays[@]} ; do
         existFlag=`docker ps | grep $imageName |wc -L`
         if [ $existFlag -ne 0 ] ;then
-            temp=`docker stop $imageName`
+            docker stop $imageName >/dev/null 2>&1
         fi
     done
-    echo "done."
-    echo "********************************"
+    logInfo "完成"
 }
 
 case "$1" in

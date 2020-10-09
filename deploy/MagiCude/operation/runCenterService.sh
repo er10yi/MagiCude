@@ -1,17 +1,18 @@
 #!/bin/bash
 # @author 贰拾壹
 # https://github.com/er10yi
+source /root/MagiCude/util.sh
 
 cd ..
-echo "**********启动center服务**********"
-echo "**********eurekaapp.jar**********"
+logInfo "启动 MagiCude 服务"
+logInfo "eurekaapp.jar"
 nohup java -jar eurekaapp.jar --spring.config.location=eureka.yml  > /dev/null 2>&1 &
 sleep 5s
-echo "**********centerapp.jar**********"
+logInfo "centerapp.jar"
 nohup java -jar centerapp.jar --spring.config.location=center.yml  > /dev/null 2>&1 &
 sleep 5s
-echo "**********agentapp.jar**********"
+logInfo "agentapp.jar"
 nohup java -jar agentapp.jar --spring.config.location=agent.yml  > /dev/null 2>&1 &
 sleep 50s
-echo "**********查看运行状态**********"
+logInfo "查看 MagiCude 服务运行状态"
 sh operation/getStatus.sh

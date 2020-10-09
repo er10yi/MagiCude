@@ -32,7 +32,7 @@ mass:
 #  path: D:\Tools\bin\masscan.exe
   path: masscan
 jep: # jep的绝对路径，mac下后缀为jnilib，linux为so，Windows为dll
-  absolutePath: /usr/local/python3/lib/python3.8/site-packages/jep/libjep.so
+  absolutePath: /usr/local/python3/lib/python3.9/site-packages/jep/libjep.so
 center:
   httpValidateApi: http://127.0.0.1:9001/center/pluginchecker # 需要修改成部署centerapp.jar服务器的ip
   dnsValidateIp: 127.0.0.1 # 需要修改成部署centerapp.jar服务器的ip

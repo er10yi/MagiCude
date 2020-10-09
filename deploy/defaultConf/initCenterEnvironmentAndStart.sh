@@ -2,25 +2,60 @@
 # 初始化环境
 # @author 贰拾壹
 # https://github.com/er10yi
+source /root/MagiCude/util.sh
 
 echo
-echo "魔方-MagiCude 一键部署脚本 V2.4"
+echo "魔方-MagiCude 一键部署脚本 V2.5"
 echo "@author 贰拾壹"
 echo "https://github.com/er10yi"
 echo
 
-# 如果jdk-15已解压，证明已经运行过部署脚本
-if [ -d "jdk-15" ]; then
-    echo -e "检测到已运行过部署脚本\n继续运行脚本将重置数据库，当前数据会丢失\n如已正常部署，请勿执行"
+# 增加操作系统判断
+if [ ! -f /etc/redhat-release ];then
+    logError "$0 仅支持CentOS 7.x"
+fi
+tempVersion=`cat /etc/redhat-release | sed -r 's/.* ([0-9]+)\..*/\1/'`
+if [ $tempVersion -ne 7 ];then
+    logError "$0 仅支持CentOS 7.x"
+fi
+
+# 判断center路径是否正确
+mcPath=$PWD
+if [ $mcPath != "/root/MagiCude" ]; then
+    logErrorNotExit "$0 执行路径非/root/MagiCude"
+    logError "请确认已将deploy目录下的MagiCude复制root目录下"
+fi
+# 判断center所需文件是否存在
+existFlag=0
+if [ ! -f db/magicude.sql ] ;then
+    logErrorNotExit "db 目录下未检测到 magicude.sql"
+    existFlag=1
+fi
+dependArrays=("centerapp.jar" "eurekaapp.jar" "center.yml" "eureka.yml")
+for dependName in ${dependArrays[@]} ; do
+    if [ ! -f $dependName ] ;then
+        logErrorNotExit "MagiCude 目录下未检测到 $dependName"
+        existFlag=1
+    fi
+done
+if [ $existFlag -eq 1 ] ;then
+    exit 1
+fi
+
+# 如果$openjdkDirName已解压，证明已经运行过部署脚本
+if [ -d $openjdkDirName ]; then
+    logInfo "检测到已运行过部署脚本"
+    logInfo "继续运行脚本将重置数据库，当前数据会丢失"
+    logInfo "如已正常部署，请勿执行"
     echo -n "是否继续(10秒后默认N)? [y/N]: "
     read -t 10 checkYes
     if [[ $checkYes != "y" ]] ; then
         echo
-        echo "**********退出部署**********"
+        logInfo "退出部署"
         exit 1
     fi
 fi
-echo "**********开始部署**********"
+logInfo "开始部署"
 # kill all jar
 jarNameArrays=("eurekaapp" "centerapp" "agentapp")
 for jarName in ${jarNameArrays[@]} ; do
@@ -42,26 +77,46 @@ fi
 existFlag=`ls /usr/bin/ | grep docker |wc -L`
 if [ $existFlag -ne 0 ] ;then
     dockerNameArrays=("nginxApp" "magicude_mysql" "magicude_redis" "magicude_rabbitmq")
-    temp=`systemctl restart docker`
+    systemctl restart docker
     for imageName in ${dockerNameArrays[@]} ; do
         existFlag=`docker ps -a | grep $imageName |wc -L`
         if [ $existFlag -ne 0 ] ;then
-            temp=`docker stop $imageName`
-            temp=`docker rm $imageName`
+            docker stop $imageName >/dev/null 2>&1
+            docker rm $imageName >/dev/null 2>&1
         fi
     done
-    temp=`systemctl stop docker`
+    systemctl stop docker
 fi
 
-echo "**********判断是否存在java 环境**********"
-java -version
+# 判断前端api地址是否修改
+errorMessage=()
+existFlag=`cat dist/static/js/app.*.js | grep "http://127.0.0.1:9001" |wc -L`
+if [ $existFlag -ne 0 ] ;then
+    errorMessage+=("检测到前端api地址未修改，如果是远程部署，将无法通过ip地址访问魔方-MagiCude，请修改前端api地址，并重启魔方")
+fi
+# 判断agent.yml内容是否已经修改
+infoMessage=()
+if [ -f agent.yml ];then
+    existFlag=`cat agent.yml | grep "httpValidateApi: http://127.0.0.1:9001/center/pluginchecker" |wc -L`
+    if [ $existFlag -ne 0 ] ;then
+        infoMessage=("agent.yml文件center节点httpValidateApi未修改：请将httpValidateApi修改成部署centerapp.jar服务器的ip")
+    fi
+    existFlag=`cat agent.yml | grep "dnsValidateIp: 127.0.0.1" |wc -L`
+    if [ $existFlag -ne 0 ] ;then
+        infoMessage+=("agent.yml文件center节点dnsValidateIp未修改：请将dnsValidateIp修改成部署centerapp.jar服务器的ip")
+    fi
+else
+    logError "agent.yml不存在"
+fi
+
+logInfo "判断是否存在java环境"
+java -version >/dev/null 2>&1
 if [ $? -eq 0 ];then
     # 存在java环境
     java_version=`java -version 2>&1 | sed '1!d' | sed -e 's/"//g' | awk '{print $3}'`
-    if [ $java_version != "15" ];then
-        echo "!!!!!!!!!! 当前已存在java $java_version 环境 !!!!!!!!!!"
-        echo "请将其卸载后，重新执行 $0 "
-        exit 1
+    if [ $java_version != $openjdkVersion ];then
+        logErrorNotExit "当前已存在 java $java_version 环境"
+        logError "请将其卸载后，重新执行 $0"
     fi
 fi
 
@@ -71,202 +126,211 @@ if [ $existFlag -eq 0 ] ;then
     echo -n "系统非中科大源，是否修改成中科大源(10秒后默认N)? [y/N]: "
     read -t 10 checkYes
     if [[ $checkYes = "y" ]] ; then
-        echo "**********备份源并更换成中科大源**********"
-        temp=`sed -e 's|^mirrorlist=|#mirrorlist=|g' -e 's|^#baseurl=http://mirror.centos.org/centos|baseurl=https://mirrors.ustc.edu.cn/centos|g' -i.backup /etc/yum.repos.d/CentOS-Base.repo`
-        temp=`yum clean all && yum makecache`
+        logInfo "备份源并更换成中科大源"
+        sed -e 's|^mirrorlist=|#mirrorlist=|g' -e 's|^#baseurl=http://mirror.centos.org/centos|baseurl=https://mirrors.ustc.edu.cn/centos|g' -i.backup /etc/yum.repos.d/CentOS-Base.repo
+        yum clean all >/dev/null 2>&1
+        yum makecache >/dev/null 2>&1
     else echo
     fi
 fi
 
-echo "**********更新系统，时间可能较久**********"
-echo "**********更新或安装依赖出现超时请忽略**********"
-temp=`yum -y update`
-echo "**********安装依赖**********"
-temp=`yum -y install wget fontconfig stix-fonts ntpdate docker gcc make libpcap libpcap-dev clang git`
-echo "**********验证依赖是否成功安装**********"
+logInfo "更新系统，时间可能较久"
+yum -y update >/dev/null 2>&1
+logInfo "安装依赖，时间可能较久"
+yum -y install wget fontconfig stix-fonts ntpdate docker gcc make libpcap libpcap-dev clang git >/dev/null 2>&1
+logInfo "验证依赖是否成功安装"
 dependArrays=("wget" "docker" "make" "gcc" "clang" "git")
 for dependName in ${dependArrays[@]} ; do
     existFlag=`ls /usr/bin/ | grep $dependName |wc -L`
     if [ $existFlag -eq 0 ] ;then
-        echo "!!!!!!!!!! $dependName未成功安装，请重新执行 $0 !!!!!!!!!!"
-        exit 1
+        logError "$dependName 未成功安装，请重新执行 $0"
     fi
 done
 
-pythonVerion="Python-3.8.5"
+# 选择Python版本
+pythonVerion=${pythonVersionArrays[0]}
+# echo "请输入数字选择编译安装的Python版本"
+# i=1
+# while ( [ $i -le ${#pythonVersionArrays[*]} ] )
+# do
+#     echo "$i.Python ${pythonVersionArrays[i-1]}"
+#     let "i++"
+# done
+# echo -n "10秒后默认选第 1 项 : "
+# read -t 10 choice
+# if [ ! $choice ]; then
+#     choice=1
+# fi
+# if [[ $choice -gt ${#pythonVersionArrays[*]} ]] || [[ $choice -lt 1 ]]; then
+#     choice=1
+# fi
+# let "choice--"
+# pythonVerion="${pythonVersionArrays[choice]}"
+# echo
+
+pythonName="Python"
+pythonNameVerion=$pythonName-$pythonVerion
 pythonTarName=".tar.xz"
-echo "**********编译安装$pythonVerion**********"
-temp=`yum -y install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libffi-devel zlib1g-dev zlib*`
-if [ ! -f $pythonVerion$pythonTarName ]; then
-    echo "下载$pythonVerion"
+logInfo "编译安装$pythonNameVerion"
+yum -y install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libffi-devel zlib1g-dev zlib* >/dev/null 2>&1
+if [ ! -f $pythonNameVerion$pythonTarName ]; then
     i=0
     while ( [ $i -lt 5 ] )
     do
-        # wget https://www.python.org/ftp/python/3.8.5/Python-3.8.5.tar.xz
-        wget https://mirrors.huaweicloud.com/python/3.8.5/$pythonVerion$pythonTarName
+        # wget https://www.python.org/ftp/python/$pythonVerion/$pythonNameVerion$pythonTarName
+        wget https://mirrors.huaweicloud.com/python/$pythonVerion/$pythonNameVerion$pythonTarName >/dev/null 2>&1
         let "i++"
-        if [ -f $pythonVerion$pythonTarName ]; then
+        if [ -f $pythonNameVerion$pythonTarName ]; then
             break
-        fi
+        fi 
     done
     if [ $i -eq 5 ] ;then
-        echo "!!!!!!!!!! $pythonVerion下载失败，重试第$i次失败，请重新执行 $0 !!!!!!!!!!"
-        exit 1
+        logError "$pythonNameVerion下载失败，重试第$i次失败，请重新执行 $0"
     fi
 fi
-echo "**********判断$pythonVerion是否已安装**********"
-python3 --version
+python3 --version >/dev/null 2>&1
 if [ $? -ne 0 ];then
-    echo "$pythonVerion未安装"
-    tar -xJf $pythonVerion$pythonTarName
-    mkdir /usr/local/python3 
-    cd $pythonVerion
-    ./configure --prefix=/usr/local/python3 --enable-shared 
-    make && make install
-    temp=`ln -s /usr/local/python3/bin/python3 /usr/local/bin/python3`
-    temp=`ln -s /usr/local/python3/bin/pip3 /usr/local/bin/pip3`
+    tar -xJf $pythonNameVerion$pythonTarName
+    mkdir /usr/local/python3  >/dev/null 2>&1
+    cd $pythonNameVerion
+    ./configure --prefix=/usr/local/python3 --enable-shared >/dev/null 2>&1
+    make >/dev/null 2>&1
+    make install >/dev/null 2>&1
+    ln -s /usr/local/python3/bin/python3 /usr/local/bin/python3 >/dev/null 2>&1
+    ln -s /usr/local/python3/bin/pip3 /usr/local/bin/pip3 >/dev/null 2>&1
     cd ..
-    temp=`rm -rf $pythonVerion`
+    rm -rf $pythonNameVerion
 fi
-export LD_LIBRARY_PATH=/usr/local/python3/lib
-echo "**********判断$pythonVerion是否成功安装**********"
-python3 --version
+logInfo "判断 $pythonNameVerion 是否成功安装"
+python3 --version >/dev/null 2>&1
 if [ $? -ne 0 ];then
-    echo "!!!!!!!!!! $pythonVerion 未成功安装，请重新执行 $0 !!!!!!!!!!"
-    exit 1
+    logError "$pythonNameVerion 未成功安装，请重新执行 $0"
 fi
-echo "**********升级pip到最新**********"
-temp=`python3 -m pip install --upgrade pip`
+logInfo "替换agent.yml中的jep.absolutePath的python路径"
+sed -i "s/python3.9/python${pythonVerion:0:3}/g" agent.yml
 
-echo "**********关闭防火墙**********"
-systemctl stop firewalld.service # firewalld
-systemctl disable firewalld.service # firewalld
-systemctl stop iptables.service # iptables
-systemctl disable iptables.service # iptables
-echo "**********SELinux切换成Permissive**********"
+# logInfo "升级pip到最新"
+# python3 -m pip install --upgrade pip >/dev/null 2>&1
+logInfo "关闭防火墙"
+systemctl stop firewalld.service >/dev/null 2>&1 # firewalld
+systemctl disable firewalld.service >/dev/null 2>&1 # firewalld
+systemctl stop iptables.service >/dev/null 2>&1 # iptables
+systemctl disable iptables.service >/dev/null 2>&1 # iptables
+logInfo "SELinux切换成Permissive"
 setenforce 0
-echo "**********修改时区并同步时间**********"
+logInfo "修改时区并同步时间"
 timedatectl set-timezone Asia/Shanghai
-temp=`ntpdate cn.pool.ntp.org`
+ntpdate cn.pool.ntp.org >/dev/null 2>&1
 
-# 判断是否存在openjdk-15_linux-x64_bin.tar.gz，不存在则下载
-openjdk="openjdk-15_linux-x64_bin.tar.gz"
+# 判断是否存在$openjdk，不存在则下载
 if [ ! -f $openjdk ]; then
-    echo "**********未检测到$openjdk**********"
-    echo "下载$openjdk"
+    logInfo "未检测到$openjdk"
+    logInfo "下载$openjdk"
     i=0
     while ( [ $i -lt 5 ] )
     do
         # http://jdk.java.net/
-        wget https://mirrors.huaweicloud.com/openjdk/15/$openjdk
+        wget https://mirrors.huaweicloud.com/openjdk/$openjdkVersion/$openjdk >/dev/null 2>&1
         let "i++"
         if [ -f $openjdk ]; then
             break
         fi
     done
     if [ $i -eq 5 ] ;then
-        echo "!!!!!!!!!! $openjdk下载失败，重试第$i次失败，请重新执行 $0 !!!!!!!!!!"
-        exit 1
+        logError "$openjdk下载失败，重试第$i次失败，请重新执行 $0"
     fi
 fi
-if [ ! -d "jdk-15" ]; then
-    echo "**********解压$openjdk**********"
+if [ ! -d $openjdkDirName ]; then
+    logInfo "解压$openjdk"
     tar -xf $openjdk
 fi
-echo "**********设置环境变量**********"
+# 判断是否已设置环境变量
+existFlag=`cat /root/.bash_profile | grep "/root/MagiCude/$openjdkDirName" |wc -L`
+if [ $existFlag -eq 0 ] ;then
+    logInfo "设置环境变量"
 cat <<EOF >> /root/.bash_profile
-export JAVA_HOME=/root/MagiCude/jdk-15
+export JAVA_HOME=/root/MagiCude/$openjdkDirName
 export JRE_HOME=\$JAVA_HOME/jre
 export CLASSPATH=\$JAVA_HOME/lib:\$JRE_HOME/lib:\$CLASSPATH
 export PATH=\$JAVA_HOME/bin:\$JRE_HOME/bin:\$PATH
 export LD_LIBRARY_PATH=/usr/local/python3/lib
 EOF
+fi
 # 下次登录才生效
 source /root/.bash_profile
-# 需要再次执行，本次编译用到
-export JAVA_HOME=/root/MagiCude/jdk-15
-export JRE_HOME=$JAVA_HOME/jre
-export CLASSPATH=$JAVA_HOME/lib:$JRE_HOME/lib:$CLASSPATH
-export PATH=$JAVA_HOME/bin:$JRE_HOME/bin:$PATH
-echo "**********安装JEP**********"
-pip3 install wheel -i https://pypi.douban.com/simple/
-pip3 install jep -i https://pypi.douban.com/simple/
+logInfo "安装JEP"
+pip3 install wheel -i https://pypi.douban.com/simple/ >/dev/null 2>&1
+pip3 install jep -i https://pypi.douban.com/simple/ >/dev/null 2>&1
 
-echo "**********安装nmap和masscan**********"
-cd agentDependency
+logInfo "安装nmap和masscan"
 existFlag=`ls /usr/bin/ | grep nmap |wc -L`
 if [ $existFlag -eq 0 ] ;then
-    temp=`rpm -ivh nmap-7.80-1.x86_64.rpm`
+    rpm -U $nmapUrl >/dev/null 2>&1
 fi
 existFlag=`ls /usr/bin/ | grep masscan |wc -L`
 if [ $existFlag -eq 0 ] ;then
-    temp=`rpm -ivh libpcap-devel-1.5.3-12.el7.x86_64.rpm`
-    #tar -xf masscan.tar.gz
     if [ ! -d masscan ]; then
         i=0
         while ( [ $i -lt 5 ] )
         do
-            git clone https://github.com/robertdavidgraham/masscan.git
+            git clone https://github.com/robertdavidgraham/masscan.git >/dev/null 2>&1
             let "i++"
             if [ -d masscan ]; then
                 break
             fi
         done
         if [ $i -eq 5 ] ;then
-            echo "!!!!!!!!!! masscan下载失败，重试第$i次失败，请重新执行 $0 !!!!!!!!!!"
-            exit 1
+            logError "masscan下载失败，重试第$i次失败，请重新执行 $0"
         fi
     fi
     cd masscan
-    temp=`make & make install`
+    make >/dev/null 2>&1
+    make install >/dev/null 2>&1
     cd ..
-    temp=`rm -rf masscan`
+    rm -rf masscan >/dev/null 2>&1
 fi
-cd ..
 
-echo "**********验证docker nmap masscan是否成功安装**********"
+logInfo "验证docker nmap masscan是否成功安装"
 dependArrays=("docker" "masscan" "nmap")
 for dependName in ${dependArrays[@]} ; do
     existFlag=`ls /usr/bin/ | grep $dependName |wc -L`
     if [ $existFlag -eq 0 ] ;then
-        echo "!!!!!!!!!! $dependName未成功安装，请重新执行 $0 !!!!!!!!!!"
-        exit 1
+        logError "$dependName 未成功安装，请重新执行 $0"
     fi
 done
 
-echo "**********docker**********"
+logInfo "docker"
 # docker pull镜像并验证
 existFlag=`cat /etc/docker/daemon.json | grep ustc |wc -L`
 if [ $existFlag -eq 0 ] ;then
     echo -n "docker非中科大镜像，是否修改成中科大镜像(10秒后默认N)? [y/N]: "
     read -t 10 checkYes
     if [[ $checkYes = "y" ]] ; then
-        echo "**********docker更换成中科大镜像**********"
+        logInfo "docker更换成中科大镜像"
         echo -e "{\n\"registry-mirrors\": [\"https://docker.mirrors.ustc.edu.cn\"]\n}" > "/etc/docker/daemon.json"
-        temp=`systemctl daemon-reload`
-        temp=`systemctl restart docker`
+        systemctl daemon-reload  >/dev/null 2>&1
+        systemctl restart docker
     else echo
     fi
 fi
-temp=`systemctl start docker`
-temp=`systemctl enable docker`
+systemctl start docker
+systemctl enable docker >/dev/null 2>&1
 
 # 偷个懒，只判断nginx是否pull
 # 如果没有证明是第一次执行
 # 则全部都要pull
 existFlag=`docker images | grep nginx |wc -L`
 if [ $existFlag -eq 0 ] ;then
-    echo "**********docker拉取所需镜像，时间可能较久**********"
-    docker pull nginx &
-    docker pull mysql &
-    docker pull redis &
-    docker pull rabbitmq:management &
+    logInfo "docker拉取所需镜像，时间可能较久"
+    docker pull nginx >/dev/null 2>&1 &
+    docker pull mysql >/dev/null 2>&1 &
+    docker pull redis >/dev/null 2>&1 &
+    docker pull rabbitmq:management >/dev/null 2>&1 &
     wait
 fi
 
-echo "**********验证docker镜像是否已拉取**********"
 # 如果未成功pull，会尝试再pull
-echo "check docker local repository"
+logInfo "检查docker本地容器是否已拉取"
 for i in `seq 1 5`
 do
     dockerNameArrays=("nginx" "mysql" "redis" "rabbitmq")
@@ -276,8 +340,8 @@ do
             if [ $imageName = "rabbitmq" ]; then 
                 imageName="rabbitmq:management"
             fi
-            echo "docker $imageName not existed, pulling latest $imageName now"
-            docker pull $imageName &
+            logInfo "$imageName 不存在，正在重新pull $imageName"
+            docker pull $imageName >/dev/null 2>&1 &
             wait
             if [ $imageName = "rabbitmq" ]; then 
                 imageName="rabbitmq"
@@ -288,42 +352,40 @@ do
                     imageName="rabbitmq:management"
                 fi
                 if [ $i -eq 6 ];then
-                    echo "!!!!!!!!!! docker pull $imageName failed. !!!!!!!!!!"
-                    echo "!!!!!!!!!! 请重新执行 $0 !!!!!!!!!!"
-                    exit 1
+                    logErrorNotExit "pull $imageName 失败"
+                    logError "请重新执行 $0"
                 fi
             fi
             docker ps | grep $imageName
-        else echo "docker $imageName already existed."
+        # else logInfo "$imageName 已存在"
         fi
     done
 done
 
-echo "**********docker创建并运行容器**********"
-temp=`docker run -di --name magicude_mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=8TAQRc9EOkV607qm mysql`
-temp=`docker run -di --name magicude_redis  -p 6379:6379 redis --requirepass snclGVwsAywx1G2R`
-temp=`docker run -di --name magicude_rabbitmq -p 5671:5671 -p 5672:5672 -p 4369:4369 -p 15671:15671 -p 15672:15672 -p 25672:25672 rabbitmq:management`
-temp=`docker run -di --name nginxApp -p 80:80 -v $PWD/dist/:/usr/share/nginx/dist/ -v $PWD/nginx/default.conf:/etc/nginx/conf.d/default.conf -d nginx`
+logInfo "docker创建并运行容器"
+docker run -di --name magicude_mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=8TAQRc9EOkV607qm mysql >/dev/null 2>&1
+docker run -di --name magicude_redis  -p 6379:6379 redis --requirepass snclGVwsAywx1G2R >/dev/null 2>&1
+docker run -di --name magicude_rabbitmq -p 5671:5671 -p 5672:5672 -p 4369:4369 -p 15671:15671 -p 15672:15672 -p 25672:25672 rabbitmq:management >/dev/null 2>&1
+docker run -di --name nginxApp -p 80:80 -v $PWD/dist/:/usr/share/nginx/dist/ -v $PWD/nginx/default.conf:/etc/nginx/conf.d/default.conf -d nginx >/dev/null 2>&1
 sleep 5s
 # checkDockerImageStatus.sh判断容器如果未成功启动，会尝试启动一次
 sh operation/checkDockerImageStatus.sh
 sleep 10s
 
-echo "**********确保容器服务已成功运行**********"
+logInfo "确保容器服务已成功运行"
 # mysql
 i=1
 while ( [ -z "`docker exec -it magicude_mysql /bin/bash -c "mysql -uroot -p8TAQRc9EOkV607qm -e'show databases'" | grep "information_schema"`" ] && [ $i -lt 6 ] )
 do
-    echo "magicude_mysql未启动，第$i次重启"
-    temp=`docker start magicude_mysql`
+    logInfo "magicude_mysql未启动，第$i次重启"
+    docker start magicude_mysql >/dev/null 2>&1
     let "i++"
     sleep 10s
 done
 if [ $i -eq 6 ] ;then
-    echo "!!!!!!!!!!docker start magicude_mysql失败，重试第$i次失败，请重新执行 $0 !!!!!!!!!!"
-    exit 1
+    logError "docker 启动 magicude_mysql失败，重试第$i次失败，请重新执行 $0"
 else
-    echo "magicude_mysql成功启动"
+    logInfo "magicude_mysql成功启动"
 fi
 
 # 其他
@@ -332,24 +394,42 @@ for imageName in ${dockerNameArrays[@]} ; do
     i=1
     while ( [ -z "`docker exec -it $imageName /bin/bash -c "ls /" | grep "root"`" ] && [ $i -lt 6 ] )
     do
-        echo "$imageName未启动，第$i次重启"
-        temp=`docker start $imageName`
+        logInfo "$imageName未启动，第$i次重启"
+        docker start $imageName >/dev/null 2>&1
         let "i++"
         sleep 10s
     done
     if [ $i -eq 6 ] ;then
-        echo "!!!!!!!!!!docker start $imageName失败，重试第$i次失败，请重新执行 $0 !!!!!!!!!!"
-        exit 1
+        logError "docker 启动 $imageName失败，重试第$i次失败，请重新执行 $0"
     else
-        echo "$imageName成功启动"
+        logInfo "$imageName成功启动"
     fi
 done
 # 再次确保容器已经启动
 sh operation/checkDockerImageStatus.sh
 sleep 10s
 
-echo "**********magicude 增加执行权限**********"
+logInfo "magicude 增加执行权限"
 chmod +x magicude
-echo "**********初始化环境结束**********"
-echo "**********初始化数据并启动系统**********"
+logInfo "初始化环境结束"
+logInfo "初始化数据并启动魔方"
 sh initDataAndStart.sh
+
+if [ ${#infoMessage[*]} -ne 0 ];then
+    echo
+    echo "以下信息不会影响魔方正常运行，但可能会导致部分功能不可用，请根据提示进行修改，并重启魔方"
+    logInfo "info start"
+    for info in ${infoMessage[@]} ; do
+        echo -e "$info"
+    done
+    logInfo "info end"
+fi
+if [ ${#errorMessage[*]} -ne 0 ];then
+    echo
+    echo "以下错误会影响魔方正常运行，导致魔方不可用，请根据提示进行修改，并重启魔方"
+    logInfo "error start"
+    for error in ${errorMessage[@]} ; do
+        echo -e "$error"
+    done
+    logInfo "error end"
+fi

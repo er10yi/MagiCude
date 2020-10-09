@@ -11,7 +11,7 @@
  Target Server Version : 80021
  File Encoding         : 65001
 
- Date: 13/09/2020 16:35:48
+ Date: 09/10/2020 20:50:23
 */
 
 SET NAMES utf8mb4;
@@ -21,70 +21,77 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Table structure for tb_agent
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_agent`;
-CREATE TABLE `tb_agent` (
+CREATE TABLE `tb_agent`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'agent编号',
-  `name` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'agent名称',
-  `nmappath` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'nmap路径',
-  `masspath` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'mass路径',
-  `ipaddress` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'ip地址',
-  `online` tinyint(1) DEFAULT NULL COMMENT '在线',
-  `timeouts` varchar(2) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '超时次数',
+  `name` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'agent名称',
+  `nmappath` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'nmap路径',
+  `masspath` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'mass路径',
+  `ipaddress` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'ip地址',
+  `online` tinyint(1) NULL DEFAULT NULL COMMENT '在线',
+  `timeouts` varchar(2) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '超时次数',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='agent表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = 'agent表' ROW_FORMAT = DYNAMIC;
 
 
 -- ----------------------------
 -- Table structure for tb_assetip
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_assetip`;
-CREATE TABLE `tb_assetip` (
+CREATE TABLE `tb_assetip`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资产ip编号',
-  `projectinfoid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目信息编号',
+  `projectinfoid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '项目信息编号',
   `ipaddressv4` varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'ipv4地址',
-  `ipaddressv6` varchar(39) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'ipv6地址',
-  `checkwhitelist` tinyint(1) DEFAULT NULL COMMENT '安全检测白名单',
-  `assetnotifywhitelist` tinyint(1) DEFAULT NULL COMMENT '资产提醒白名单',
-  `activetime` datetime DEFAULT NULL COMMENT 'ip发现时间',
-  `passivetime` datetime DEFAULT NULL COMMENT 'ip下线时间',
-  `remark` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '备注',
+  `ipaddressv6` varchar(39) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'ipv6地址',
+  `checkwhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '安全检测白名单',
+  `assetnotifywhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '资产提醒白名单',
+  `activetime` datetime(0) NULL DEFAULT NULL COMMENT 'ip发现时间',
+  `passivetime` datetime(0) NULL DEFAULT NULL COMMENT 'ip下线时间',
+  `remark` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='资产ip，用于记录资产ip信息';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '资产ip，用于记录资产ip信息' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_assetip
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_assetport
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_assetport`;
-CREATE TABLE `tb_assetport` (
+CREATE TABLE `tb_assetport`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '端口编号',
-  `assetipid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '资产ip编号',
+  `assetipid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资产ip编号',
   `port` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '端口',
-  `protocol` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '端口协议',
-  `state` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '端口开放状态',
-  `service` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '端口服务',
-  `version` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '服务版本',
-  `checkwhitelist` tinyint(1) DEFAULT NULL COMMENT '安全检测白名单',
-  `assetnotifywhitelist` tinyint(1) DEFAULT NULL COMMENT '提醒白名单',
-  `uptime` datetime DEFAULT NULL COMMENT '端口发现时间',
-  `downtime` datetime DEFAULT NULL COMMENT '端口关闭时间',
-  `changedtime` datetime DEFAULT NULL COMMENT '修改时间',
+  `protocol` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '端口协议',
+  `state` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '端口开放状态',
+  `service` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '端口服务',
+  `version` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '服务版本',
+  `checkwhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '安全检测白名单',
+  `assetnotifywhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '提醒白名单',
+  `uptime` datetime(0) NULL DEFAULT NULL COMMENT '端口发现时间',
+  `downtime` datetime(0) NULL DEFAULT NULL COMMENT '端口关闭时间',
+  `changedtime` datetime(0) NULL DEFAULT NULL COMMENT '修改时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='资产端口，用于记录端口信息';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '资产端口，用于记录端口信息' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_assetport
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_categorysecond
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_categorysecond`;
-CREATE TABLE `tb_categorysecond` (
+CREATE TABLE `tb_categorysecond`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '漏洞二级分类编号',
-  `categorytopid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞一级分类编号',
-  `name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞二级分类类型',
+  `categorytopid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞一级分类编号',
+  `name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞二级分类类型',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='漏洞二级分类，用于记录二级漏洞类型';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '漏洞二级分类，用于记录二级漏洞类型' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_categorysecond
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_categorysecond` VALUES ('1252508920921067520', '1252508920883318784', '﻿代码执行');
 INSERT INTO `tb_categorysecond` VALUES ('1252508920992370688', '1252508920954621952', 'SQL注入');
 INSERT INTO `tb_categorysecond` VALUES ('1252508921013342208', '1252508920954621952', 'LDAP注入');
@@ -159,22 +166,20 @@ INSERT INTO `tb_categorysecond` VALUES ('1252508922833670144', '1252508922640732
 INSERT INTO `tb_categorysecond` VALUES ('1252508922846253056', '1252508922640732160', '邮箱验证码包含在响应中');
 INSERT INTO `tb_categorysecond` VALUES ('1252508922875613184', '1252508922858835968', '默认');
 INSERT INTO `tb_categorysecond` VALUES ('1260829552448507904', '1260833385614544896', '拒绝服务');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_categorytop
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_categorytop`;
-CREATE TABLE `tb_categorytop` (
+CREATE TABLE `tb_categorytop`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '漏洞一级分类编号',
-  `name` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞一级分类名称',
+  `name` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞一级分类名称',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='漏洞一级分类，用于记录漏洞一级分类';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '漏洞一级分类，用于记录漏洞一级分类' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_categorytop
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_categorytop` VALUES ('1252508920883318784', '﻿代码执行');
 INSERT INTO `tb_categorytop` VALUES ('1252508920954621952', '注入');
 INSERT INTO `tb_categorytop` VALUES ('1252508921361469440', '失效的身份认证');
@@ -193,129 +198,143 @@ INSERT INTO `tb_categorytop` VALUES ('1252508922586206208', '不严格的数据�
 INSERT INTO `tb_categorytop` VALUES ('1252508922640732160', '业务逻辑');
 INSERT INTO `tb_categorytop` VALUES ('1252508922858835968', '默认');
 INSERT INTO `tb_categorytop` VALUES ('1260833385614544896', '拒绝服务');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_checkresult
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_checkresult`;
-CREATE TABLE `tb_checkresult` (
+CREATE TABLE `tb_checkresult`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '检测结果编号',
-  `assetportid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '端口编号',
-  `name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '检测结果名称',
-  `result` varchar(20480) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '检测结果',
-  `risk` varchar(6) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '缺陷风险级别',
-  `activetime` datetime DEFAULT NULL COMMENT '缺陷发现时间',
-  `passivetime` datetime DEFAULT NULL COMMENT '缺陷修复时间',
-  `remark` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '备注',
+  `assetportid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '端口编号',
+  `name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '检测结果名称',
+  `result` varchar(20480) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '检测结果',
+  `risk` varchar(6) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '缺陷风险级别',
+  `activetime` datetime(0) NULL DEFAULT NULL COMMENT '缺陷发现时间',
+  `passivetime` datetime(0) NULL DEFAULT NULL COMMENT '缺陷修复时间',
+  `remark` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='检测结果，用于记录nse或自定义插件检测结果';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '检测结果，用于记录nse或自定义插件检测结果' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_checkresult
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_checkresult_vuln
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_checkresult_vuln`;
-CREATE TABLE `tb_checkresult_vuln` (
+CREATE TABLE `tb_checkresult_vuln`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
   `checkresultid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '检测结果编号',
   `vulnid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '漏洞编号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='检测结果漏洞中间表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '检测结果漏洞中间表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_checkresult_vuln
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_contact
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_contact`;
-CREATE TABLE `tb_contact` (
+CREATE TABLE `tb_contact`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '联系人',
-  `email` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '邮箱',
-  `phone` varchar(24) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '电话，座机或手机',
+  `name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '联系人',
+  `email` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '邮箱',
+  `phone` varchar(24) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '电话，座机或手机',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='联系表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '联系表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_contact
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_contact_projectinfo
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_contact_projectinfo`;
-CREATE TABLE `tb_contact_projectinfo` (
+CREATE TABLE `tb_contact_projectinfo`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `contactid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '联系编号',
-  `projectinfoid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目信息编号',
+  `contactid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '联系编号',
+  `projectinfoid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '项目信息编号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='联系项目信息中间表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '联系项目信息中间表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_contact_projectinfo
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_cronjob
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_cronjob`;
-CREATE TABLE `tb_cronjob` (
+CREATE TABLE `tb_cronjob`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
   `name` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '名称',
-  `cronexpression` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'cron表达式',
+  `cronexpression` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'cron表达式',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='计划任务表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '计划任务表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_cronjob
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_cronjob` VALUES ('1216569721126785024', '任务状态监控', '0/10 * * * * ?');
 INSERT INTO `tb_cronjob` VALUES ('1216569761488572416', 'agent心跳包监控', '0 0/5 * * * ?');
 INSERT INTO `tb_cronjob` VALUES ('1216569881969954816', '邮件资产报告', NULL);
 INSERT INTO `tb_cronjob` VALUES ('1216569922503708672', '邮件漏洞报告', NULL);
 INSERT INTO `tb_cronjob` VALUES ('1216569975163195392', '每天执行一次的任务', '0 21 3 * * ?');
 INSERT INTO `tb_cronjob` VALUES ('1216570003462164488', '统计报表数据', '0 0 6 * * ?');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_democode
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_democode`;
-CREATE TABLE `tb_democode` (
+CREATE TABLE `tb_democode`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '漏洞示例代码编号',
-  `vulnid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞编号',
-  `democode` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '漏洞示例代码',
-  `poc` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '漏洞poc',
+  `vulnid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞编号',
+  `democode` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '漏洞示例代码',
+  `poc` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '漏洞poc',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='漏洞示例代码';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '漏洞示例代码' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_democode
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_democode` VALUES ('1252508972309680128', '1252508972280320000', '默认信息漏洞示例代码', '默认信息漏洞POC');
 INSERT INTO `tb_democode` VALUES ('1252508972506812416', '1252508972448092160', '默认低危漏洞示例代码', '默认低危漏洞POC');
 INSERT INTO `tb_democode` VALUES ('1252508972615864320', '1252508972586504192', '默认中危漏洞示例代码', '默认中危漏洞POC');
 INSERT INTO `tb_democode` VALUES ('1252508972695556096', '1252508972666195968', '默认高危漏洞示例代码', '默认高危漏洞POC');
 INSERT INTO `tb_democode` VALUES ('1252508972771053568', '1252508972750082048', '默认严重漏洞示例代码', '默认严重漏洞POC');
 INSERT INTO `tb_democode` VALUES ('1252508972859133952', '1252508972833968128', '默认致命漏洞示例代码', '默认致命漏洞POC');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_department
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_department`;
-CREATE TABLE `tb_department` (
+CREATE TABLE `tb_department`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `departmentname` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '部门名称',
+  `departmentname` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '部门名称',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='部门信息表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '部门信息表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_department
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_dictionarypassword
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_dictionarypassword`;
-CREATE TABLE `tb_dictionarypassword` (
+CREATE TABLE `tb_dictionarypassword`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '字典编号',
-  `password` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '字典密码',
+  `password` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '字典密码',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='字典，用于记录密码';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '字典，用于记录密码' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_dictionarypassword
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_dictionarypassword` VALUES ('1249945537030000640', 'root');
 INSERT INTO `tb_dictionarypassword` VALUES ('1253148513987072000', '1qaz@WSX');
 INSERT INTO `tb_dictionarypassword` VALUES ('1253148514104512512', 'admin123456');
@@ -340,44 +359,40 @@ INSERT INTO `tb_dictionarypassword` VALUES ('1304068896965398528', 'tomcat');
 INSERT INTO `tb_dictionarypassword` VALUES ('1304068897175113728', 'administrator');
 INSERT INTO `tb_dictionarypassword` VALUES ('1304068932222717952', 'toor');
 INSERT INTO `tb_dictionarypassword` VALUES ('1304068956872642560', '123456');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_dictionaryusername
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_dictionaryusername`;
-CREATE TABLE `tb_dictionaryusername` (
+CREATE TABLE `tb_dictionaryusername`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '字典编号',
-  `username` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '字典用户名',
+  `username` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '字典用户名',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='字典，用于记录用户名';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '字典，用于记录用户名' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_dictionaryusername
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_dictionaryusername` VALUES ('1304068407464955904', 'admin');
 INSERT INTO `tb_dictionaryusername` VALUES ('1304068407913746432', 'root');
 INSERT INTO `tb_dictionaryusername` VALUES ('1304068407976660992', 'tomcat');
 INSERT INTO `tb_dictionaryusername` VALUES ('1304068408039575552', 'administrator');
 INSERT INTO `tb_dictionaryusername` VALUES ('1304068408102490112', 'test');
 INSERT INTO `tb_dictionaryusername` VALUES ('1305054577313320960', 'linux');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_domainwhitelist
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_domainwhitelist`;
-CREATE TABLE `tb_domainwhitelist` (
+CREATE TABLE `tb_domainwhitelist`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '参数编号',
-  `domain` varchar(254) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '域名',
+  `domain` varchar(254) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '域名',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='域名白名单';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '域名白名单' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_domainwhitelist
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_domainwhitelist` VALUES ('1166176029530787868', 'microsoft.com');
 INSERT INTO `tb_domainwhitelist` VALUES ('1212621047124332544', 'centos.org');
 INSERT INTO `tb_domainwhitelist` VALUES ('1212633068138008576', 'apache.org');
@@ -387,144 +402,158 @@ INSERT INTO `tb_domainwhitelist` VALUES ('1212636857746198528', 'nginx.net');
 INSERT INTO `tb_domainwhitelist` VALUES ('1212985316789587968', 'baidu.com');
 INSERT INTO `tb_domainwhitelist` VALUES ('1234145903191920640', 'google.com');
 INSERT INTO `tb_domainwhitelist` VALUES ('1234147367637356544', 'firefox.com');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_host
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_host`;
-CREATE TABLE `tb_host` (
+CREATE TABLE `tb_host`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '主机编号',
-  `assetipid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '资产ip编号',
-  `macaddress` varchar(48) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'mac地址',
-  `hostname` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '主机名',
-  `ostype` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '操作系统类型',
-  `osversion` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '操作系统版本',
-  `type` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '主机类型',
-  `owner` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '主机所有者',
-  `activetime` datetime DEFAULT NULL COMMENT '主机发现时间',
-  `remark` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '备注，标记非dns反向解析',
+  `assetipid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资产ip编号',
+  `macaddress` varchar(48) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'mac地址',
+  `hostname` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '主机名',
+  `ostype` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '操作系统类型',
+  `osversion` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '操作系统版本',
+  `type` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '主机类型',
+  `owner` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '主机所有者',
+  `activetime` datetime(0) NULL DEFAULT NULL COMMENT '主机发现时间',
+  `remark` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注，标记非dns反向解析',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='主机，用于记录主机信息';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '主机，用于记录主机信息' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_host
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_imvulnnotify
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_imvulnnotify`;
-CREATE TABLE `tb_imvulnnotify` (
+CREATE TABLE `tb_imvulnnotify`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `notify` tinyint(1) DEFAULT NULL COMMENT '是否开启通知',
-  `notifyall` tinyint(1) DEFAULT NULL COMMENT '是否提醒所有人',
-  `secret` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '秘钥',
-  `risk` varchar(35) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '风险等级',
-  `receiver` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '接收人列表',
-  `messageurl` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '消息地址',
-  `messagetitle` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '消息标题',
-  `messageprefix` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '消息前缀',
-  `messagesuffix` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '消息后缀',
-  `messagecharset` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '消息编码',
+  `notify` tinyint(1) NULL DEFAULT NULL COMMENT '是否开启通知',
+  `notifyall` tinyint(1) NULL DEFAULT NULL COMMENT '是否提醒所有人',
+  `secret` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '秘钥',
+  `risk` varchar(35) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '风险等级',
+  `receiver` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '接收人列表',
+  `messageurl` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '消息地址',
+  `messagetitle` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '消息标题',
+  `messageprefix` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '消息前缀',
+  `messagesuffix` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '消息后缀',
+  `messagecharset` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '消息编码',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='即时消息漏洞提醒表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '即时消息漏洞提醒表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_imvulnnotify
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_imvulnnotify` VALUES ('1143092349392524201', 0, 0, '', '低危,中危,高危,严重,致命', '', '', '【魔方】漏洞提醒', '您好', '请及时处理', 'utf-8');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_ipportwhitelist
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_ipportwhitelist`;
-CREATE TABLE `tb_ipportwhitelist` (
+CREATE TABLE `tb_ipportwhitelist`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `ipwhitelistid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'ip白名单编号',
-  `port` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '端口',
-  `checkwhitelist` tinyint(1) DEFAULT NULL COMMENT '检测白名单',
-  `notifywhitelist` tinyint(1) DEFAULT NULL COMMENT '提醒白名单',
+  `ipwhitelistid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'ip白名单编号',
+  `port` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '端口',
+  `checkwhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '检测白名单',
+  `notifywhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '提醒白名单',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='ip端口白名单表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = 'ip端口白名单表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_ipportwhitelist
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_ipwhitelist
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_ipwhitelist`;
-CREATE TABLE `tb_ipwhitelist` (
+CREATE TABLE `tb_ipwhitelist`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `ip` varchar(39) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'ip',
-  `checkwhitelist` tinyint(1) DEFAULT NULL COMMENT '检测白名单',
-  `notifywhitelist` tinyint(1) DEFAULT NULL COMMENT '提醒白名单',
+  `ip` varchar(39) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'ip',
+  `checkwhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '检测白名单',
+  `notifywhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '提醒白名单',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='ip白名单表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = 'ip白名单表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_ipwhitelist
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_location
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_location`;
-CREATE TABLE `tb_location` (
+CREATE TABLE `tb_location`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '位置编号',
-  `assetipid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '资产ip编号',
-  `country` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '国家',
-  `province` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '省份',
-  `road` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '道路',
-  `building` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '大厦',
-  `floor` varchar(8) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '楼层',
-  `direction` varchar(8) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '方位',
+  `assetipid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资产ip编号',
+  `country` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '国家',
+  `province` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '省份',
+  `road` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '道路',
+  `building` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '大厦',
+  `floor` varchar(8) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '楼层',
+  `direction` varchar(8) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '方位',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='位置，用于记录位置信息';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '位置，用于记录位置信息' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_location
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_nmapconfig
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_nmapconfig`;
-CREATE TABLE `tb_nmapconfig` (
+CREATE TABLE `tb_nmapconfig`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'nmap配置编号',
   `taskid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '任务编号',
-  `threadnumber` varchar(4) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '线程数量，在mass2Nmap模式下使用',
-  `singleipscantime` varchar(2) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '单个ip扫描次数，在mass2Nmap模式下使用',
-  `additionoption` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '附加选项，在mass2Nmap模式下使用',
+  `threadnumber` varchar(4) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '线程数量，在mass2Nmap模式下使用',
+  `singleipscantime` varchar(2) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '单个ip扫描次数，在mass2Nmap模式下使用',
+  `additionoption` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '附加选项，在mass2Nmap模式下使用',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='mass2Nmap模式下，nmap的配置';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = 'mass2Nmap模式下，nmap的配置' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_nmapconfig
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_nmapconfig` VALUES ('1305055496268550144', '1304327021228331008', '10', '1', '-Pn -n -sV --max-retries=1 --open');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_notifylog
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_notifylog`;
-CREATE TABLE `tb_notifylog` (
+CREATE TABLE `tb_notifylog`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `type` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '类型',
-  `recipient` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '接收人',
-  `receiveuser` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '接收账户',
-  `content` varchar(20480) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '内容',
-  `success` tinyint(1) DEFAULT NULL COMMENT '发送成功',
-  `exception` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '异常消息',
-  `sendtime` datetime DEFAULT NULL COMMENT '发送时间',
+  `type` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '类型',
+  `recipient` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '接收人',
+  `receiveuser` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '接收账户',
+  `content` varchar(20480) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '内容',
+  `success` tinyint(1) NULL DEFAULT NULL COMMENT '发送成功',
+  `exception` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '异常消息',
+  `sendtime` datetime(0) NULL DEFAULT NULL COMMENT '发送时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='通知记录表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '通知记录表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_notifylog
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_pluginassetservice
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_pluginassetservice`;
-CREATE TABLE `tb_pluginassetservice` (
+CREATE TABLE `tb_pluginassetservice`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资产服务编号',
-  `pluginconfigid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '插件配置编号',
+  `pluginconfigid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '插件配置编号',
   `assetservice` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资产服务',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='资产服务，记录数据库中所有ip的service，根据服务确定对应的nse或者自定义插件进行扫描';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '资产服务，记录数据库中所有ip的service，根据服务确定对应的nse或者自定义插件进行扫描' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_pluginassetservice
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_pluginassetservice` VALUES ('1298634974131523584', '1298634973577875456', 'redis');
 INSERT INTO `tb_pluginassetservice` VALUES ('1298634975737942016', '1298634975670833152', 'memcached');
 INSERT INTO `tb_pluginassetservice` VALUES ('1298634975968628736', '1298634975670833152', 'memcache');
@@ -556,23 +585,21 @@ INSERT INTO `tb_pluginassetservice` VALUES ('1298635551120953344', '129863555107
 INSERT INTO `tb_pluginassetservice` VALUES ('1298635551552966656', '1298635551494246400', 'ftp');
 INSERT INTO `tb_pluginassetservice` VALUES ('1298635668129452032', '1298635551737516032', 'http');
 INSERT INTO `tb_pluginassetservice` VALUES ('1305054771446681600', '1305054770993696768', 'http');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_pluginassetversion
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_pluginassetversion`;
-CREATE TABLE `tb_pluginassetversion` (
+CREATE TABLE `tb_pluginassetversion`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资产版本编号',
-  `pluginconfigid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '插件配置编号',
+  `pluginconfigid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '插件配置编号',
   `assetversion` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资产版本',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='资产版本，记录数据库中所有ip的version，根据版本确定对应的nse或者自定义插件进行扫描';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '资产版本，记录数据库中所有ip的version，根据版本确定对应的nse或者自定义插件进行扫描' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_pluginassetversion
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_pluginassetversion` VALUES ('1298634974316072960', '1298634973577875456', 'Redis key-value store');
 INSERT INTO `tb_pluginassetversion` VALUES ('1298634975792467968', '1298634975670833152', 'Memcached');
 INSERT INTO `tb_pluginassetversion` VALUES ('1298634976157372416', '1298634976069292032', 'Zookeeper');
@@ -602,28 +629,26 @@ INSERT INTO `tb_pluginassetversion` VALUES ('1298635551397777408', '129863555107
 INSERT INTO `tb_pluginassetversion` VALUES ('1298635551594909696', '1298635551494246400', 'ftp');
 INSERT INTO `tb_pluginassetversion` VALUES ('1298635551771070464', '1298635551737516032', 'nginx');
 INSERT INTO `tb_pluginassetversion` VALUES ('1305054771866112000', '1305054770993696768', 'Elasticsearch');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_pluginconfig
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_pluginconfig`;
-CREATE TABLE `tb_pluginconfig` (
+CREATE TABLE `tb_pluginconfig`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '插件配置编号',
   `name` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '插件名称',
-  `args` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '插件参数',
-  `risk` varchar(6) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '插件风险级别',
-  `type` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '插件类型：nse或者自定义',
-  `timeout` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '插件超时',
-  `plugincode` text COMMENT '插件代码',
-  `validatetype` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'http辅助验证或dns辅助验证',
+  `args` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '插件参数',
+  `risk` varchar(6) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '插件风险级别',
+  `type` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '插件类型：nse或者自定义',
+  `timeout` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '插件超时',
+  `plugincode` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '插件代码',
+  `validatetype` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'http辅助验证或dns辅助验证',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='插件配置，用于记录插件配置信息';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '插件配置，用于记录插件配置信息' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_pluginconfig
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_pluginconfig` VALUES ('1298634973577875456', 'JavaRedisWeakPass', 'info', '高危', 'selfd', '3000', NULL, '');
 INSERT INTO `tb_pluginconfig` VALUES ('1298634975670833152', 'JavaMemcachedUnauth', 'stats', '中危', 'selfd', '3000', NULL, '');
 INSERT INTO `tb_pluginconfig` VALUES ('1298634976069292032', 'JavaZookeeperUnauth', 'envi', '中危', 'selfd', '3000', NULL, '');
@@ -653,78 +678,86 @@ INSERT INTO `tb_pluginconfig` VALUES ('1298635551074816000', 'MysqlWeakPass', 'm
 INSERT INTO `tb_pluginconfig` VALUES ('1298635551494246400', 'FTPWeakPass', '10', '中危', 'selfd', '3000', '\n# -*- coding:utf-8 -*-\nimport ftplib\n\n\ndef check(ip, port, args, timeout, payload_map):\n    username_list = payload_map.get(\'username\')\n    password_list = payload_map.get(\'password\')\n\n    try:\n        ftp = ftplib.FTP()\n        ftp.timeout = int(timeout)\n        for username in username_list:\n            for password in password_list:\n                try:\n                    ftp.connect(ip, int(port))\n                    ftp.login(username, password)\n                    if username == \'ftp\':\n                        result = \"FTP允许匿名访问\"\n                    else:\n                        result = \"用户名密码: \" + username + \":\" + password\n                    return result\n                except ftplib.error_perm:\n                    pass\n        ftp.quit()\n    except Exception:\n        raise\n', '');
 INSERT INTO `tb_pluginconfig` VALUES ('1298635551737516032', 'NginxVerDetect', '', '低危', 'selfd', '3000', '\n# -*- coding:utf-8 -*-\n\n\ndef check(ip, port, args, timeout, payload_map):\n    nginx_mainline_version = payload_map.get(\'Mainline version\')[0]\n    nginx_stable_version = payload_map.get(\'Stable version\')[0]\n    nginx_raw_version = payload_map.get(\'rawVersion\')[0]\n    split_version = nginx_raw_version.split(\' \')\n    if len(split_version) == 2:\n        real_version = nginx_raw_version.split(\' \')[1]\n        if real_version is not None:\n            real_cp_mainline = compare_version(nginx_mainline_version, real_version)\n            real_cp_stable = compare_version(nginx_stable_version, real_version)\n            if real_cp_mainline == 0 or real_cp_stable == 0:\n                return nginx_raw_version + \' is up to date\'\n            else:\n                # 小于主线版本\n                if real_cp_mainline == 1:\n                    return nginx_raw_version + \' is out of date. \' + \'Mainline version: \' + nginx_mainline_version\n                # 小于稳定版\n                if real_cp_stable == 1:\n                    return nginx_raw_version + \' is out of date. \' + \'Stable version: \' + nginx_stable_version\n\n\n# 0相等，1左边大，-1右边大\n# version1----第一个要比较的版本字符串\n# version2----第二个要比较的版本字符串\n# split_flag----版本分隔符，默认为\".\"，可自定义\n# 接受的版本字符形式----空/x/x.y/x.y./x.y.z；两个参数可为前边列出的形式的任一种\ndef compare_version(version1=None, version2=None, split_flag=\".\"):\n    # 如果存在有为空的情况则进入\n    if (version1 is None) or (version1 == \"\") or (version2 is None) or (version2 == \"\"):\n        # version1为空且version2不为空，则返回version2大\n        if ((version1 is None) or (version1 == \"\")) and (version2 is not None) and (version2 != \"\"):\n            return -1\n        # version2为空且version1不为空，则返回version1大\n        if ((version2 is None) or (version2 == \"\")) and (version1 is not None) and (version1 != \"\"):\n            return 1\n\n    # 如果版本字符串相等，那么直接返回相等，这句会且只会在第一次比较时才可能进入\n    # version1和version2都为空时也会进入这里\n    if version1 == version2:\n        return 0\n\n    # 对版本字符串从左向右查找\".\"，第一个\".\"之前的字符串即为此次要比较的版本\n    # 如1.3.5中的1\n    try:\n        current_section_version1 = version1[:version1.index(split_flag)]\n    except:\n        current_section_version1 = version1\n    try:\n        current_section_version2 = version2[:version2.index(split_flag)]\n    except:\n        current_section_version2 = version2\n    # 对本次要比较的版本字符转成整型进行比较\n    if int(current_section_version1) > int(current_section_version2):\n        return 1\n    elif int(current_section_version1) < int(current_section_version2):\n        return -1\n\n    # 如果本次传来版本字符串中已没有版本号分隔符，那说明本次比较的版本号已是最后一位版本号，下次比较值赋空\n    # 如本次传来的是5，那下次要比较的只能赋空\n    try:\n        other_section_version1 = version1[version1.index(split_flag) + 1:]\n    except:\n        other_section_version1 = \"\"\n    try:\n        other_section_version2 = version2[version2.index(split_flag) + 1:]\n    except:\n        other_section_version2 = \"\"\n\n    # 递归调用比较\n    return compare_version(other_section_version1, other_section_version2)\n', '');
 INSERT INTO `tb_pluginconfig` VALUES ('1305054770993696768', 'HTTPElasticsearchUnauth', '', '高危', 'selfd', '0', '\n{\n    \"protocol\":\"http\",\n    \"method\":\"get\", \n    \"url\":\"/_cat\"\n}\n', '');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_project
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_project`;
-CREATE TABLE `tb_project` (
+CREATE TABLE `tb_project`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目编号',
   `name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目名称',
-  `description` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目描述',
+  `description` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '项目描述',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='项目，用于记录项目信息';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目，用于记录项目信息' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_project
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_projectinfo
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_projectinfo`;
-CREATE TABLE `tb_projectinfo` (
+CREATE TABLE `tb_projectinfo`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `departmentid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '部门编号',
-  `projectname` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目名称',
-  `checkwhitelist` tinyint(1) DEFAULT NULL COMMENT '检测白名单',
-  `notifywhitelist` tinyint(1) DEFAULT NULL COMMENT '提醒白名单',
-  `inserttime` datetime DEFAULT NULL COMMENT '插入时间',
-  `overrideipwhitelist` tinyint(1) DEFAULT NULL COMMENT '覆盖ip白名单，默认为false，如果为true，则会对项目下所有的ip进行白名单',
+  `departmentid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '部门编号',
+  `projectname` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '项目名称',
+  `checkwhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '检测白名单',
+  `notifywhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '提醒白名单',
+  `inserttime` datetime(0) NULL DEFAULT NULL COMMENT '插入时间',
+  `overrideipwhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '覆盖ip白名单，默认为false，如果为true，则会对项目下所有的ip进行白名单',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='项目信息表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目信息表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_projectinfo
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_projectportwhitelist
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_projectportwhitelist`;
-CREATE TABLE `tb_projectportwhitelist` (
+CREATE TABLE `tb_projectportwhitelist`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `projectinfoid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目信息编号',
-  `port` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '端口',
-  `checkwhitelist` tinyint(1) DEFAULT NULL COMMENT '检测白名单',
-  `notifywhitelist` tinyint(1) DEFAULT NULL COMMENT '提醒白名单',
+  `projectinfoid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '项目信息编号',
+  `port` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '端口',
+  `checkwhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '检测白名单',
+  `notifywhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '提醒白名单',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='项目端口白名单表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目端口白名单表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_projectportwhitelist
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_projectvulnnotify
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_projectvulnnotify`;
-CREATE TABLE `tb_projectvulnnotify` (
+CREATE TABLE `tb_projectvulnnotify`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `risk` varchar(35) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '风险等级',
+  `risk` varchar(35) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '风险等级',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='项目组漏洞提醒';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目组漏洞提醒' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_projectvulnnotify
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_projectvulnnotify` VALUES ('1143092349392523271', '低危,中危,高危,严重,致命');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_riskport
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_riskport`;
-CREATE TABLE `tb_riskport` (
+CREATE TABLE `tb_riskport`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `port` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '高危端口',
+  `port` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '高危端口',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='高危端口表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '高危端口表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_riskport
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_riskport` VALUES ('1168817979845120001', '6379');
 INSERT INTO `tb_riskport` VALUES ('1233467415178907648', '21');
 INSERT INTO `tb_riskport` VALUES ('1233468251812532224', '22');
@@ -740,22 +773,20 @@ INSERT INTO `tb_riskport` VALUES ('1233468701420949504', '161');
 INSERT INTO `tb_riskport` VALUES ('1233468746341945344', '162');
 INSERT INTO `tb_riskport` VALUES ('1233468788243042304', '23');
 INSERT INTO `tb_riskport` VALUES ('1233471409758539776', '5432');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_riskservice
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_riskservice`;
-CREATE TABLE `tb_riskservice` (
+CREATE TABLE `tb_riskservice`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `service` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '高危服务',
+  `service` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '高危服务',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='高危服务表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '高危服务表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_riskservice
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_riskservice` VALUES ('1168817979845120011', 'redis');
 INSERT INTO `tb_riskservice` VALUES ('1233467447277916160', 'ftp');
 INSERT INTO `tb_riskservice` VALUES ('1233468896120541184', 'ssh');
@@ -770,70 +801,64 @@ INSERT INTO `tb_riskservice` VALUES ('1233469905303638016', 'netbios-ssn');
 INSERT INTO `tb_riskservice` VALUES ('1233470365368455168', 'memcached');
 INSERT INTO `tb_riskservice` VALUES ('1233470924116856832', 'X11');
 INSERT INTO `tb_riskservice` VALUES ('1233471342574178304', 'postgresql');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_riskversion
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_riskversion`;
-CREATE TABLE `tb_riskversion` (
+CREATE TABLE `tb_riskversion`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `version` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '高危版本',
+  `version` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '高危版本',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='高危版本表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '高危版本表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_riskversion
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_riskversion` VALUES ('1168817979845120021', 'Redis key-value store');
 INSERT INTO `tb_riskversion` VALUES ('1168817979845120022', 'Redis key-value store 5.0');
 INSERT INTO `tb_riskversion` VALUES ('1233470404446785536', 'Memcached');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_sendmailconfig
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_sendmailconfig`;
-CREATE TABLE `tb_sendmailconfig` (
+CREATE TABLE `tb_sendmailconfig`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `sendhost` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '邮箱host',
-  `sendpassword` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '密码',
-  `sendfrom` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '发件人',
-  `sendto` varchar(2018) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '提醒邮箱，强制提醒，不管是否在提醒白名单里，提醒包括所有资产和在收件人列表接收漏洞风险中的漏洞',
-  `sendtorisk` varchar(35) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '收件人列表接收漏洞风险',
-  `vulnsubject` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞邮件主题',
-  `assetsubject` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '资产邮件主题',
-  `vulncontent` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞邮件内容',
-  `assetcontent` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '资产邮件内容',
-  `excelauthor` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'excel作者',
+  `sendhost` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '邮箱host',
+  `sendpassword` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '密码',
+  `sendfrom` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '发件人',
+  `sendto` varchar(2018) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '提醒邮箱，强制提醒，不管是否在提醒白名单里，提醒包括所有资产和在收件人列表接收漏洞风险中的漏洞',
+  `sendtorisk` varchar(35) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '收件人列表接收漏洞风险',
+  `vulnsubject` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞邮件主题',
+  `assetsubject` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资产邮件主题',
+  `vulncontent` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞邮件内容',
+  `assetcontent` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资产邮件内容',
+  `excelauthor` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'excel作者',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='发邮件配置';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '发邮件配置' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_sendmailconfig
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_sendmailconfig` VALUES ('1143092349392523272', NULL, NULL, '', '', '低危,中危,高危,严重,致命', '【魔方】漏洞报告', '【魔方】资产报告', '您好，附件为漏洞报告', '您好，附件为资产报告', '信息安全部');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_solution
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_solution`;
-CREATE TABLE `tb_solution` (
+CREATE TABLE `tb_solution`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '修复方案编号',
-  `vulnid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞编号',
-  `solution` varchar(10240) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '修复方案',
-  `codedemo` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '修复代码示例',
-  `configdemo` varchar(10240) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '修复配置示例',
+  `vulnid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞编号',
+  `solution` varchar(10240) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '修复方案',
+  `codedemo` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '修复代码示例',
+  `configdemo` varchar(10240) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '修复配置示例',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='修复方案，用于记录漏洞修复方案';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '修复方案，用于记录漏洞修复方案' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_solution
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_solution` VALUES ('1252508972364206080', '1252508972280320000', '默认信息修复方案', '默认信息修复代码示例', '默认信息修复配置示例');
 INSERT INTO `tb_solution` VALUES ('1252508972527783936', '1252508972448092160', '默认低危修复方案', '默认低危修复代码示例', '默认低危修复配置示例');
 INSERT INTO `tb_solution` VALUES ('1252508972641030144', '1252508972586504192', '默认中危修复方案', '默认中危修复代码示例', '默认中危修复配置示例');
@@ -852,76 +877,78 @@ INSERT INTO `tb_solution` VALUES ('1260513758808248320', '1260513758787276800', 
 INSERT INTO `tb_solution` VALUES ('1260513758871162880', '1260513758854385664', '1.Oracle如果不需要外部访问，设置只对本地开放，2.对未设置密码的用户添加密码，3.权限最小化, 为不同的数据库用户赋予不同的权限，4.配置防火墙，只对业务ip开放Oracle访问权限', '', '');
 INSERT INTO `tb_solution` VALUES ('1260513758942466048', '1260513758921494528', '1.PostgreSQL如果不需要外部访问，设置只对本地开放，2.对未设置密码的用户添加密码，3.权限最小化, 为不同的数据库用户赋予不同的权限，4.配置防火墙，只对业务ip开放PostgreSQL访问权限', '', '');
 INSERT INTO `tb_solution` VALUES ('1260513759009574912', '1260513758992797696', '1.修改Samba密码，使密码符合公司密码复杂度要求，2.对未设置密码的用户添加密码，3.配置防火墙，只对业务ip开放Samba访问权限', '', '');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_statistics
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_statistics`;
-CREATE TABLE `tb_statistics` (
+CREATE TABLE `tb_statistics`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `ipcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'ip数',
-  `ipcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '未下线ip数',
-  `portcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '端口数',
-  `portcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '未下线端口数',
-  `checkresultcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '检测结果数',
-  `checkresultcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '未修复检测结果数',
-  `infocount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '信息检测结果数',
-  `lowcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '低危检测结果数',
-  `mediumcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中危检测结果数',
-  `highcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '高危检测结果数',
-  `criticalcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '严重检测结果数',
-  `fatalcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '致命检测结果数',
-  `infocountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '未修复信息检测结果数',
-  `lowcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '未修复低危检测结果数',
-  `mediumcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '未修复中危检测结果数',
-  `highcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '未修复高危检测结果数',
-  `criticalcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '未修复严重检测结果数',
-  `fatalcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '未修复致命检测结果数',
-  `riskportcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '高危端口数',
-  `riskportcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '未下线高危端口数',
-  `riskservicecount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '高危服务数',
-  `riskservicecountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '未下线高危服务数',
-  `riskversioncount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '高危版本数',
-  `riskversioncountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '未下线高危版本数',
-  `updatetime` datetime DEFAULT NULL COMMENT '更新时间',
+  `ipcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'ip数',
+  `ipcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '未下线ip数',
+  `portcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '端口数',
+  `portcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '未下线端口数',
+  `checkresultcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '检测结果数',
+  `checkresultcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '未修复检测结果数',
+  `infocount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '信息检测结果数',
+  `lowcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '低危检测结果数',
+  `mediumcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '中危检测结果数',
+  `highcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '高危检测结果数',
+  `criticalcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '严重检测结果数',
+  `fatalcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '致命检测结果数',
+  `infocountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '未修复信息检测结果数',
+  `lowcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '未修复低危检测结果数',
+  `mediumcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '未修复中危检测结果数',
+  `highcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '未修复高危检测结果数',
+  `criticalcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '未修复严重检测结果数',
+  `fatalcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '未修复致命检测结果数',
+  `riskportcount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '高危端口数',
+  `riskportcountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '未下线高危端口数',
+  `riskservicecount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '高危服务数',
+  `riskservicecountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '未下线高危服务数',
+  `riskversioncount` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '高危版本数',
+  `riskversioncountonline` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '未下线高危版本数',
+  `updatetime` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='统计数据';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '统计数据' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_statistics
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_task
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_task`;
-CREATE TABLE `tb_task` (
+CREATE TABLE `tb_task`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '任务编号',
-  `taskparentid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '任务父编号',
-  `projectid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目编号',
-  `name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '任务名称',
-  `description` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '任务描述',
-  `cronexpression` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'cron表达式',
-  `crontask` tinyint(1) DEFAULT NULL COMMENT 'cron任务',
-  `starttime` datetime DEFAULT NULL COMMENT '任务开始时间',
-  `endtime` datetime DEFAULT NULL COMMENT '任务结束时间',
-  `worktype` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '任务类型',
-  `checktype` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '检测类型',
-  `threadnumber` varchar(4) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '线程数量',
-  `singleipscantime` varchar(2) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '1' COMMENT '单个ip扫描次数',
-  `additionoption` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '任务附加选项',
-  `rate` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '扫描速率',
-  `targetip` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '目标ip',
-  `targetport` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '目标端口',
-  `excludeip` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '排除ip',
-  `ipslicesize` varchar(8) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '255' COMMENT '分组大小',
-  `portslicesize` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '端口分组大小，nmap全端口模式时，如果该字段有值，则进行端口分组，分组大小范围：1000-10000',
-  `dbipisexcludeip` tinyint(1) DEFAULT NULL COMMENT 'db中ip作为排除ip',
-  `merge2asset` tinyint(1) DEFAULT NULL COMMENT '扫描结果合并到资产',
+  `taskparentid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '任务父编号',
+  `projectid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '项目编号',
+  `name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '任务名称',
+  `description` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '任务描述',
+  `cronexpression` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'cron表达式',
+  `crontask` tinyint(1) NULL DEFAULT NULL COMMENT 'cron任务',
+  `starttime` datetime(0) NULL DEFAULT NULL COMMENT '任务开始时间',
+  `endtime` datetime(0) NULL DEFAULT NULL COMMENT '任务结束时间',
+  `worktype` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '任务类型',
+  `checktype` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '检测类型',
+  `threadnumber` varchar(4) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '线程数量',
+  `singleipscantime` varchar(2) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT '1' COMMENT '单个ip扫描次数',
+  `additionoption` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '任务附加选项',
+  `rate` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '扫描速率',
+  `targetip` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '目标ip',
+  `targetport` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '目标端口',
+  `excludeip` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '排除ip',
+  `ipslicesize` varchar(8) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT '255' COMMENT '分组大小',
+  `portslicesize` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '端口分组大小，nmap全端口模式时，如果该字段有值，则进行端口分组，分组大小范围：1000-10000',
+  `dbipisexcludeip` tinyint(1) NULL DEFAULT NULL COMMENT 'db中ip作为排除ip',
+  `merge2asset` tinyint(1) NULL DEFAULT NULL COMMENT '扫描结果合并到资产',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='用于记录任务及配置信息';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用于记录任务及配置信息' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_task
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_task` VALUES ('1304326239309402112', NULL, NULL, 'nmap常规端口-demo', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -n -sV --max-retries=1 --open', NULL, '127.0.0.1', 'regular', NULL, '255', NULL, 0, 1);
 INSERT INTO `tb_task` VALUES ('1304326543249641472', NULL, NULL, 'nmap所有端口-demo', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -n -sV --max-retries=1 --open', NULL, '127.0.0.1', NULL, NULL, '255', '1000', 0, 1);
 INSERT INTO `tb_task` VALUES ('1304326778726256640', NULL, NULL, 'nmap指定端口-demo', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -n -sV --max-retries=1 --open', NULL, '127.0.0.1', '80,443,6379', NULL, '255', NULL, 0, 1);
@@ -932,140 +959,203 @@ INSERT INTO `tb_task` VALUES ('1304327185506635776', NULL, NULL, 'nse启用smb-v
 INSERT INTO `tb_task` VALUES ('1304327417707499520', NULL, NULL, 'selfd启用所有插件-demo', NULL, NULL, 0, NULL, NULL, 'selfd', NULL, '4', '1', '', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
 INSERT INTO `tb_task` VALUES ('1304327508270911488', NULL, NULL, 'selfd启用JavaRedisWeakPass插件-demo', NULL, NULL, 0, NULL, NULL, 'selfd', NULL, '4', '1', '', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
 INSERT INTO `tb_task` VALUES ('1304328077727371264', NULL, NULL, 'httpp任务-demo', NULL, NULL, 0, NULL, NULL, 'httpp', NULL, '4', '1', '', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_taskip
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_taskip`;
-CREATE TABLE `tb_taskip` (
+CREATE TABLE `tb_taskip`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资产ip编号',
-  `taskid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '任务编号',
+  `taskid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '任务编号',
   `ipaddressv4` varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'ipv4地址',
-  `ipaddressv6` varchar(39) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'ipv6地址',
-  `checkwhitelist` tinyint(1) DEFAULT NULL COMMENT '安全检测白名单',
+  `ipaddressv6` varchar(39) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'ipv6地址',
+  `checkwhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '安全检测白名单',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='任务ip表，用于记录每次扫描任务的ip信息';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '任务ip表，用于记录每次扫描任务的ip信息' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_taskip
+-- ----------------------------
+INSERT INTO `tb_taskip` VALUES ('1314483884750147584', '1304326543249641472', '127.0.0.1', NULL, 0);
+INSERT INTO `tb_taskip` VALUES ('1314485012380389376', '1304327021228331008', '127.0.0.1', NULL, 0);
+INSERT INTO `tb_taskip` VALUES ('1314485455953203200', '1314485452954275840', '127.0.0.1', NULL, 0);
 
 -- ----------------------------
 -- Table structure for tb_taskpluginconfig
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_taskpluginconfig`;
-CREATE TABLE `tb_taskpluginconfig` (
+CREATE TABLE `tb_taskpluginconfig`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
   `taskid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '任务编号',
-  `pluginconfigid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '插件编号',
+  `pluginconfigid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '插件编号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='任务插件，nse/selfd任务，或nse/selfd任务启用的插件';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '任务插件，nse/selfd任务，或nse/selfd任务启用的插件' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_taskpluginconfig
+-- ----------------------------
+INSERT INTO `tb_taskpluginconfig` VALUES ('1314486172193525760', '1304327185506635776', '1298634979529592832');
+INSERT INTO `tb_taskpluginconfig` VALUES ('1314486238509666304', '1304327508270911488', '1298634973577875456');
 
 -- ----------------------------
 -- Table structure for tb_taskport
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_taskport`;
-CREATE TABLE `tb_taskport` (
+CREATE TABLE `tb_taskport`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '端口编号',
-  `taskipid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '任务ip编号',
+  `taskipid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '任务ip编号',
   `port` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '端口',
-  `protocol` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '端口协议',
-  `state` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '端口开放状态',
-  `service` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '端口服务',
-  `version` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '服务版本',
-  `checkwhitelist` tinyint(1) DEFAULT NULL COMMENT '安全检测白名单',
+  `protocol` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '端口协议',
+  `state` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '端口开放状态',
+  `service` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '端口服务',
+  `version` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '服务版本',
+  `checkwhitelist` tinyint(1) NULL DEFAULT NULL COMMENT '安全检测白名单',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='任务端口表，用于记录每次扫描任务的端口信息';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '任务端口表，用于记录每次扫描任务的端口信息' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_taskport
+-- ----------------------------
+INSERT INTO `tb_taskport` VALUES ('1314483885274435584', '1314483884750147584', '3306', 'tcp', 'open', 'mysql', 'MySQL 8.0.21', 0);
+INSERT INTO `tb_taskport` VALUES ('1314483909760782336', '1314483884750147584', '22', 'tcp', 'open', 'ssh', 'OpenSSH 7.4 (protocol 2.0)', 0);
+INSERT INTO `tb_taskport` VALUES ('1314483909790142464', '1314483884750147584', '25', 'tcp', 'open', 'smtp', 'Postfix smtpd', 0);
+INSERT INTO `tb_taskport` VALUES ('1314483909827891200', '1314483884750147584', '80', 'tcp', 'open', 'http', 'nginx 1.19.3', 0);
+INSERT INTO `tb_taskport` VALUES ('1314483911727910912', '1314483884750147584', '4369', 'tcp', 'open', 'epmd', 'Erlang Port Mapper Daemon', 0);
+INSERT INTO `tb_taskport` VALUES ('1314483928450600960', '1314483884750147584', '5672', 'tcp', 'open', 'amqp', 'RabbitMQ 3.8.9 (0-9)', 0);
+INSERT INTO `tb_taskport` VALUES ('1314483928479961088', '1314483884750147584', '5671', 'tcp', 'open', 'tcpwrapped', 'null', 0);
+INSERT INTO `tb_taskport` VALUES ('1314483953985523712', '1314483884750147584', '6379', 'tcp', 'open', 'redis', 'Redis key-value store', 0);
+INSERT INTO `tb_taskport` VALUES ('1314483960394420224', '1314483884750147584', '8686', 'tcp', 'open', 'sun-as-jmxrmi?', 'null', 0);
+INSERT INTO `tb_taskport` VALUES ('1314483960914513920', '1314483884750147584', '9001', 'tcp', 'open', 'tor-orport?', 'null', 0);
+INSERT INTO `tb_taskport` VALUES ('1314483961065508864', '1314483884750147584', '9991', 'tcp', 'open', 'issa?', 'null', 0);
+INSERT INTO `tb_taskport` VALUES ('1314483979763716096', '1314483884750147584', '15672', 'tcp', 'open', 'http', 'Cowboy httpd', 0);
+INSERT INTO `tb_taskport` VALUES ('1314483979839213568', '1314483884750147584', '15671', 'tcp', 'open', 'tcpwrapped', 'null', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012434915328', '1314485012380389376', '913', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012451692544', '1314485012380389376', '903', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012468469760', '1314485012380389376', '49667', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012522995712', '1314485012380389376', '808', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012548161536', '1314485012380389376', '10001', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012569133056', '1314485012380389376', '445', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012590104576', '1314485012380389376', '443', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012615270400', '1314485012380389376', '49669', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012632047616', '1314485012380389376', '49665', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012648824832', '1314485012380389376', '49670', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012669796352', '1314485012380389376', '4000', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012682379264', '1314485012380389376', '135', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012703350784', '1314485012380389376', '5040', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012724322304', '1314485012380389376', '49664', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012745293824', '1314485012380389376', '7680', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012774653952', '1314485012380389376', '28317', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012795625472', '1314485012380389376', '2968', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012816596992', '1314485012380389376', '10000', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012833374208', '1314485012380389376', '49666', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012850151424', '1314485012380389376', '54530', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012866928640', '1314485012380389376', '49668', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012883705856', '1314485012380389376', '1362', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485012900483072', '1314485012380389376', '8307', 'tcp', 'open', NULL, NULL, 0);
+INSERT INTO `tb_taskport` VALUES ('1314485456074838016', '1314485455953203200', '3306', 'tcp', 'open', 'mysql', 'MySQL 8.0.21', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485480770899968', '1314485455953203200', '22', 'tcp', 'open', 'ssh', 'OpenSSH 7.4 (protocol 2.0)', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485480796065792', '1314485455953203200', '25', 'tcp', 'open', 'smtp', 'Postfix smtpd', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485480821231616', '1314485455953203200', '80', 'tcp', 'open', 'http', 'nginx 1.19.3', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485482398289920', '1314485455953203200', '4369', 'tcp', 'open', 'epmd', 'Erlang Port Mapper Daemon', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485499087425536', '1314485455953203200', '5672', 'tcp', 'open', 'amqp', 'RabbitMQ 3.8.9 (0-9)', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485499112591360', '1314485455953203200', '5671', 'tcp', 'open', 'tcpwrapped', 'null', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485525029195776', '1314485455953203200', '6379', 'tcp', 'open', 'redis', 'Redis key-value store', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485530448236544', '1314485455953203200', '8686', 'tcp', 'open', 'sun-as-jmxrmi?', 'null', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485530842501120', '1314485455953203200', '9001', 'tcp', 'open', 'tor-orport?', 'null', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485530892832768', '1314485455953203200', '9991', 'tcp', 'open', 'issa?', 'null', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485549981110272', '1314485455953203200', '15672', 'tcp', 'open', 'http', 'Cowboy httpd', 0);
+INSERT INTO `tb_taskport` VALUES ('1314485550006276096', '1314485455953203200', '15671', 'tcp', 'open', 'tcpwrapped', 'null', 0);
+INSERT INTO `tb_taskport` VALUES ('1314486096687665152', '1314485455953203200', '25672', 'tcp', 'open', 'unknown', 'null', 0);
 
 -- ----------------------------
 -- Table structure for tb_titlewhitelist
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_titlewhitelist`;
-CREATE TABLE `tb_titlewhitelist` (
+CREATE TABLE `tb_titlewhitelist`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '参数编号',
-  `title` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '标题',
+  `title` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '标题',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='标题白名单';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '标题白名单' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_titlewhitelist
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_titlewhitelist` VALUES ('1164432912121204766', 'Welcome to nginx');
 INSERT INTO `tb_titlewhitelist` VALUES ('1164432912121204767', 'Apache Tomcat');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_url
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_url`;
-CREATE TABLE `tb_url` (
+CREATE TABLE `tb_url`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'url编号',
-  `webinfoid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'web信息编号',
-  `name` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '名称',
-  `url` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'url',
+  `webinfoid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'web信息编号',
+  `name` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '名称',
+  `url` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT 'url',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='当前页面所有url及url名称';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '当前页面所有url及url名称' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_url
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_user
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_user`;
-CREATE TABLE `tb_user` (
+CREATE TABLE `tb_user`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '用户编号',
-  `username` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '用户名',
-  `password` varchar(60) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '密码',
-  `admin` tinyint(1) DEFAULT NULL COMMENT '是否管理员',
-  `active` tinyint(1) DEFAULT NULL COMMENT '是否有效',
-  `avatar` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '头像地址',
-  `lastdate` datetime DEFAULT NULL COMMENT '最后登录时间',
+  `username` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '用户名',
+  `password` varchar(60) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '密码',
+  `admin` tinyint(1) NULL DEFAULT NULL COMMENT '是否管理员',
+  `active` tinyint(1) NULL DEFAULT NULL COMMENT '是否有效',
+  `avatar` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '头像地址',
+  `lastdate` datetime(0) NULL DEFAULT NULL COMMENT '最后登录时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='用户表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_user
 -- ----------------------------
-BEGIN;
-INSERT INTO `tb_user` VALUES ('1259704243355521024', 'MagiCude', '$2a$10$7wmPIhsnZS3/I1xrQQOtvep9J/GVt2ofofkF4365cAxoFP8E5Zjd6', 1, 1, '/favicon.ico', '2020-09-13 16:32:27');
-COMMIT;
+INSERT INTO `tb_user` VALUES ('1259704243355521024', 'MagiCude', '$2a$10$7wmPIhsnZS3/I1xrQQOtvep9J/GVt2ofofkF4365cAxoFP8E5Zjd6', 1, 1, '/favicon.ico', '2020-10-09 20:32:27');
 
 -- ----------------------------
 -- Table structure for tb_useragent
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_useragent`;
-CREATE TABLE `tb_useragent` (
+CREATE TABLE `tb_useragent`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `useragent` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'useragent',
+  `useragent` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'useragent',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='useragent';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = 'useragent' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_useragent
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_useragent` VALUES ('1168817980281327616', 'Mozilla/5.0 (Linux; U; Android 8.1.0; zh-cn; BLA-AL00 Build/HUAWEIBLA-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/8.9 Mobile Safari/537.36');
 INSERT INTO `tb_useragent` VALUES ('1168817980558151680', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50');
 INSERT INTO `tb_useragent` VALUES ('1168817981279571968', 'Opera/9.80 (Windows NT 6.1; U; zh-cn) Presto/2.9.168 Version/11.50');
 INSERT INTO `tb_useragent` VALUES ('1168817981397012480', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:6.0) Gecko/20100101 Firefox/6.0');
 INSERT INTO `tb_useragent` VALUES ('1168817981434761216', 'Mozilla/5.0 (X11; U; Linux x86_64; zh-CN; rv:1.9.2.10) Gecko/20100922 Ubuntu/10.10 (maverick) Firefox/3.6.10');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_vuln
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_vuln`;
-CREATE TABLE `tb_vuln` (
+CREATE TABLE `tb_vuln`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '漏洞编号',
-  `categorysecondid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞二级分类编号',
-  `name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞名称',
-  `description` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞描述',
-  `risk` char(2) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞风险级别',
-  `refer` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '参考',
-  `impactscope` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '影响范围',
+  `categorysecondid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞二级分类编号',
+  `name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞名称',
+  `description` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞描述',
+  `risk` char(2) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞风险级别',
+  `refer` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '参考',
+  `impactscope` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '影响范围',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='漏洞，用于记录漏洞信息';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '漏洞，用于记录漏洞信息' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_vuln
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_vuln` VALUES ('1252508972280320000', '1252508922875613184', '默认信息', '默认信息描述', '信息', '默认信息参考', '默认信息影响范围');
 INSERT INTO `tb_vuln` VALUES ('1252508972448092160', '1252508922875613184', '默认低危', '默认低危描述', '低危', '默认低危参考', '默认低危影响范围');
 INSERT INTO `tb_vuln` VALUES ('1252508972586504192', '1252508922875613184', '默认中危', '默认中危描述', '中危', '默认中危参考', '默认中危影响范围');
@@ -1084,23 +1174,21 @@ INSERT INTO `tb_vuln` VALUES ('1260513758787276800', '1252508921818648576', 'MS 
 INSERT INTO `tb_vuln` VALUES ('1260513758854385664', '1252508921818648576', 'Oracle弱密码/未授权访问', 'Oracle存在未设置密码的用户或存在弱密码的用户，攻击者可以获取数据库数据，即平常所说的拖库', '严重', '', '所有Oracle版本');
 INSERT INTO `tb_vuln` VALUES ('1260513758921494528', '1252508921818648576', 'PostgreSQL弱密码/未授权访问', 'PostgreSQL存在未设置密码的用户或存在弱密码的用户，攻击者可以获取数据库数据，即平常所说的拖库', '严重', '', '所有PostgreSQL版本');
 INSERT INTO `tb_vuln` VALUES ('1260513758992797696', '1252508921818648576', 'Samba弱密码/未授权访问', 'Samba未设置访问权限或存在弱密码的用户，攻击者可以获取共享的数据；如果用户能够远程登录，则服务器沦陷', '致命', '', '所有Samba版本');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_vulnkeyword
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_vulnkeyword`;
-CREATE TABLE `tb_vulnkeyword` (
+CREATE TABLE `tb_vulnkeyword`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '漏洞关键字编号',
-  `pluginconfigid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '插件配置编号',
-  `keyword` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞关键字',
+  `pluginconfigid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '插件配置编号',
+  `keyword` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞关键字',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='漏洞关键字，用于记录漏洞关键字';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '漏洞关键字，用于记录漏洞关键字' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_vulnkeyword
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_vulnkeyword` VALUES ('1298634974383181824', '1298634973577875456', 'redis_version');
 INSERT INTO `tb_vulnkeyword` VALUES ('1298634974878109696', '1298634973577875456', 'Server');
 INSERT INTO `tb_vulnkeyword` VALUES ('1298634975117185024', '1298634973577875456', 'Clients');
@@ -1143,23 +1231,21 @@ INSERT INTO `tb_vulnkeyword` VALUES ('1298635551225810944', '1298635551074816000
 INSERT INTO `tb_vulnkeyword` VALUES ('1298635551645241344', '1298635551494246400', 'FTPWeakPass');
 INSERT INTO `tb_vulnkeyword` VALUES ('1298635551796236288', '1298635551737516032', 'out');
 INSERT INTO `tb_vulnkeyword` VALUES ('1305054772423954432', '1305054770993696768', '/_cat/count');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_vulnpluginconfig
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_vulnpluginconfig`;
-CREATE TABLE `tb_vulnpluginconfig` (
+CREATE TABLE `tb_vulnpluginconfig`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `vulnid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '漏洞编号',
-  `pluginconfigid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '插件配置编号',
+  `vulnid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '漏洞编号',
+  `pluginconfigid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '插件配置编号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='漏洞对应的插件配置表，用于检测漏洞的插件';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '漏洞对应的插件配置表，用于检测漏洞的插件' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_vulnpluginconfig
 -- ----------------------------
-BEGIN;
 INSERT INTO `tb_vulnpluginconfig` VALUES ('1298634974685171712', '1260513758078439424', '1298634973577875456');
 INSERT INTO `tb_vulnpluginconfig` VALUES ('1298634975880548352', '1260513758166519808', '1298634975670833152');
 INSERT INTO `tb_vulnpluginconfig` VALUES ('1298634976237064192', '1260513758560784384', '1298634976069292032');
@@ -1189,27 +1275,30 @@ INSERT INTO `tb_vulnpluginconfig` VALUES ('1298635551301308416', '12605137586530
 INSERT INTO `tb_vulnpluginconfig` VALUES ('1298635551695572992', '1260513758237822976', '1298635551494246400');
 INSERT INTO `tb_vulnpluginconfig` VALUES ('1298635551825596416', '1260513758720167936', '1298635551737516032');
 INSERT INTO `tb_vulnpluginconfig` VALUES ('1305054772977602560', '1252508972666195968', '1305054770993696768');
-COMMIT;
 
 -- ----------------------------
 -- Table structure for tb_webinfo
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_webinfo`;
-CREATE TABLE `tb_webinfo` (
+CREATE TABLE `tb_webinfo`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'web信息编号',
-  `portid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '端口编号',
-  `titlewhitelistid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '标题白名单编号',
-  `title` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '页面标题',
-  `bodychildrenstextcontent` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT 'body子节点文本内容',
-  `server` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '响应头中的服务',
-  `xpoweredby` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT 'xpoweredby',
-  `setcookie` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '设置cookie',
-  `wwwauthenticate` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '认证方式',
-  `appname` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '应用名称',
-  `appversion` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '应用版本',
-  `devlanguage` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '开发语言',
-  `crawltime` datetime DEFAULT NULL COMMENT '页面抓取时间',
+  `portid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '端口编号',
+  `titlewhitelistid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '标题白名单编号',
+  `title` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '页面标题',
+  `bodychildrenstextcontent` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT 'body子节点文本内容',
+  `server` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '响应头中的服务',
+  `xpoweredby` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'xpoweredby',
+  `setcookie` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '设置cookie',
+  `wwwauthenticate` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '认证方式',
+  `appname` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '应用名称',
+  `appversion` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '应用版本',
+  `devlanguage` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '开发语言',
+  `crawltime` datetime(0) NULL DEFAULT NULL COMMENT '页面抓取时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='网站信息表';
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '网站信息表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_webinfo
+-- ----------------------------
 
 SET FOREIGN_KEY_CHECKS = 1;

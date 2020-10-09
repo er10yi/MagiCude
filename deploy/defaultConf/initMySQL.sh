@@ -3,6 +3,6 @@
 # @author 贰拾壹
 # https://github.com/er10yi
 
-echo "**********docker MySQL导入数据**********"
-temp=`mysql -uroot -p8TAQRc9EOkV607qm -e"CREATE DATABASE magicude DEFAULT CHARACTER SET utf8"`
-temp=`mysql -uroot -p8TAQRc9EOkV607qm -Dmagicude -e"SOURCE /usr/local/magicude.sql"`
+echo  "*****info*****   docker MySQL导入数据"
+mysql -uroot -p8TAQRc9EOkV607qm -e"CREATE DATABASE magicude DEFAULT CHARACTER SET utf8" >/dev/null 2>&1
+mysql -uroot -p8TAQRc9EOkV607qm -Dmagicude -e"SOURCE /usr/local/magicude.sql" >/dev/null 2>&1
