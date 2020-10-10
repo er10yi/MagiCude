@@ -19,11 +19,15 @@ function logInfo(){
     echo -e "*****info*****\t $1"
 }
 
+function logWarn(){
+    echo -e "\033[33m*****warn*****\t $1\033[0m"
+}
+
 function logError(){
-    echo -e "!!!!!error!!!!!\t $1"
+    echo -e "\033[31m!!!!!error!!!!!\t $1\033[0m"
     exit 1
 }
 
 function logErrorNotExit(){
-    echo -e "!!!!!error!!!!!\t $1"
+    echo -e "\033[31m!!!!!error!!!!!\t $1\033[0m"
 }

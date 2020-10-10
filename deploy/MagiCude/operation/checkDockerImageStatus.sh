@@ -9,7 +9,7 @@ dockerNameArrays=("nginxApp" "magicude_mysql" "magicude_redis" "magicude_rabbitm
 for imageName in ${dockerNameArrays[@]} ; do
     existFlag=`docker ps | grep $imageName |wc -L`
     if [ $existFlag -eq 0 ] ;then
-        logInfo "$imageName 未启动，正在启动 $imageName"
+        logWarn "$imageName 未启动，正在启动 $imageName"
         docker start $imageName >/dev/null 2>&1
         logInfo "$imageName 完成启动"
     else logInfo "$imageName 已启动"

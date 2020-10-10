@@ -3,12 +3,12 @@
 # https://github.com/er10yi
 source /root/MagiCude/util.sh
 
-logInfo "停止 MagiCude 服务"
+logWarn "停止 MagiCude 服务"
 jarNameArrays=("eurekaapp" "centerapp" "agentapp")
 for jarName in ${jarNameArrays[@]} ; do
     tempPid=`ps -ef|grep $jarName|grep -v grep|cut -c 9-15`
     if [ $tempPid ] ;then
-        logInfo "停止 $jarName"
+        logWarn "停止 $jarName"
         kill -9 $tempPid
     fi
 done

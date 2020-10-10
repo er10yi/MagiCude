@@ -28,41 +28,23 @@ by [贰拾壹](https://github.com/er10yi )
 
 假设服务器已装好，服务器ip地址为```192.168.12.128```
 
-## 四步快速部署
+## 三步快速部署
 
 ### 1.生成配置文件
 
 下载部署包（Releases页面）解压后，deploy目录下双击```GenPass.bat```（Windows下，*uinx/mac直接执行```GenPass.bat```里面的内容就行了），将在当前目录生成newPass.txt，新的配置文件和初始化脚本会自动复制到MagiCude目录下
 
-### 2.修改前端api接口地址及agent.yml
+### 2.将deploy目录下的MagiCude上传到服务器root目录下
 
-#### 前端api接口地址
-
-需要修改```MagiCude\dist\static\js\app.*.js```，* 指的是类似ea5c35e2这样一串字符
-
-将baseURL:```"http://127.0.0.1:9001/"```中的ip改成实际部署服务器的ip
-
-如 ```baseURL:"http://192.168.12.128:9001/"```
-
-#### agent.yml
-
-需要修改```MagiCude```目录下的agent.yml中center节点的ip地址
-
-```yml
-center:
-  httpValidateApi: http://127.0.0.1:9001/center/pluginchecker # 需要修改成部署centerapp.jar服务器的ip
-  dnsValidateIp: 127.0.0.1 # 需要修改成部署centerapp.jar服务器的ip
-```
-
-将127.0.0.1改成实际部署centerapp.jar服务器的ip
-
-如 ```dnsValidateIp: 192.168.12.128```
-
-### 3.将deploy目录下的MagiCude上传到服务器root目录下
-
-### 4.初始化环境并运行系统
+### 3.初始化环境并运行系统
 
 终端执行```sh initCenterEnvironmentAndStart.sh```，初始化环境和数据并启动系统
+
+**需要手动选择center的ip地址**
+
+![选择ip](./使用说明图1/选择ip.png)
+
+安装结束时，如果没有错误信息，则成功安装
 
 ## 其他
 
@@ -97,7 +79,7 @@ center:
 密码：见newPass.txt
 ```
 
-### 任务信息-Agent
+任务信息-Agent，看到agent在线即可
 ![agent在线](./使用说明图1/agent在线.png)
 
 ## 微信讨论组

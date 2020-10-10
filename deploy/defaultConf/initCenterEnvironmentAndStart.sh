@@ -5,7 +5,7 @@
 source /root/MagiCude/util.sh
 
 echo
-echo "魔方-MagiCude 一键部署脚本 V2.5"
+echo "魔方-MagiCude 一键部署脚本 V2.6"
 echo "@author 贰拾壹"
 echo "https://github.com/er10yi"
 echo
@@ -44,9 +44,9 @@ fi
 
 # 如果$openjdkDirName已解压，证明已经运行过部署脚本
 if [ -d $openjdkDirName ]; then
-    logInfo "检测到已运行过部署脚本"
-    logInfo "继续运行脚本将重置数据库，当前数据会丢失"
-    logInfo "如已正常部署，请勿执行"
+    logWarn "检测到已运行过部署脚本"
+    logWarn "继续运行脚本将重置数据库，当前数据会丢失"
+    logWarn "如已正常部署，请勿执行"
     echo -n "是否继续(10秒后默认N)? [y/N]: "
     read -t 10 checkYes
     if [[ $checkYes != "y" ]] ; then
@@ -74,8 +74,8 @@ if [ $existFlag ] ;then
     kill -9 $(pidof masscan)
 fi
 # stop and remove docker images
-existFlag=`ls /usr/bin/ | grep docker |wc -L`
-if [ $existFlag -ne 0 ] ;then
+type docker >/dev/null 2>&1
+if [ $? -eq 0 ] ;then
     dockerNameArrays=("nginxApp" "magicude_mysql" "magicude_redis" "magicude_rabbitmq")
     systemctl restart docker
     for imageName in ${dockerNameArrays[@]} ; do
@@ -86,6 +86,38 @@ if [ $existFlag -ne 0 ] ;then
         fi
     done
     systemctl stop docker
+fi
+
+# 修改前端api地址及agent.yml
+errorMessage=()
+existFlag=`cat dist/static/js/app.*.js | grep "http://127.0.0.1:9001" |wc -L`
+if [ $existFlag -ne 0 ] ;then
+    tempIp=`ip a |grep -w inet|awk '{print $2}'|awk -F '/' '{print $1}'`
+    ipArray=(${tempIp// / })
+    logInfo "服务器所有IP如下: "
+    i=1
+    while ( [ $i -le ${#ipArray[*]} ] )
+    do
+        echo "$i ${ipArray[i-1]}"
+        let "i++"
+    done
+    echo -n "请输入数字选择部署center的IP地址: "
+    read choice
+    if [ ! $choice ]; then
+        logErrorNotExit "未选择有效的IP地址"
+        logError "请重新执行 $0"
+    fi
+    if [[ $choice -gt ${#ipArray[*]} ]] || [[ $choice -lt 1 ]]; then
+        logErrorNotExit "未选择有效的IP地址"
+        logError "请重新执行 $0"
+    fi
+    let "choice--"
+    centerRealIp="${ipArray[choice]}"
+    logInfo "替换前端api地址"
+    sed -i "s/127.0.0.1/$centerRealIp/g" dist/static/js/app.*.js
+    logInfo "替换agent.yml中的地址"
+    sed -i "s/httpValidateApi: http:\/\/127.0.0.1/httpValidateApi: http:\/\/$centerRealIp/g" agent.yml
+    sed -i "s/dnsValidateIp: 127.0.0.1/dnsValidateIp: $centerRealIp/g" agent.yml
 fi
 
 # 判断前端api地址是否修改
@@ -110,7 +142,7 @@ else
 fi
 
 logInfo "判断是否存在java环境"
-java -version >/dev/null 2>&1
+type java >/dev/null 2>&1
 if [ $? -eq 0 ];then
     # 存在java环境
     java_version=`java -version 2>&1 | sed '1!d' | sed -e 's/"//g' | awk '{print $3}'`
@@ -141,8 +173,8 @@ yum -y install wget fontconfig stix-fonts ntpdate docker gcc make libpcap libpca
 logInfo "验证依赖是否成功安装"
 dependArrays=("wget" "docker" "make" "gcc" "clang" "git")
 for dependName in ${dependArrays[@]} ; do
-    existFlag=`ls /usr/bin/ | grep $dependName |wc -L`
-    if [ $existFlag -eq 0 ] ;then
+    type $dependName >/dev/null 2>&1
+    if [ $? -ne 0 ];then
         logError "$dependName 未成功安装，请重新执行 $0"
     fi
 done
@@ -153,7 +185,7 @@ pythonVerion=${pythonVersionArrays[0]}
 # i=1
 # while ( [ $i -le ${#pythonVersionArrays[*]} ] )
 # do
-#     echo "$i.Python ${pythonVersionArrays[i-1]}"
+#     echo "$i Python ${pythonVersionArrays[i-1]}"
 #     let "i++"
 # done
 # echo -n "10秒后默认选第 1 项 : "
@@ -188,7 +220,7 @@ if [ ! -f $pythonNameVerion$pythonTarName ]; then
         logError "$pythonNameVerion下载失败，重试第$i次失败，请重新执行 $0"
     fi
 fi
-python3 --version >/dev/null 2>&1
+type python3 >/dev/null 2>&1
 if [ $? -ne 0 ];then
     tar -xJf $pythonNameVerion$pythonTarName
     mkdir /usr/local/python3  >/dev/null 2>&1
@@ -201,8 +233,8 @@ if [ $? -ne 0 ];then
     cd ..
     rm -rf $pythonNameVerion
 fi
-logInfo "判断 $pythonNameVerion 是否成功安装"
-python3 --version >/dev/null 2>&1
+logInfo "判断$pythonNameVerion是否成功安装"
+type python3 >/dev/null 2>&1
 if [ $? -ne 0 ];then
     logError "$pythonNameVerion 未成功安装，请重新执行 $0"
 fi
@@ -263,12 +295,12 @@ pip3 install wheel -i https://pypi.douban.com/simple/ >/dev/null 2>&1
 pip3 install jep -i https://pypi.douban.com/simple/ >/dev/null 2>&1
 
 logInfo "安装nmap和masscan"
-existFlag=`ls /usr/bin/ | grep nmap |wc -L`
-if [ $existFlag -eq 0 ] ;then
+type nmap >/dev/null 2>&1
+if [ $? -ne 0 ];then
     rpm -U $nmapUrl >/dev/null 2>&1
 fi
-existFlag=`ls /usr/bin/ | grep masscan |wc -L`
-if [ $existFlag -eq 0 ] ;then
+type masscan >/dev/null 2>&1
+if [ $? -ne 0 ];then
     if [ ! -d masscan ]; then
         i=0
         while ( [ $i -lt 5 ] )
@@ -290,12 +322,12 @@ if [ $existFlag -eq 0 ] ;then
     rm -rf masscan >/dev/null 2>&1
 fi
 
-logInfo "验证docker nmap masscan是否成功安装"
-dependArrays=("docker" "masscan" "nmap")
+logInfo "验证nmap masscan是否成功安装"
+dependArrays=("masscan" "nmap")
 for dependName in ${dependArrays[@]} ; do
-    existFlag=`ls /usr/bin/ | grep $dependName |wc -L`
-    if [ $existFlag -eq 0 ] ;then
-        logError "$dependName 未成功安装，请重新执行 $0"
+    type $dependName >/dev/null 2>&1
+    if [ $? -ne 0 ];then
+        logError "$dependName未成功安装，请重新执行 $0"
     fi
 done
 
@@ -340,7 +372,7 @@ do
             if [ $imageName = "rabbitmq" ]; then 
                 imageName="rabbitmq:management"
             fi
-            logInfo "$imageName 不存在，正在重新pull $imageName"
+            logWarn "$imageName 不存在，正在重新pull $imageName"
             docker pull $imageName >/dev/null 2>&1 &
             wait
             if [ $imageName = "rabbitmq" ]; then 
@@ -377,7 +409,7 @@ logInfo "确保容器服务已成功运行"
 i=1
 while ( [ -z "`docker exec -it magicude_mysql /bin/bash -c "mysql -uroot -p8TAQRc9EOkV607qm -e'show databases'" | grep "information_schema"`" ] && [ $i -lt 6 ] )
 do
-    logInfo "magicude_mysql未启动，第$i次重启"
+    logWarn "magicude_mysql未启动，第$i次重启"
     docker start magicude_mysql >/dev/null 2>&1
     let "i++"
     sleep 10s
@@ -394,7 +426,7 @@ for imageName in ${dockerNameArrays[@]} ; do
     i=1
     while ( [ -z "`docker exec -it $imageName /bin/bash -c "ls /" | grep "root"`" ] && [ $i -lt 6 ] )
     do
-        logInfo "$imageName未启动，第$i次重启"
+        logWarn "$imageName未启动，第$i次重启"
         docker start $imageName >/dev/null 2>&1
         let "i++"
         sleep 10s
@@ -417,19 +449,19 @@ sh initDataAndStart.sh
 
 if [ ${#infoMessage[*]} -ne 0 ];then
     echo
-    echo "以下信息不会影响魔方正常运行，但可能会导致部分功能不可用，请根据提示进行修改，并重启魔方"
-    logInfo "info start"
+    logWarn "以下信息不会影响魔方正常运行，但可能会导致部分功能不可用，请根据提示进行修改，并重启魔方"
+    logWarn "info start"
     for info in ${infoMessage[@]} ; do
         echo -e "$info"
     done
-    logInfo "info end"
+    logWarn "info end"
 fi
 if [ ${#errorMessage[*]} -ne 0 ];then
     echo
-    echo "以下错误会影响魔方正常运行，导致魔方不可用，请根据提示进行修改，并重启魔方"
-    logInfo "error start"
+    logErrorNotExit "以下错误会影响魔方正常运行，导致魔方不可用，请根据提示进行修改，并重启魔方"
+    logErrorNotExit "error start"
     for error in ${errorMessage[@]} ; do
         echo -e "$error"
     done
-    logInfo "error end"
+    logErrorNotExit "error end"
 fi

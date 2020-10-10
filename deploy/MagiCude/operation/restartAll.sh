@@ -3,10 +3,10 @@
 # https://github.com/er10yi
 source /root/MagiCude/util.sh
 
-logInfo "$0 将执行以下操作"
-logInfo "停止nmap和masscan"
-logInfo "重启docker中的容器：magicude_mysql magicude_redis magicude_rabbitmq nginxApp"
-logInfo "重启center所有服务：eurekaapp.jar centerapp.jar agentapp.jar"
+logWarn "$0 将执行以下操作"
+logWarn "停止nmap和masscan"
+logWarn "重启docker中的容器：magicude_mysql magicude_redis magicude_rabbitmq nginxApp"
+logWarn "重启center所有服务：eurekaapp.jar centerapp.jar agentapp.jar"
 echo -n "是否继续(10秒后默认N)? [y/N]: "
 read -t 10 checkYes
 if [[ $checkYes = "y" ]] ; then
@@ -15,7 +15,7 @@ if [[ $checkYes = "y" ]] ; then
     for jarName in ${jarNameArrays[@]} ; do
         tempPid=`ps -ef|grep $jarName|grep -v grep|cut -c 9-15`
         if [ $tempPid ] ;then
-            logInfo "停止 $jarName"
+            logWarn "停止 $jarName"
             kill -9 $tempPid
         fi
     done
@@ -23,16 +23,16 @@ if [[ $checkYes = "y" ]] ; then
     # kill nmap masscan
     existFlag=`ps -ef|grep nmap|grep -v grep|cut -c 9-15`
     if [ $existFlag ] ;then
-        logInfo "停止 nmap"
+        logWarn "停止 nmap"
         kill -9 $(pidof nmap)
     fi
     existFlag=`ps -ef|grep masscan|grep -v grep|cut -c 9-15`
     if [ $existFlag ] ;then
-        logInfo "停止 masscan"
+        logWarn "停止 masscan"
         kill -9 $(pidof masscan)
     fi
     logInfo "完成"
-    logInfo "docker重启容器"
+    logWarn "docker重启容器"
     docker restart magicude_mysql > /dev/null 2>&1 &
     docker restart magicude_redis > /dev/null 2>&1 &
     docker restart magicude_rabbitmq > /dev/null 2>&1 &

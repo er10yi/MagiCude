@@ -5,7 +5,7 @@
 source /root/MagiCude/util.sh
 
 echo 
-echo "魔方-MagiCude agent部署脚本 V2.5"
+echo "魔方-MagiCude agent部署脚本 V2.6"
 echo "@author 贰拾壹"
 echo "https://github.com/er10yi"
 echo
@@ -42,7 +42,7 @@ fi
 
 # 如果$openjdkDirName已解压，证明已经运行过部署脚本
 if [ -d $openjdkDirName ]; then
-    logInfo "检测到已运行过部署脚本"
+    logWarn "检测到已运行过部署脚本"
     echo -n "是否继续(10秒后默认N)? [y/N]: "
     read -t 10 checkYes
     if [[ $checkYes != "y" ]] ; then
@@ -67,10 +67,60 @@ if [ $existFlag ] ;then
     kill -9 $(pidof masscan)
 fi
 
+function check_ip() {
+     local agentRealIp=$1
+     VALID_CHECK=$( echo $agentRealIp| awk  -F.  '$1<=255&&$2<=255&&$3<=255&&$4<=255{print "yes"}' )
+     if echo $agentRealIp| grep  -E  "^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$"  > /dev/null ;  then
+        if [[ $VALID_CHECK =  "yes" ]];  then
+            logInfo "正在ping $agentRealIp"
+            check_ret=`ping ${agentRealIp} -c 2 | grep -q  'ttl='  && echo "yes" || echo "no"`
+            if [ $check_ret = "no" ];then
+                logErrorNotExit "$agentRealIp 无法ping通"
+                return 1
+            else
+                logInfo "替换agent.yml中的127.0.0.1"
+                sed -i "s/127.0.0.1/$agentRealIp/g" agent.yml
+                return 0
+            fi
+        else
+            logErrorNotExit "$agentRealIp 无效的IP"
+            return  1
+        fi
+    else
+        logErrorNotExit "$agentRealIp 格式错误"
+        return  1
+    fi
+}
+
 # 判断agent.yml内容是否已经修改
 # agent分布式部署
 if [ ! -f initCenterEnvironmentAndStart.sh ]; then
+    # 修改agent.yml
     logInfo "检测到agent分布式部署"
+    # 需要手动输入服务器的ip地址
+    existFlag=`cat agent.yml | grep "name: agent1" |wc -L`
+    if [ $existFlag -ne 0 ] ;then
+        logInfo "修改agent.yml中的name: agent1"
+        logWarn "要求：不能是agent1, 需唯一且只能英文且不能包含空格"
+        echo -n "请输入agent的名字: "
+        read newName
+        logInfo "替换agent.yml中的name: agent1"
+        sed -i "s/name: agent1/name: $newName/g" agent.yml
+    fi
+
+    logInfo "修改agent.yml中center相关的ip"
+    existFlag=`cat agent.yml | grep "127.0.0.1" |wc -L`
+    if [ $existFlag -ne 0 ] ;then
+        while  true ;  do
+        echo -n "请输入部署center的服务IP地址: "
+        read agentRealIp
+        check_ip "${agentRealIp}"
+        if [ $? -eq  0 ]; then
+           break
+        fi
+        done
+    fi
+    
     existFlag=`cat agent.yml | grep "name: agent1" |wc -L`
     if [ $existFlag -ne 0 ] ;then
         logError "agent.yml文件name节点 agent1 未修改，请修改成非 agent1 后重新运行 $0"
@@ -97,12 +147,10 @@ if [ -f agent.yml ];then
     if [ $existFlag -ne 0 ] ;then
         infoMessage+=("agent.yml文件center节点dnsValidateIp未修改：请将dnsValidateIp修改成部署centerapp.jar服务器的ip")
     fi
-else
-    logError "agent.yml不存在"
 fi
 
 logInfo "判断是否存在java 环境"
-java -version >/dev/null 2>&1
+type java >/dev/null 2>&1
 if [ $? -eq 0 ];then
     # 存在java环境
     java_version=`java -version 2>&1 | sed '1!d' | sed -e 's/"//g' | awk '{print $3}'`
@@ -132,8 +180,8 @@ yum -y install gcc make libpcap libpcap-dev clang git wget >/dev/null 2>&1
 logInfo "验证依赖是否成功安装"
 dependArrays=("wget" "make" "gcc" "clang" "git")
 for dependName in ${dependArrays[@]} ; do
-    existFlag=`ls /usr/bin/ | grep $dependName |wc -L`
-    if [ $existFlag -eq 0 ] ;then
+    type $dependName >/dev/null 2>&1
+    if [ $? -ne 0 ];then
         logError "$dependName未成功安装，请重新执行 $0"
     fi
 done
@@ -144,7 +192,7 @@ pythonVerion=${pythonVersionArrays[0]}
 # i=1
 # while ( [ $i -le ${#pythonVersionArrays[*]} ] )
 # do
-#     echo "$i.Python ${pythonVersionArrays[i-1]}"
+#     echo "$i Python ${pythonVersionArrays[i-1]}"
 #     let "i++"
 # done
 # echo -n "10秒后默认选第 1 项 : "
@@ -178,7 +226,7 @@ if [ ! -f $pythonNameVerion$pythonTarName ]; then
         logError "$pythonNameVerion下载失败，重试第$i次失败，请重新执行 $0"
     fi
 fi
-python3 --version >/dev/null 2>&1
+type python3 >/dev/null 2>&1
 if [ $? -ne 0 ];then
     tar -xJf $pythonNameVerion$pythonTarName
     mkdir /usr/local/python3  >/dev/null 2>&1
@@ -191,9 +239,9 @@ if [ $? -ne 0 ];then
     cd ..
     rm -rf $pythonNameVerion >/dev/null 2>&1
 fi
-logInfo "判断 $pythonNameVerion 是否成功安装"
-python3 --version >/dev/null 2>&1
-if [ $? != 0 ];then
+logInfo "判断$pythonNameVerion是否成功安装"
+type python3 >/dev/null 2>&1
+if [ $? -ne 0 ];then
     logError "$pythonNameVerion 未成功安装，请重新执行 $0"
 fi
 logInfo "替换agent.yml中的jep.absolutePath的python路径"
@@ -248,13 +296,12 @@ pip3 install wheel -i https://pypi.douban.com/simple/ >/dev/null 2>&1
 pip3 install jep -i https://pypi.douban.com/simple/ >/dev/null 2>&1
 
 logInfo "安装nmap和masscan"
-existFlag=`ls /usr/bin/ | grep nmap |wc -L`
-if [ $existFlag -eq 0 ] ;then
+type nmap >/dev/null 2>&1
+if [ $? -ne 0 ];then
     rpm -U $nmapUrl >/dev/null 2>&1
 fi
-
-existFlag=`ls /usr/bin/ | grep masscan |wc -L`
-if [ $existFlag -eq 0 ] ;then
+type masscan >/dev/null 2>&1
+if [ $? -ne 0 ];then
     if [ ! -d masscan ]; then
         i=0
         while ( [ $i -lt 5 ] )
@@ -279,8 +326,8 @@ fi
 logInfo "验证nmap masscan是否成功安装"
 dependArrays=("masscan" "nmap")
 for dependName in ${dependArrays[@]} ; do
-    existFlag=`ls /usr/bin/ | grep $dependName |wc -L`
-    if [ $existFlag -eq 0 ] ;then
+    type $dependName >/dev/null 2>&1
+    if [ $? -ne 0 ];then
         logError "$dependName未成功安装，请重新执行 $0"
     fi
 done
@@ -291,10 +338,10 @@ sh runAgent.sh
 
 if [ ${#infoMessage[*]} -ne 0 ];then 
     echo
-    echo "以下信息不会影响魔方正常运行，但可能会导致agent部分功能不可用，请根据提示进行修改，并重启agent"
-    logInfo "info start"
+    logWarn "以下信息不会影响魔方正常运行，但可能会导致agent部分功能不可用，请根据提示进行修改，并重启agent"
+    logWarn "info start"
     for info in ${infoMessage[@]} ; do
         echo -e "$info"
     done
-    logInfo "info end"
+    logWarn "info end"
 fi
