@@ -137,7 +137,7 @@ public class RiskversionController {
      * 批量导入高危服务
      */
     @RequestMapping(value = "/batchAdd", method = RequestMethod.POST)
-    public Result batchAdd(@RequestParam("file") MultipartFile file) throws IOException {
+    public Result batchAdd(@RequestParam("file") MultipartFile file) {
         if (Objects.isNull(file) || file.getSize() == 0) {
             return new Result(false, StatusCode.ERROR, "文件为空");
         }
@@ -158,14 +158,16 @@ public class RiskversionController {
         }
 
         String line;
-        BufferedReader bf = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
-        while ((line = bf.readLine()) != null) {
-            Riskversion riskversion = riskversionService.findByVersion(line);
-            if (Objects.isNull(riskversion)) {
-                riskversionService.add(new Riskversion(idWorker.nextId() + "", line));
+        //20201012 优化 去除bf.close，bf放到try中
+        try (BufferedReader bf = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            while ((line = bf.readLine()) != null) {
+                Riskversion riskversion = riskversionService.findByVersion(line);
+                if (Objects.isNull(riskversion)) {
+                    riskversionService.add(new Riskversion(idWorker.nextId() + "", line));
+                }
             }
+        } catch (IOException ignored) {
         }
-        bf.close();
         return new Result(true, StatusCode.OK, "高危版本已上传处理，请稍后查看");
 
     }
