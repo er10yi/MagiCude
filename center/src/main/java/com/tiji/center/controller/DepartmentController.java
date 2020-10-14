@@ -21,10 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * department控制器层
@@ -40,9 +37,6 @@ public class DepartmentController {
     private DepartmentService departmentService;
     @Autowired
     private IdWorker idWorker;
-    /**
-     * 批量导入部门项目信息联系人
-     */
     @Autowired
     private ProjectinfoService projectinfoService;
     @Autowired
@@ -147,6 +141,9 @@ public class DepartmentController {
         return new Result(true, StatusCode.OK, "删除成功");
     }
 
+    /**
+     * 批量导入部门项目信息联系人
+     */
     @RequestMapping(value = "/batchAdd", method = RequestMethod.POST)
     public Result batchAdd(@RequestParam("file") MultipartFile file) {
         if (Objects.isNull(file) || file.getSize() == 0) {
@@ -169,65 +166,69 @@ public class DepartmentController {
         }
 
         String line;
+        Set<String> tempSet = new HashSet<>();
         try (BufferedReader bf = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));) {
             while ((line = bf.readLine()) != null) {
-                String departmentname = line.split("\\|")[0];
-                String projectinfoname = line.split("\\|")[1];
-                String name = line.split("\\|")[2];
-                String email = line.split("\\|")[3];
-                String phone = line.split("\\|")[4];
-                if (!Objects.isNull(departmentname) && !departmentname.isEmpty()) {
-                    //部门不存在，直接新增
-                    Department department = departmentService.findByDepartmentname(departmentname);
-                    String departmentId;
-                    if (Objects.isNull(department)) {
-                        departmentId = idWorker.nextId() + "";
-                        departmentService.add(new Department(departmentId, departmentname));
+                tempSet.add(line);
+            }
+        } catch (IOException ignored) {
+        }
+        tempSet.forEach(infoLine -> {
+            String departmentname = infoLine.split("\\|")[0];
+            String projectinfoname = infoLine.split("\\|")[1];
+            String name = infoLine.split("\\|")[2];
+            String email = infoLine.split("\\|")[3];
+            String phone = infoLine.split("\\|")[4];
+            if (!Objects.isNull(departmentname) && !departmentname.isEmpty()) {
+                //部门不存在，直接新增
+                Department department = departmentService.findByDepartmentname(departmentname);
+                String departmentId;
+                if (Objects.isNull(department)) {
+                    departmentId = idWorker.nextId() + "";
+                    departmentService.add(new Department(departmentId, departmentname));
+                } else {
+                    //部门存在
+                    departmentId = department.getId();
+                }
+                if (!Objects.isNull(projectinfoname) && !projectinfoname.isEmpty()) {
+                    Projectinfo projectinfo = projectinfoService.findByDepartmentidAndProjectname(departmentId, projectinfoname);
+                    String projectinfoId;
+                    //部门不存在当前项目信息，直接新增
+                    if (Objects.isNull(projectinfo)) {
+                        projectinfoId = idWorker.nextId() + "";
+                        projectinfoService.add(new Projectinfo(projectinfoId, departmentId, projectinfoname, false, false, new Date(), false));
                     } else {
-                        //部门存在
-                        departmentId = department.getId();
+                        //项目信息存在
+                        projectinfoId = projectinfo.getId();
                     }
-                    if (!Objects.isNull(projectinfoname) && !projectinfoname.isEmpty()) {
-                        Projectinfo projectinfo = projectinfoService.findByDepartmentidAndProjectname(departmentId, projectinfoname);
-                        String projectinfoId;
-                        //部门不存在当前项目信息，直接新增
-                        if (Objects.isNull(projectinfo)) {
-                            projectinfoId = idWorker.nextId() + "";
-                            projectinfoService.add(new Projectinfo(projectinfoId, departmentId, projectinfoname, false, false, new Date(), false));
-                        } else {
-                            //项目信息存在
-                            projectinfoId = projectinfo.getId();
-                        }
 
-                        if (!Objects.isNull(name) && !name.isEmpty() && !Objects.isNull(email) && !email.isEmpty()) {
-                            Contact contact = contactService.findByNameAndEmail(name, email);
-                            String contactId;
-                            //联系人不存在
-                            //新增联系人、联系人项目信息关联
-                            if (Objects.isNull(contact)) {
-                                contactId = idWorker.nextId() + "";
-                                contactService.add(new Contact(contactId, name, email, phone));
-                                contactProjectinfoService.add(new ContactProjectinfo(idWorker.nextId() + "", contactId, projectinfoId));
-                            } else {
-                                //联系人存在
-                                contactId = contact.getId();
-                                //更新联系人项目信息关联
-                                contactProjectinfoService.add(new ContactProjectinfo(idWorker.nextId() + "", contactId, projectinfoId));
-                                //更新电话
-                                if (!Objects.isNull(phone) && !phone.isEmpty() && !phone.equals("暂无")) {
-                                    //没有电话，更新电话
-                                    if (Objects.isNull(contact.getPhone())) {
-                                        contact.setPhone(phone);
-                                        contactService.update(contact);
-                                    }
+                    if (!Objects.isNull(name) && !name.isEmpty() && !Objects.isNull(email) && !email.isEmpty()) {
+                        Contact contact = contactService.findByNameAndEmail(name, email);
+                        String contactId;
+                        //联系人不存在
+                        //新增联系人、联系人项目信息关联
+                        if (Objects.isNull(contact)) {
+                            contactId = idWorker.nextId() + "";
+                            contactService.add(new Contact(contactId, name, email, phone));
+                            contactProjectinfoService.add(new ContactProjectinfo(idWorker.nextId() + "", contactId, projectinfoId));
+                        } else {
+                            //联系人存在
+                            contactId = contact.getId();
+                            //更新联系人项目信息关联
+                            contactProjectinfoService.add(new ContactProjectinfo(idWorker.nextId() + "", contactId, projectinfoId));
+                            //更新电话
+                            if (!Objects.isNull(phone) && !phone.isEmpty() && !phone.equals("暂无")) {
+                                //没有电话，更新电话
+                                if (Objects.isNull(contact.getPhone())) {
+                                    contact.setPhone(phone);
+                                    contactService.update(contact);
                                 }
                             }
                         }
                     }
                 }
             }
-        } catch (IOException ignored) {
-        }
+        });
         return new Result(true, StatusCode.OK, "部门项目信息联系人已上传处理，请稍后查看");
     }
 }
