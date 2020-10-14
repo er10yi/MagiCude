@@ -47,9 +47,6 @@ public class AssetipController {
     private WebinfoService webinfoService;
     @Autowired
     private UrlService urlService;
-    /**
-     * 批量导入部门ip
-     */
     @Autowired
     private ProjectinfoService projectinfoService;
 
@@ -194,26 +191,49 @@ public class AssetipController {
 
         Map<String, Set<String>> resultMap = new LinkedHashMap<>();
         String line;
+        Date date = new Date();
+        Set<String> ipSet = new HashSet<>();
         try (BufferedReader bf = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));) {
             while ((line = bf.readLine()) != null) {
-                line = line.replaceAll("\\[\\[", "@");
-                line = line.replaceAll("],\\s?\\[", "!");
-                line = line.replaceAll("]]", "");
-                String ipp = line.split("@")[0];
-                String servers = line.split("@")[1];
-                List<String> serverList = Arrays.asList(servers.split("!"));
-                Set<String> resultSet = new HashSet<>(serverList);
-                if (resultMap.containsKey(ipp)) {
-                    Set<String> set = resultMap.get(ipp);
-                    set.addAll(resultSet);
-                    resultMap.put(ipp, set);
+                //有端口
+                if (line.contains("[[")) {
+                    line = line.replaceAll("\\[\\[", "@");
+                    line = line.replaceAll("],\\s?\\[", "!");
+                    line = line.replaceAll("]]", "");
+                    String ipp = line.split("@")[0];
+                    String servers = line.split("@")[1];
+                    List<String> serverList = Arrays.asList(servers.split("!"));
+                    Set<String> resultSet = new HashSet<>(serverList);
+                    if (resultMap.containsKey(ipp)) {
+                        Set<String> set = resultMap.get(ipp);
+                        set.addAll(resultSet);
+                        resultMap.put(ipp, set);
+                    } else {
+                        resultMap.put(ipp, resultSet);
+                    }
                 } else {
-                    resultMap.put(ipp, resultSet);
+                    //20201012 新增 增加无端口的ip导入格式
+                    //没有端口，新增ip
+                    ipSet = IpRange2Ips.genIp(line);
                 }
+
             }
         } catch (IOException ignored) {
         }
-        TijiHelper.nmapScanResult2AssetDB(assetipService, assetportService, idWorker, resultMap);
+        if (!resultMap.isEmpty()) {
+            TijiHelper.nmapScanResult2AssetDB(assetipService, assetportService, idWorker, resultMap);
+        }
+        if (!ipSet.isEmpty()) {
+            ipSet.forEach(ip -> {
+                Assetip assetip = assetipService.findByIpaddressv4AndPassivetimeIsNull(ip);
+                String assetipId;
+                //ip不存在，新增
+                if (Objects.isNull(assetip)) {
+                    assetipId = idWorker.nextId() + "";
+                    assetipService.add(new Assetip(assetipId, null, ip, null, false, false, date, null, null));
+                }
+            });
+        }
         return new Result(true, StatusCode.OK, "ip端口已上传处理，请稍后查看");
 
     }
@@ -229,8 +249,11 @@ public class AssetipController {
         return new Result(true, StatusCode.OK, "查询成功", assetipService.findByIds(ids));
     }
 
+    /**
+     * 批量导入部门ip
+     */
     @RequestMapping(value = "/projectinfoip/batchAdd", method = RequestMethod.POST)
-    public Result batchAddProjectinfoIp(@RequestParam("file") MultipartFile file) throws IOException {
+    public Result batchAddProjectinfoIp(@RequestParam("file") MultipartFile file) {
         if (Objects.isNull(file) || file.getSize() == 0) {
             return new Result(false, StatusCode.ERROR, "文件为空");
         }
@@ -251,41 +274,45 @@ public class AssetipController {
         }
 
         String line;
-        BufferedReader bf = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
-        Date date = new Date();
-        while ((line = bf.readLine()) != null) {
-            String projectinfoName = line.split("\\|")[0];
-            String ipRange = line.split("\\|")[1];
-            Projectinfo projectinfo = projectinfoService.findByProjectname(projectinfoName);
-            String projectInfoId;
-            if (Objects.isNull(projectinfo)) {
-                projectInfoId = idWorker.nextId() + "";
-                projectinfoService.add(new Projectinfo(projectInfoId, null, projectinfoName, false, false, date, false));
-            } else {
-                projectInfoId = projectinfo.getId();
-            }
-
-            Set<String> ipSet = IpRange2Ips.genIp(ipRange);
-            ipSet.forEach(ip -> {
-                Assetip assetip = assetipService.findByIpaddressv4AndPassivetimeIsNull(ip);
-                String assetipId;
-                System.out.println(projectInfoId + " = " + ip);
-                //ip不存在，新增
-                if (Objects.isNull(assetip)) {
-                    assetipId = idWorker.nextId() + "";
-                    assetipService.add(new Assetip(assetipId, projectInfoId, ip, null, false, false, date, null, null));
+        //20201012 优化 去除bf.close，bf放到try中
+        try (BufferedReader bf = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            Date date = new Date();
+            while ((line = bf.readLine()) != null) {
+                String projectinfoName = line.split("\\|")[0];
+                String ipRange = line.split("\\|")[1];
+                Projectinfo projectinfo = projectinfoService.findByProjectname(projectinfoName);
+                String projectInfoId;
+                if (Objects.isNull(projectinfo)) {
+                    projectInfoId = idWorker.nextId() + "";
+                    projectinfoService.add(new Projectinfo(projectInfoId, null, projectinfoName, false, false, date, false));
                 } else {
-                    //ip存在
-                    //projectInfoId = assetip.getProjectinfoid();
-                    //没有项目信息
-                    if (Objects.isNull(assetip.getProjectinfoid()) || assetip.getProjectinfoid().isEmpty()) {
-                        assetip.setProjectinfoid(projectInfoId);
-                        assetipService.update(assetip);
-                    }
+                    projectInfoId = projectinfo.getId();
                 }
-            });
+
+                Set<String> ipSet = IpRange2Ips.genIp(ipRange);
+                ipSet.forEach(ip -> {
+                    Assetip assetip = assetipService.findByIpaddressv4AndPassivetimeIsNull(ip);
+                    String assetipId;
+                    //System.out.println(projectInfoId + " = " + ip);
+                    //20201012 移除 移除如果ip不存在，会新增
+                    //ip不存在，新增
+                    if (Objects.isNull(assetip)) {
+                        //assetipId = idWorker.nextId() + "";
+                        //assetipService.add(new Assetip(assetipId, projectInfoId, ip, null, false, false, date, null, null));
+                    } else {
+                        //ip存在
+                        //projectInfoId = assetip.getProjectinfoid();
+                        //没有项目信息
+                        if (Objects.isNull(assetip.getProjectinfoid()) || assetip.getProjectinfoid().isEmpty()) {
+                            assetip.setProjectinfoid(projectInfoId);
+                            assetipService.update(assetip);
+                        }
+                    }
+                });
+            }
+        } catch (IOException ignored) {
         }
-        bf.close();
+
         return new Result(true, StatusCode.OK, "项目信息ip已上传处理，请稍后查看");
     }
 
