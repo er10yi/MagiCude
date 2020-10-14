@@ -153,37 +153,41 @@ public class HostController {
 
         String line;
         Date date = new Date();
-        List<Host> hostList = new LinkedList<>();
-        List<Assetip> assetipListList = new LinkedList<>();
+        List<Host> hostList = new ArrayList<>();
+        List<Assetip> assetipListList = new ArrayList<>();
+        Set<String> tempSet = new HashSet<>();
         try (BufferedReader bf = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             while ((line = bf.readLine()) != null) {
-                String ip = line.split(":")[0];
-                String hostname = line.split(":")[1];
-                Assetip assetip = assetipService.findByIpaddressv4AndPassivetimeIsNull(ip);
-                String temp = hostname.split("\\.")[0];
-                String owner = temp.substring(temp.indexOf("-") + 1);
-                if (assetip != null) {
-                    Host hostnameInDb = hostService.findByHostname(hostname);
-                    if (Objects.isNull(hostnameInDb)) {
-                        Host host = new Host(idWorker.nextId() + "", assetip.getId(), null, hostname, null, null, null, owner, date, null);
-                        hostList.add(host);
-                    }
-                } else {
-                    String assetipId = idWorker.nextId() + "";
-                    Host hostnameInDb = hostService.findByHostname(hostname);
-                    if (Objects.isNull(hostnameInDb)) {
-                        hostList.add(new Host(idWorker.nextId() + "", assetipId, null, hostname, null, null, null, owner, date, null));
-                    }
-                    assetipListList.add(new Assetip(assetipId, null, ip, null, false, false, date, null, null));
-                }
-            }
-            if (!assetipListList.isEmpty()) {
-                assetipService.batchAdd(assetipListList);
-            }
-            if (!hostList.isEmpty()) {
-                hostService.batchAdd(hostList);
+                tempSet.add(line);
             }
         } catch (IOException ignored) {
+        }
+        tempSet.forEach(infoLine -> {
+            String ip = infoLine.split(":")[0];
+            String hostname = infoLine.split(":")[1];
+            Assetip assetip = assetipService.findByIpaddressv4AndPassivetimeIsNull(ip);
+            String temp = hostname.split("\\.")[0];
+            String owner = temp.substring(temp.indexOf("-") + 1);
+            if (assetip != null) {
+                //20201012 修复 修复ip主机名，主机名重复时，导入失败问题
+                String assetipId = assetip.getId();
+                Host hostnameInDb = hostService.findByAssetipidAndHostname(assetipId, hostname);
+                if (Objects.isNull(hostnameInDb)) {
+                    Host host = new Host(idWorker.nextId() + "", assetipId, null, hostname, null, null, null, owner, date, null);
+                    hostList.add(host);
+                }
+            } else {
+                String assetipId = idWorker.nextId() + "";
+                //20201012 修复 修复ip主机名，主机名重复时，导入失败问题
+                Host hostnameInDb = hostService.findByAssetipidAndHostname(assetipId, hostname);
+                if (Objects.isNull(hostnameInDb)) {
+                    hostList.add(new Host(idWorker.nextId() + "", assetipId, null, hostname, null, null, null, owner, date, null));
+                }
+                assetipService.add(new Assetip(assetipId, null, ip, null, false, false, date, null, null));
+            }
+        });
+        if (!hostList.isEmpty()) {
+            hostService.batchAdd(hostList);
         }
         return new Result(true, StatusCode.OK, "ip主机名已上传处理，请稍后查看");
     }
