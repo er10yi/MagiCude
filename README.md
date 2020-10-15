@@ -14,7 +14,7 @@ by [贰拾壹](https://github.com/er10yi )
 
 ## 说明
 
-1. **本文档为快速部署说明，快速上手见《快速上手指南》，分布式部署及详细使用说明文档见《使用说明》**
+1. **本文档为快速部署说明，快速上手见[《快速上手指南》](https://github.com/er10yi/MagiCude/blob/master/%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B%E6%8C%87%E5%8D%97.md )，分布式部署及详细使用说明文档见[《使用说明》](https://github.com/er10yi/MagiCude/blob/master/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E.md )，开发说明见[《开发说明》](https://github.com/er10yi/MagiCude/blob/master/%E5%BC%80%E5%8F%91%E8%AF%B4%E6%98%8E.md )**
 
 2. 如果部署在生产环境，请参考使用说明配置防火墙
 
@@ -59,18 +59,8 @@ by [贰拾壹](https://github.com/er10yi )
 ./magicude status # 查看魔方运行状态
 ```
 
-### Eureka确认服务已注册
 
-访问目标ip:8686，确认服务已注册，当前http://192.168.12.128:8686/
-
-```
-账号：magicude
-密码：见newPass.txt
-```
-
-![eureka服务](./使用说明图1/eureka服务.png)
-
-### 确认agent已在线（可能需要稍等几分钟才能看到）
+### 登录魔方-MagiCude
 
 访问服务器ip，使用admin（后台管理员）密码登录，当前是http://192.168.12.128/
 
@@ -78,9 +68,6 @@ by [贰拾壹](https://github.com/er10yi )
 账号：MagiCude
 密码：见newPass.txt
 ```
-
-任务信息-Agent，看到agent在线即可
-![agent在线](./使用说明图1/agent在线.png)
 
 ## 微信讨论组
 
