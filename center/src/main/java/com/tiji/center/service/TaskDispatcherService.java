@@ -545,7 +545,6 @@ public class TaskDispatcherService {
                     });
                 }
                 if (nseSet.isEmpty()) {
-                    taskpluginconfigService.deleteAllByTaskid(taskId);
                     return;
                 }
                 //写到redis
@@ -666,7 +665,6 @@ public class TaskDispatcherService {
                     });
                 }
                 if (selfdSet.isEmpty()) {
-                    taskpluginconfigService.deleteAllByTaskid(taskId);
                     return;
                 }
                 //写到redis
