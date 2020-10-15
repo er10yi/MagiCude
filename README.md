@@ -46,9 +46,7 @@ by [贰拾壹](https://github.com/er10yi )
 
 安装结束时，如果没有错误信息，则成功安装
 
-## 其他
-
-### 系统操作
+## 系统操作
 
 ```MagiCude```目录下```magicude```为可执行文件，用法
 
@@ -60,7 +58,7 @@ by [贰拾壹](https://github.com/er10yi )
 ```
 
 
-### 登录魔方-MagiCude
+## 登录魔方-MagiCude
 
 访问服务器ip，使用admin（后台管理员）密码登录，当前是http://192.168.12.128/
 
