@@ -100,9 +100,9 @@ public class TaskService {
             if (task.getWorktype().equals("nmap") || task.getWorktype().equals("nse")) {
                 if (task.getTargetip().equals("unknownPortSerVer") || task.getTargetip().equals("ipAllPort")) {
                     // 不能带open..否则扫不到关掉端口
-                    task.setAdditionoption("-Pn -n -sV --max-retries=1");
+                    task.setAdditionoption("-Pn  -sV --max-retries=1");
                 } else {
-                    task.setAdditionoption("-Pn -n -sV --max-retries=1 --open");
+                    task.setAdditionoption("-Pn -sV --max-retries=1 --open");
                 }
             } else {
                 task.setAdditionoption("");
