@@ -41,11 +41,11 @@ agent：端口扫描任务、插件任务、http页面抓取任务执行；从re
 
 2. 服务器上执行`sh initCenterEnvironmentAndStart.sh`，初始化环境和数据并启动系统，按提示**手动选择center的ip地址**即可。
 
-3. 安装结束时，如果没有错误信息，则成功安装，稍等几分钟[前端登录]()即可。
+3. 安装结束时，如果没有错误信息，则成功安装，稍等几分钟[前端登录](https://github.com/er10yi/MagiCude/blob/master/README.md#%E5%89%8D%E7%AB%AF%E7%99%BB%E5%BD%95)即可。
 
 ### agent分布式部署
 
-1. 需要先执行上述步骤[center和agent部署在同一台服务器]()部署center，完成之后。
+1. 需要先执行上述步骤[center和agent部署在同一台服务器](https://github.com/er10yi/MagiCude/blob/master/README.md#center%E5%92%8Cagent%E9%83%A8%E7%BD%B2%E5%9C%A8%E5%90%8C%E4%B8%80%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%99%A8)部署center，完成之后。
 
 2. agent服务器的```root```目录下新建```MagiCude```目录。
 
