@@ -28,11 +28,11 @@ agent：端口扫描任务、插件任务、http页面抓取任务执行；从re
 
 1. 所有内容编码均为utf-8
 2. 服务器系统要求 CentOS 7.x
-3. **生产环境使用，请在部署完成后参考wiki中的[防火墙配置](https://github.com/er10yi/MagiCude/wiki/Firewall-Config)进行防火墙配置**
+3. **生产环境使用，请在部署完成后参考wiki中的[防火墙配置](https://github.com/er10yi/MagiCude/wiki/Firewall-Config )进行防火墙配置**
 
 ### 生成配置文件
 
-1. [Releases页面](https://github.com/er10yi/MagiCude/releases)下载最新部署包。
+1. [Releases页面](https://github.com/er10yi/MagiCude/releases )下载最新部署包。
 2. 解压后，[deploy目录](https://github.com/er10yi/MagiCude/wiki/UserPass-Table-Deploy-Structure )下双击`GenPass.bat`（Windows下，*uinx/Mac直接执行`GenPass.bat`里面的内容），将在当前目录生成**newPass.txt（请注意备份）**，新的配置文件和初始化脚本会自动复制到**MagiCude（后面部署都是用这个目录）**目录下。
 
 ### center和agent部署在同一台服务器
@@ -41,11 +41,11 @@ agent：端口扫描任务、插件任务、http页面抓取任务执行；从re
 
 2. 服务器上执行`sh initCenterEnvironmentAndStart.sh`，初始化环境和数据并启动系统，按提示**手动选择center的ip地址**即可。
 
-3. 安装结束时，如果没有错误信息，则成功安装，稍等几分钟[前端登录](https://github.com/er10yi/MagiCude/blob/master/README.md#%E5%89%8D%E7%AB%AF%E7%99%BB%E5%BD%95)即可。
+3. 安装结束时，如果没有错误信息，则成功安装，稍等几分钟[前端登录](https://github.com/er10yi/MagiCude/blob/master/README.md#%E5%89%8D%E7%AB%AF%E7%99%BB%E5%BD%95 )即可。
 
 ### agent分布式部署
 
-1. 需要先执行上述步骤[center和agent部署在同一台服务器](https://github.com/er10yi/MagiCude/blob/master/README.md#center%E5%92%8Cagent%E9%83%A8%E7%BD%B2%E5%9C%A8%E5%90%8C%E4%B8%80%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%99%A8)部署center，完成之后。
+1. 需要先执行上述步骤[center和agent部署在同一台服务器](https://github.com/er10yi/MagiCude/blob/master/README.md#center%E5%92%8Cagent%E9%83%A8%E7%BD%B2%E5%9C%A8%E5%90%8C%E4%B8%80%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%99%A8 )部署center，完成之后。
 
 2. agent服务器的```root```目录下新建```MagiCude```目录。
 
