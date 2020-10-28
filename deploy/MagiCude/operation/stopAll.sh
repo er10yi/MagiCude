@@ -25,13 +25,13 @@ if [[ $checkYes = "y" ]] ; then
     logInfo "完成"
     logWarn "停止 nmap和masscan"
     # kill nmap masscan
-    existFlag=`ps -ef|grep nmap|grep -v grep|cut -c 9-15`
-    if [ $existFlag ] ;then
+    existFlag=`ps -ef|grep nmap|grep -v grep| wc -L`
+    if [ $existFlag -ne 0 ] ;then
         logWarn "停止 nmap"
         kill -9 $(pidof nmap)
     fi
-    existFlag=`ps -ef|grep masscan|grep -v grep|cut -c 9-15`
-    if [ $existFlag ] ;then
+    existFlag=` ps -ef|grep masscan|grep -v grep| wc -L`
+    if [ $existFlag -ne 0 ] ;then
         logWarn "停止 masscan"
         kill -9 $(pidof masscan)
     fi

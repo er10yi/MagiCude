@@ -65,14 +65,15 @@ for jarName in ${jarNameArrays[@]} ; do
     fi
 done
 # kill nmap masscan
-existFlag=`ps -ef|grep nmap|grep -v grep|cut -c 9-15`
-if [ $existFlag ] ;then
+existFlag=`ps -ef|grep nmap|grep -v grep| wc -L`
+if [ $existFlag -ne 0 ] ;then
     kill -9 $(pidof nmap)
 fi
-existFlag=`ps -ef|grep masscan|grep -v grep|cut -c 9-15`
-if [ $existFlag ] ;then
+existFlag=` ps -ef|grep masscan|grep -v grep| wc -L`
+if [ $existFlag -ne 0 ] ;then
     kill -9 $(pidof masscan)
 fi
+
 # stop and remove docker images
 type docker >/dev/null 2>&1
 if [ $? -eq 0 ] ;then

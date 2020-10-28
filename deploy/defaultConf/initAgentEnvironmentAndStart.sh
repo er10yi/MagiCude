@@ -58,12 +58,12 @@ if [ $tempPid ] ;then
     kill -9 $tempPid
 fi
 # kill nmap masscan
-existFlag=`ps -ef|grep nmap|grep -v grep|cut -c 9-15`
-if [ $existFlag ] ;then
+existFlag=`ps -ef|grep nmap|grep -v grep| wc -L`
+if [ $existFlag -ne 0 ] ;then
     kill -9 $(pidof nmap)
 fi
-existFlag=`ps -ef|grep masscan|grep -v grep|cut -c 9-15`
-if [ $existFlag ] ;then
+existFlag=` ps -ef|grep masscan|grep -v grep| wc -L`
+if [ $existFlag -ne 0 ] ;then
     kill -9 $(pidof masscan)
 fi
 

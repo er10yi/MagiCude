@@ -84,7 +84,7 @@ public class TaskportController {
             searchMap.put("id", taskPortIdList);
         }
 
-        System.out.println("taskPortIdList "+taskPortIdList);
+        System.out.println("taskPortIdList " + taskPortIdList);
         Page<Taskport> pageList = taskportService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(taskport -> {
             String taskipid = taskport.getTaskipid();
@@ -93,8 +93,12 @@ public class TaskportController {
                 if (!Objects.isNull(taskip)) {
                     taskport.setTaskipid(taskip.getIpaddressv4());
                     String taskid = taskip.getTaskid();
-                    Task task = taskService.findById(taskid);
-                    taskport.setTaskname(task.getName());
+                    if (!StringUtils.isEmpty(taskid)) {
+                        Task task = taskService.findById(taskid);
+                        if (!Objects.isNull(task)) {
+                            taskport.setTaskname(task.getName());
+                        }
+                    }
                 }
             }
 

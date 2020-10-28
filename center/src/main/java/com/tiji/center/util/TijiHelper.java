@@ -714,10 +714,10 @@ public class TijiHelper {
     public static Map<String, Set<String>> nmapResult2Map(String result) {
         //portInfo port, state, service, version;
         Map<String, Set<String>> resultMap = new LinkedHashMap<>();
-        if ((result.contains("tcp") || result.contains("udp")) && !(result.contains("rDNS record") || result.contains("Other addresses for"))) {
+        String regex = "Nmap\\sscan\\sreport\\s|(?:^|\n)Starting\\sNmap.*|(?:^|\n)Host.*|(?:^|\n)Not shown.*|(?:^|\n)Some\\sclosed .*|(?:^|\n)PORT.*|(?:^|\n)[0-9]?\\sservice.?\\sunrecognized.*|(?:^|\n)SF.*|(?:^|\n)Starting.*|(?:^|\n)Warning.*|(?:^|\n)={14}.*|(?:^|\n)Service\\sdetection.*|(?:^|\n)Nmap done.*";
+        result = result.replaceAll(regex, "");
+        if ((result.contains("tcp") || result.contains("udp")) && !(result.contains("rDNS record") || result.contains("Other addresses for")||result.contains("("))) {
             //端口扫描
-            String regex = "Nmap\\sscan\\sreport\\s|(?:^|\n)Starting\\sNmap.*|(?:^|\n)Host.*|(?:^|\n)Not shown.*|(?:^|\n)Some\\sclosed .*|(?:^|\n)PORT.*|(?:^|\n)[0-9]?\\sservice.?\\sunrecognized.*|(?:^|\n)SF.*|(?:^|\n)Starting.*|(?:^|\n)Warning.*|(?:^|\n)={14}.*|(?:^|\n)Service\\sdetection.*|(?:^|\n)Nmap done.*";
-            result = result.replaceAll(regex, "");
             //正则采用NFA，递归过深会导致Exception in thread "main" java.lang.StackOverflowError
             //{1,500}限制单个ip匹配端口数，测试中超过770个就会导致栈溢出
             //匹配IP及对应服务
@@ -734,7 +734,7 @@ public class TijiHelper {
                 String[] lineStatus = status.split("\n");
                 resultMap.put(ip, lineStatus2Set(lineStatus));
             }
-        } else if (result.contains("rDNS record") || result.contains("Other addresses for")) {
+        } else if (result.contains("rDNS record") || result.contains("Other addresses for")||result.contains("(")) {
             String replaceRegex = "Other\\saddresses\\sfor.*|(?:^|\n)rDNS\\srecord\\sfor.*|(?:^|\n)Nmap\\sscan\\sreport\\s|(?:^|\n)Starting\\sNmap.*|(?:^|\n)Host.*|(?:^|\n)Not shown.*|(?:^|\n)Some\\sclosed .*|(?:^|\n)PORT.*|(?:^|\n)[0-9]?\\sservice.?\\sunrecognized.*|(?:^|\n)SF.*|(?:^|\n)Starting.*|(?:^|\n)Warning.*|(?:^|\n)={14}.*|(?:^|\n)Service\\sdetection.*|(?:^|\n)Nmap done.*";
             result = result.replaceAll(replaceRegex, "");
 

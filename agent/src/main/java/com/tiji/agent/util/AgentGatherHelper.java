@@ -104,6 +104,10 @@ public class AgentGatherHelper {
         String title = doc.title();
         resultMap.put("title", title);
 
+//        Map<String, String> headersMap = response.headers();
+//        headersMap.forEach((key, value) -> {
+//            System.out.println(key + " : " + value);
+//        });
         //响应头
         //Server
         //X-Powered-By
@@ -261,6 +265,10 @@ public class AgentGatherHelper {
                 } else {
                     cmd = new StringBuilder(basePath + " " + ip + " -p" + port + " " + options);
                 }
+            }
+            //nmap -sn，仅仅保留-sn选项
+            if (cmd.toString().contains("-sn")) {
+                cmd = new StringBuilder(cmd.toString().replaceAll(" -p1-65535", "").replaceAll(options, " -sn"));
             }
 
             String sliceIPListSizeName = "sliceIPListSize_" + taskId;
