@@ -1,12 +1,15 @@
 package com.tiji.center.dao;
 
+import com.tiji.center.pojo.Assetip;
 import com.tiji.center.pojo.Projectinfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * projectinfo数据访问接口
@@ -26,5 +29,6 @@ public interface ProjectinfoDao extends JpaRepository<Projectinfo, String>, JpaS
     @Modifying
     @Query(value = "DELETE FROM `tb_projectinfo` WHERE id IN(?1)", nativeQuery = true)
     void deleteAllByIds(List<String> ids);
+
 
 }

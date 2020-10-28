@@ -73,7 +73,7 @@ public class DictionaryusernameService {
      * @return
      */
     public Dictionaryusername findById(String id) {
-        return dictionaryusernameDao.findById(id).get();
+        return dictionaryusernameDao.findById(id).orElse(null);
     }
 
     /**

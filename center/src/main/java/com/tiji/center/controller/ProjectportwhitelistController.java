@@ -1,12 +1,15 @@
 package com.tiji.center.controller;
 
+import com.tiji.center.pojo.Projectinfo;
 import com.tiji.center.pojo.Projectportwhitelist;
+import com.tiji.center.service.ProjectinfoService;
 import com.tiji.center.service.ProjectportwhitelistService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +28,8 @@ public class ProjectportwhitelistController {
 
     @Autowired
     private ProjectportwhitelistService projectportwhitelistService;
+    @Autowired
+    private ProjectinfoService projectinfoService;
 
 
     /**
@@ -60,6 +65,13 @@ public class ProjectportwhitelistController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Projectportwhitelist> pageList = projectportwhitelistService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(projectportwhitelist -> {
+            String projectinfoid = projectportwhitelist.getProjectinfoid();
+            if (!StringUtils.isEmpty(projectinfoid)) {
+                Projectinfo projectinfo = projectinfoService.findById(projectinfoid);
+                projectportwhitelist.setProjectinfoid(projectinfo.getProjectname());
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Projectportwhitelist>(pageList.getTotalElements(), pageList.getContent()));
     }
 

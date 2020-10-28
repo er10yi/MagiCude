@@ -1,7 +1,8 @@
 package com.tiji.center.controller;
 
-import com.tiji.center.pojo.Agent;
 import com.tiji.center.pojo.Nmapconfig;
+import com.tiji.center.pojo.Project;
+import com.tiji.center.pojo.Projectinfo;
 import com.tiji.center.pojo.Task;
 import com.tiji.center.schedule.ExecuteCheckTaskScheduler;
 import com.tiji.center.schedule.ExecuteWorkTaskScheduler;
@@ -15,8 +16,10 @@ import entity.StatusCode;
 import org.quartz.CronExpression;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
+import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import util.IdWorker;
 
@@ -55,6 +58,11 @@ public class TaskController {
     private AgentService agentService;
     @Autowired
     private TaskpluginconfigService taskpluginconfigService;
+    @Autowired
+    private RabbitMessagingTemplate rabbitMessagingTemplate;
+    @Autowired
+    private ProjectService projectService;
+
 
     /**
      * 查询全部数据
@@ -89,6 +97,29 @@ public class TaskController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Task> pageList = taskService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(task -> {
+            String taskparentid = task.getTaskparentid();
+            if(!StringUtils.isEmpty(taskparentid)){
+                Task task1 = taskService.findById(taskparentid);
+                task.setTaskparentid(task1.getName());
+            }
+
+            String taskId = task.getId();
+            String projectid = task.getProjectid();
+            if (!StringUtils.isEmpty(projectid)) {
+                Project project = projectService.findById(projectid);
+                if (!Objects.isNull(project)) {
+                    task.setProjectid(project.getName());
+                }
+            }
+            List<Task> childTaskList = taskService.findAllByTaskparentid(taskId);
+            String name = task.getName();
+            if(!StringUtils.isEmpty(name)){
+                task.setStatistic(String.valueOf(childTaskList.size()));
+            }
+            Double taskPercent = taskService.getTaskPercent(taskId);
+            task.setPercentage(String.valueOf(taskPercent));
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<>(pageList.getTotalElements(), pageList.getContent()));
     }
 
@@ -110,24 +141,6 @@ public class TaskController {
      */
     @RequestMapping(method = RequestMethod.POST)
     public Result add(@RequestBody Task task) {
-        //String name = task.getName();
-        //Task taskInDb = taskService.findByName(name);
-        //if(Objects.isNull(taskInDb)){
-        //    String taskId = "";
-        //    if (Objects.isNull(task.getId())) {
-        //        taskId = idWorker.nextId() + "";
-        //        task.setId(taskId);
-        //    }
-        //    taskService.add(task);
-        //    if (task.getWorktype().equals("mass2Nmap")) {
-        //        return new Result(true, StatusCode.OK, "增加成功", taskId);
-        //    } else {
-        //        return new Result(true, StatusCode.OK, "增加成功");
-        //    }
-        //}else {
-        //    return new Result(false, StatusCode.ERROR,"增加失败：任务名称重复");
-        //}
-
         String taskId = "";
         if (Objects.isNull(task.getId())) {
             taskId = idWorker.nextId() + "";
@@ -166,7 +179,8 @@ public class TaskController {
         taskService.deleteById(id);
         //删除任务插件配置
         taskpluginconfigService.deleteAllByTaskid(id);
-
+        //删除子任务
+        taskService.deleteAllByTaskparentid(id);
         return new Result(true, StatusCode.OK, "删除成功");
     }
 
@@ -179,8 +193,7 @@ public class TaskController {
     @RequestMapping(value = "/execute/{id}", method = RequestMethod.GET)
     public Result executeTask(@PathVariable String id) throws SchedulerException, InterruptedException {
 
-        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
-        if (onlineAgentList.isEmpty()) {
+        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)) {
             return new Result(false, StatusCode.ERROR, "没有agent在线");
         }
         Map<String, Object> taskInfo = new HashMap<>();
@@ -240,8 +253,7 @@ public class TaskController {
      */
     @RequestMapping(value = "/execute/check/{id}", method = RequestMethod.GET)
     public Result executeCheck(@PathVariable String id) throws SchedulerException {
-        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
-        if (onlineAgentList.isEmpty()) {
+        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)) {
             return new Result(false, StatusCode.ERROR, "没有agent在线");
         }
         Map<String, Object> taskInfo = new HashMap<>();
@@ -305,8 +317,7 @@ public class TaskController {
      */
     @RequestMapping(value = "/repeat/{id}", method = RequestMethod.GET)
     public Result repeatTask(@PathVariable String id) throws InterruptedException {
-        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
-        if (onlineAgentList.isEmpty()) {
+        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)) {
             return new Result(false, StatusCode.ERROR, "没有agent在线");
         }
         Map<String, Object> taskInfo = taskDispatcherService.repeat(id);
@@ -348,4 +359,15 @@ public class TaskController {
         return new Result(true, StatusCode.OK, "删除成功");
     }
 
+    /**
+     * 根据taskId获取任务状态
+     *
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/statuspercent/{id}", method = RequestMethod.GET)
+    public Result getTaskStatusPercent(@PathVariable String id) {
+        Map<String, Object> taskStatus = taskDispatcherService.getTaskStatusPercent(id);
+        return new Result(true, StatusCode.OK, "任务状态", taskStatus);
+    }
 }

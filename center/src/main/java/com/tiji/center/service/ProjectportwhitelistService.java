@@ -73,7 +73,7 @@ public class ProjectportwhitelistService {
      * @return
      */
     public Projectportwhitelist findById(String id) {
-        return projectportwhitelistDao.findById(id).get();
+        return projectportwhitelistDao.findById(id).orElse(null);
     }
 
     /**

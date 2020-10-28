@@ -73,7 +73,7 @@ public class RiskversionService {
      * @return
      */
     public Riskversion findById(String id) {
-        return riskversionDao.findById(id).get();
+        return riskversionDao.findById(id).orElse(null);
     }
 
     /**

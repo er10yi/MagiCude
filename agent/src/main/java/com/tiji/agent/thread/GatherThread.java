@@ -26,7 +26,7 @@ public class GatherThread implements Runnable {
     private final String ip, port, options, rate, workType, nmapPath, massPath, taskId;
     private final RedisTemplate<String, String> redisTemplate;
 
-    public GatherThread(String taskId, String workType, String ip, RabbitMessagingTemplate rabbitMessagingTemplate, String port, String options, String rate, String nmapPath, String massPath, RedisTemplate<String, String> redisTemplate) {
+    public GatherThread(String taskId, String workType, String ip, RabbitMessagingTemplate rabbitMessagingTemplate, String port, String options, String rate, String nmapPath, String massPath,RedisTemplate<String, String> redisTemplate) {
         this.taskId = taskId;
         this.ip = ip;
         this.port = port;

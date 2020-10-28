@@ -3,6 +3,7 @@ package com.tiji.center.pojo;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -17,6 +18,11 @@ public class Assetip implements Serializable {
 
     @Id
     private String id;//资产ip编号
+
+    @Transient
+    private String statistic;
+    @Transient
+    private String label;
 
     private String projectinfoid;//联系表编号
     private String ipaddressv4;//ip地址
@@ -49,6 +55,22 @@ public class Assetip implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getStatistic() {
+        return statistic;
+    }
+
+    public void setStatistic(String statistic) {
+        this.statistic = statistic;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getProjectinfoid() {

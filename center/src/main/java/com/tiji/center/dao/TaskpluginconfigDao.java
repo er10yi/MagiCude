@@ -18,6 +18,10 @@ public interface TaskpluginconfigDao extends JpaRepository<Taskpluginconfig, Str
 
     List<Taskpluginconfig> findAllByTaskid(String taskid);
 
+
+    @Query(value = "SELECT pluginconfigid FROM `tb_taskpluginconfig` WHERE taskid=?1", nativeQuery = true)
+    List<String> findPluginconfigidByTaskid(String taskid);
+
     void deleteAllByTaskid(String taskid);
 
     void deleteAllByTaskidAndPluginconfigid(String taskid, String pluginconfigid);

@@ -3,6 +3,7 @@ package com.tiji.center.pojo;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -18,6 +19,14 @@ public class Checkresult implements Serializable {
     @Id
     private String id;//检测结果编号
 
+
+
+    @Transient
+    private String assetip;
+    @Transient
+    private String vulname;
+    @Transient
+    private String assetport;//端口
 
     private String assetportid;//端口编号
     private String name;//检测结果名称
@@ -47,6 +56,30 @@ public class Checkresult implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getAssetip() {
+        return assetip;
+    }
+
+    public void setAssetip(String assetip) {
+        this.assetip = assetip;
+    }
+
+    public String getVulname() {
+        return vulname;
+    }
+
+    public String getAssetport() {
+        return assetport;
+    }
+
+    public void setAssetport(String assetport) {
+        this.assetport = assetport;
+    }
+
+    public void setVulname(String vulname) {
+        this.vulname = vulname;
     }
 
     public String getAssetportid() {

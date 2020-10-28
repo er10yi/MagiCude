@@ -1,16 +1,20 @@
 package com.tiji.center.controller;
 
 import com.tiji.center.pojo.Nmapconfig;
+import com.tiji.center.pojo.Task;
 import com.tiji.center.service.NmapconfigService;
+import com.tiji.center.service.TaskService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * nmapconfig控制器层
@@ -24,6 +28,8 @@ public class NmapconfigController {
 
     @Autowired
     private NmapconfigService nmapconfigService;
+    @Autowired
+    private TaskService taskService;
 
 
     /**
@@ -59,6 +65,15 @@ public class NmapconfigController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Nmapconfig> pageList = nmapconfigService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(nmapconfig -> {
+            String taskid = nmapconfig.getTaskid();
+            if (!StringUtils.isEmpty(taskid)) {
+                Task task = taskService.findById(taskid);
+                if (!Objects.isNull(task)) {
+                    nmapconfig.setTaskid(task.getName());
+                }
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Nmapconfig>(pageList.getTotalElements(), pageList.getContent()));
     }
 

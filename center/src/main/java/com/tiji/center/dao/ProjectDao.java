@@ -21,4 +21,8 @@ public interface ProjectDao extends JpaRepository<Project, String>, JpaSpecifica
     @Query(value = "DELETE FROM `tb_project` WHERE id IN(?1)", nativeQuery = true)
     void deleteAllByIds(List<String> ids);
 
+    @Modifying
+    @Query(value = "UPDATE tb_task SET projectid = NULL WHERE projectid=?1", nativeQuery = true)
+    void updateTaskByProjectIdSetProjectid2Null(String projectid);
+
 }

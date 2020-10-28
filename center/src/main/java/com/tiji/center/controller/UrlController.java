@@ -120,17 +120,6 @@ public class UrlController {
     }
 
     /**
-     * 根据webinfoids查询所有链接
-     *
-     * @param webinfoids
-     * @return
-     */
-    @RequestMapping(value = "/links", method = RequestMethod.POST)
-    public Result findByWebinfoids(@RequestBody String[] webinfoids) {
-        return new Result(true, StatusCode.OK, "查询成功", urlService.findByWebinfoid(webinfoids));
-    }
-
-    /**
      * 根据webinfoid查询
      *
      * @param webinfoid webinfoid
@@ -162,4 +151,16 @@ public class UrlController {
     public Result findAllByWebinfoIds2Port(@RequestBody String[] webinfoids) {
         return new Result(true, StatusCode.OK, "查询成功", urlService.findAllByWebinfoIds2Port(webinfoids));
     }
+
+    /**
+     * 根据webinfoid查询
+     *
+     * @param webinfoid webinfoid
+     * @return
+     */
+    @RequestMapping(value = "/links/{webinfoid}", method = RequestMethod.GET)
+    public Result findLinksByWebinfoId(@PathVariable String webinfoid) {
+        return new Result(true, StatusCode.OK, "查询成功", urlService.findLinksByWebinfoId(webinfoid));
+    }
+
 }

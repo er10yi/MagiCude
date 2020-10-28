@@ -3,6 +3,7 @@ package com.tiji.center.pojo;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 
 /**
@@ -17,6 +18,9 @@ public class Taskport implements Serializable {
     @Id
     private String id;//端口编号
 
+
+    @Transient
+    private String taskname;
 
     private String taskipid;//资产ip编号
     private String port;//端口
@@ -46,6 +50,14 @@ public class Taskport implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getTaskname() {
+        return taskname;
+    }
+
+    public void setTaskname(String taskname) {
+        this.taskname = taskname;
     }
 
     public String getTaskipid() {

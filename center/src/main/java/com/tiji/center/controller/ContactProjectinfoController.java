@@ -1,10 +1,16 @@
 package com.tiji.center.controller;
 
+import com.tiji.center.pojo.Contact;
 import com.tiji.center.pojo.ContactProjectinfo;
+import com.tiji.center.pojo.Department;
+import com.tiji.center.pojo.Projectinfo;
 import com.tiji.center.service.ContactProjectinfoService;
+import com.tiji.center.service.ContactService;
+import com.tiji.center.service.ProjectinfoService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +31,10 @@ public class ContactProjectinfoController {
 
     @Autowired
     private ContactProjectinfoService contactProjectinfoService;
+    @Autowired
+    private ContactService contactService;
+    @Autowired
+    private ProjectinfoService projectinfoService;
 
 
     /**
@@ -60,6 +70,22 @@ public class ContactProjectinfoController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<ContactProjectinfo> pageList = contactProjectinfoService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(contactProjectinfo -> {
+            String contactid = contactProjectinfo.getContactid();
+            if (!StringUtils.isEmpty(contactid)) {
+                Contact contact = contactService.findById(contactid);
+                if (!Objects.isNull(contact)) {
+                    contactProjectinfo.setContactid(contact.getName());
+                }
+            }
+            String projectinfoid = contactProjectinfo.getProjectinfoid();
+            if (!StringUtils.isEmpty(projectinfoid)) {
+                Projectinfo projectinfo = projectinfoService.findById(projectinfoid);
+                if (!Objects.isNull(projectinfo)) {
+                    contactProjectinfo.setProjectinfoid(projectinfo.getProjectname());
+                }
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<ContactProjectinfo>(pageList.getTotalElements(), pageList.getContent()));
     }
 

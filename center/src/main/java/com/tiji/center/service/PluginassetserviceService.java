@@ -73,7 +73,7 @@ public class PluginassetserviceService {
      * @return
      */
     public Pluginassetservice findById(String id) {
-        return pluginassetserviceDao.findById(id).get();
+        return pluginassetserviceDao.findById(id).orElse(null);
     }
 
     /**

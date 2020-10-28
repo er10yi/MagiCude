@@ -74,7 +74,7 @@ public class IpportwhitelistService {
      * @return
      */
     public Ipportwhitelist findById(String id) {
-        return ipportwhitelistDao.findById(id).get();
+        return ipportwhitelistDao.findById(id).orElse(null);
     }
 
     /**

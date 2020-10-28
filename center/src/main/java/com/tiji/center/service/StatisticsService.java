@@ -69,7 +69,7 @@ public class StatisticsService {
      * @return
      */
     public Statistics findById(String id) {
-        return statisticsDao.findById(id).get();
+        return statisticsDao.findById(id).orElse(null);
     }
 
     /**

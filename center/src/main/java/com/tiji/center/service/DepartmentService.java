@@ -73,7 +73,7 @@ public class DepartmentService {
      * @return
      */
     public Department findById(String id) {
-        return departmentDao.findById(id).get();
+        return departmentDao.findById(id).orElse(null);
     }
 
     /**

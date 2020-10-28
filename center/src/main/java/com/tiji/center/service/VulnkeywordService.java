@@ -73,7 +73,7 @@ public class VulnkeywordService {
      * @return
      */
     public Vulnkeyword findById(String id) {
-        return vulnkeywordDao.findById(id).get();
+        return vulnkeywordDao.findById(id).orElse(null);
     }
 
     /**

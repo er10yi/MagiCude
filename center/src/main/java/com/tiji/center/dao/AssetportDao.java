@@ -46,4 +46,10 @@ public interface AssetportDao extends JpaRepository<Assetport, String>, JpaSpeci
     @Modifying
     @Query(value = "DELETE FROM `tb_assetport` WHERE id IN(?1)", nativeQuery = true)
     void deleteAllByIds(List<String> ids);
+
+    @Query(value = "SELECT tp.id,COUNT(*) as vulnCount FROM tb_assetport tp,tb_checkresult tcl  WHERE tcl.assetportid IN(tp.id) and tp.id in(?1) GROUP BY tp.id ", nativeQuery = true)
+    List<String> findVulnCountByIds(List<String> ids);
+
+    @Query(value = "SELECT tp.id,COUNT(*) as vulnCount FROM tb_assetport tp,tb_checkresult tcl  WHERE tcl.assetportid IN(tp.id) and ISNULL(tcl.passivetime) and tp.id in(?1) GROUP BY tp.id ", nativeQuery = true)
+    List<String> findVulnCountOnlineByIds(List<String> ids);
 }

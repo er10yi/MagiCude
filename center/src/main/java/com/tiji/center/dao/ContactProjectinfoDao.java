@@ -27,4 +27,6 @@ public interface ContactProjectinfoDao extends JpaRepository<ContactProjectinfo,
     @Query(value = "DELETE FROM `tb_contact_projectinfo` WHERE id IN(?1)", nativeQuery = true)
     void deleteAllByIds(List<String> ids);
 
+    void deleteByContactidAndProjectinfoid(String contactid, String projectinfoid);
+
 }

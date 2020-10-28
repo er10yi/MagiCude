@@ -169,4 +169,8 @@ public class CheckresultVulnService {
     public List<CheckresultVuln> findAllByCheckresultid(String id) {
         return checkresultVulnDao.findAllByCheckresultid(id);
     }
+
+    public List<String> findAllCheckResultIdByVulnid(String id) {
+        return checkresultVulnDao.findAllCheckResultIdByVulnid(id);
+    }
 }

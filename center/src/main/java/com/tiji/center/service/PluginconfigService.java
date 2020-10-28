@@ -73,7 +73,7 @@ public class PluginconfigService {
      * @return
      */
     public Pluginconfig findById(String id) {
-        return pluginconfigDao.findById(id).get();
+        return pluginconfigDao.findById(id).orElse(null);
     }
 
     /**

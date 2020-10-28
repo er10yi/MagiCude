@@ -1,15 +1,14 @@
 package com.tiji.center.controller;
 
-import com.tiji.center.pojo.Assetip;
-import com.tiji.center.pojo.Assetport;
-import com.tiji.center.pojo.Projectinfo;
-import com.tiji.center.pojo.Projectportwhitelist;
+import com.tiji.center.pojo.*;
 import com.tiji.center.service.*;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import util.IdWorker;
@@ -41,7 +40,8 @@ public class ProjectinfoController {
     private AssetipService assetipService;
     @Autowired
     private AssetportService assetportService;
-
+    @Autowired
+    private DepartmentService departmentService;
     @Autowired
     private IdWorker idWorker;
 
@@ -75,9 +75,33 @@ public class ProjectinfoController {
      * @param size      页大小
      * @return 分页结果
      */
+    @Autowired
+    private ContactService contactService;
+
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Projectinfo> pageList = projectinfoService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(projectinfo -> {
+            StringBuilder stringBuilder = new StringBuilder();
+            String departmentid = projectinfo.getDepartmentid();
+            if (!StringUtils.isEmpty(departmentid)) {
+                Department department = departmentService.findById(departmentid);
+                if (!Objects.isNull(department)) {
+                    projectinfo.setDepartmentid(department.getDepartmentname());
+                }
+            }
+            String id = projectinfo.getId();
+            List<ContactProjectinfo> contactProjectinfoList = contactProjectinfoService.findAllByProjectinfoid(id);
+            contactProjectinfoList.forEach(contactProjectinfo -> {
+                String contactid = contactProjectinfo.getContactid();
+                Contact contact = contactService.findById(contactid);
+                if (!Objects.isNull(contact)) {
+                    stringBuilder.append(contact.getName()).append(" \n");
+                }
+            });
+            projectinfo.setContact(stringBuilder.toString());
+        });
+
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Projectinfo>(pageList.getTotalElements(), pageList.getContent()));
     }
 
@@ -102,8 +126,13 @@ public class ProjectinfoController {
         String departmentid = projectinfo.getDepartmentid();
         Projectinfo projectinfoInDb = projectinfoService.findByDepartmentidAndProjectname(departmentid, projectinfo.getProjectname());
         if (Objects.isNull(projectinfoInDb)) {
+            String id = projectinfo.getId();
+            if (Objects.isNull(id)) {
+                id = idWorker.nextId() + "";
+                projectinfo.setId(id);
+            }
             projectinfoService.add(projectinfo);
-            return new Result(true, StatusCode.OK, "增加成功");
+            return new Result(true, StatusCode.OK, "增加成功", id);
         } else {
             return new Result(false, StatusCode.ERROR, "增加失败：部门和项目信息重复");
         }
@@ -311,5 +340,62 @@ public class ProjectinfoController {
         return new Result(true, StatusCode.OK, "项目信息端口白名单已在后台处理，请稍后查看");
     }
 
+    /**
+     * 根据id数组查询
+     *
+     * @param ids
+     * @return
+     */
+    @RequestMapping(value = "/ids", method = RequestMethod.POST)
+    public Result findByAssetIpIds(@RequestBody String[] ids) {
+        return new Result(true, StatusCode.OK, "查询成功", projectinfoService.findByIds(ids));
+    }
+
+    /**
+     * 根据id查询联系人
+     *
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/contact/{id}", method = RequestMethod.GET)
+    public Result findAllContactById(@PathVariable String id) {
+        return new Result(true, StatusCode.OK, "查询成功", projectinfoService.findAllContactById(id));
+    }
+
+    /**
+     * 根据项目信息id和联系人id，新增关联
+     *
+     * @param projectinfoIdAndContactId
+     * @return
+     */
+    @RequestMapping(value = "/contact", method = RequestMethod.POST)
+    public Result addContact(@RequestBody String[] projectinfoIdAndContactId) {
+        String projectinfoId = projectinfoIdAndContactId[0];
+        String contactId = projectinfoIdAndContactId[1];
+        if(!StringUtils.isEmpty((projectinfoId))&&!StringUtils.isEmpty((contactId))){
+            ContactProjectinfo contactProjectinfo = contactProjectinfoService.findByContactidAndProjectinfoid(contactId, projectinfoId);
+            if (Objects.isNull(contactProjectinfo)) {
+                projectinfoService.addContact(projectinfoIdAndContactId);
+                return new Result(true, StatusCode.OK, "新增成功");
+            } else {
+                return new Result(false, StatusCode.ERROR, "已存在负责人");
+            }
+        }
+        return new Result(false, StatusCode.ERROR, "新增失败");
+    }
+
+    /**
+     * 根据contacid和projectinfoid删除
+     *
+     * @param ids
+     */
+
+    @RequestMapping(value = "/delcontact", method = RequestMethod.POST)
+    public Result deleteContact(@RequestBody List<String> ids) {
+        String id = ids.get(1);
+        String contactid = ids.get(0);
+        contactProjectinfoService.deleteByContactidAndProjectinfoid(id, contactid);
+        return new Result(true, StatusCode.OK, "删除成功");
+    }
 
 }

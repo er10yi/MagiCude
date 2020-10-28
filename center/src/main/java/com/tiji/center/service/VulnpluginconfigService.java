@@ -1,6 +1,7 @@
 package com.tiji.center.service;
 
 import com.tiji.center.dao.VulnpluginconfigDao;
+import com.tiji.center.pojo.Vuln;
 import com.tiji.center.pojo.Vulnpluginconfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,7 +27,8 @@ public class VulnpluginconfigService {
 
     @Autowired
     private VulnpluginconfigDao vulnpluginconfigDao;
-
+    @Autowired
+    private VulnService vulnService;
     @Autowired
     private IdWorker idWorker;
 
@@ -73,7 +75,7 @@ public class VulnpluginconfigService {
      * @return
      */
     public Vulnpluginconfig findById(String id) {
-        return vulnpluginconfigDao.findById(id).get();
+        return vulnpluginconfigDao.findById(id).orElse(null);
     }
 
     /**
@@ -171,8 +173,14 @@ public class VulnpluginconfigService {
      * @param pluginId pluginId
      * @return
      */
-    public List<Vulnpluginconfig> findAllByPluginconfigid(String pluginId) {
-        return vulnpluginconfigDao.findAllByPluginconfigid(pluginId);
+    public List<Vuln> findAllByPluginconfigid(String pluginId) {
+        List<String> vulnidList = new ArrayList<>();
+        List<Vulnpluginconfig> vulnpluginconfigList = vulnpluginconfigDao.findAllByPluginconfigid(pluginId);
+        vulnpluginconfigList.forEach(vulnpluginconfig -> {
+            String vulnid = vulnpluginconfig.getVulnid();
+            vulnidList.add(vulnid);
+        });
+        return  vulnService.findByVulnIds(vulnidList);
     }
 
     /**

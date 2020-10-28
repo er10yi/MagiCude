@@ -95,7 +95,7 @@ public class HostNameUtil {
                 String dnsComputerName = matcher.group(0);
                 hostname = dnsComputerName.split(":\\s")[1];
             }
-            //nse检查结果中hostname不为空
+            //nse检测结果中hostname不为空
             if (!Objects.isNull(hostname)) {
                 boolean addHostFlag = true;
                 Assetport assetport = assetportService.findById(assetportid);

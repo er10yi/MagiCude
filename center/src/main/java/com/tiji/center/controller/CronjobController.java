@@ -14,6 +14,7 @@ import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.scheduling.support.CronSequenceGenerator;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
@@ -172,7 +173,7 @@ public class CronjobController {
     @RequestMapping(value = "/parse", method = RequestMethod.POST)
     public Result parse(@RequestBody Map searchMap) {
         String cronExpression = (String) searchMap.get("cronExpression");
-        if (!CronExpression.isValidExpression(cronExpression)) {
+        if (StringUtils.isEmpty(cronExpression) || !CronExpression.isValidExpression(cronExpression)) {
             return new Result(false, StatusCode.ERROR, "解析失败：Cron表达式错误");
         }
         List<Object> resultList = new LinkedList<>();

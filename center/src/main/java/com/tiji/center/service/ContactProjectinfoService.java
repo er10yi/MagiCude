@@ -73,7 +73,7 @@ public class ContactProjectinfoService {
      * @return
      */
     public ContactProjectinfo findById(String id) {
-        return contactProjectinfoDao.findById(id).get();
+        return contactProjectinfoDao.findById(id).orElse(null);
     }
 
     /**
@@ -185,4 +185,11 @@ public class ContactProjectinfoService {
     public ContactProjectinfo findByContactidAndProjectinfoid(String contactid, String projectinfoid) {
         return contactProjectinfoDao.findByContactidAndProjectinfoid(contactid, projectinfoid);
     }
+
+    @Transactional(value = "masterTransactionManager")
+    public void deleteByContactidAndProjectinfoid(String id, String contactid) {
+        contactProjectinfoDao.deleteByContactidAndProjectinfoid(id, contactid);
+    }
+
+
 }

@@ -73,7 +73,7 @@ public class TitlewhitelistService {
      * @return
      */
     public Titlewhitelist findById(String id) {
-        return titlewhitelistDao.findById(id).get();
+        return titlewhitelistDao.findById(id).orElse(null);
     }
 
     /**
@@ -151,4 +151,9 @@ public class TitlewhitelistService {
         return titlewhitelistDao.findByTitle(title);
     }
 
+
+    @Transactional(value = "masterTransactionManager")
+    public void deleteByTitle(String title) {
+        titlewhitelistDao.deleteByTitle(title);
+    }
 }

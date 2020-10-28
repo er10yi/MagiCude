@@ -73,7 +73,7 @@ public class PluginassetversionService {
      * @return
      */
     public Pluginassetversion findById(String id) {
-        return pluginassetversionDao.findById(id).get();
+        return pluginassetversionDao.findById(id).orElse(null);
     }
 
     /**

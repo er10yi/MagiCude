@@ -1,16 +1,20 @@
 package com.tiji.center.controller;
 
 import com.tiji.center.pojo.Solution;
+import com.tiji.center.pojo.Vuln;
 import com.tiji.center.service.SolutionService;
+import com.tiji.center.service.VulnService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * solution控制器层
@@ -24,7 +28,8 @@ public class SolutionController {
 
     @Autowired
     private SolutionService solutionService;
-
+    @Autowired
+    private VulnService vulnService;
 
     /**
      * 查询全部数据
@@ -59,6 +64,15 @@ public class SolutionController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Solution> pageList = solutionService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(Solution -> {
+            String vulnid = Solution.getVulnid();
+            if (!StringUtils.isEmpty(vulnid)) {
+                Vuln vuln = vulnService.findById(vulnid);
+                if (!Objects.isNull(vuln)) {
+                    Solution.setVulnid(vuln.getName());
+                }
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Solution>(pageList.getTotalElements(), pageList.getContent()));
     }
 

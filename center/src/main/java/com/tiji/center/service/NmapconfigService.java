@@ -73,7 +73,7 @@ public class NmapconfigService {
      * @return
      */
     public Nmapconfig findById(String id) {
-        return nmapconfigDao.findById(id).get();
+        return nmapconfigDao.findById(id).orElse(null);
     }
 
     /**

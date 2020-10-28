@@ -73,7 +73,7 @@ public class LocationService {
      * @return
      */
     public Location findById(String id) {
-        return locationDao.findById(id).get();
+        return locationDao.findById(id).orElse(null);
     }
 
     /**

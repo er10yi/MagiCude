@@ -1,16 +1,23 @@
 package com.tiji.center.controller;
 
+import com.tiji.center.pojo.Checkresult;
+import com.tiji.center.pojo.Pluginconfig;
+import com.tiji.center.pojo.Vuln;
 import com.tiji.center.pojo.Vulnpluginconfig;
+import com.tiji.center.service.PluginconfigService;
+import com.tiji.center.service.VulnService;
 import com.tiji.center.service.VulnpluginconfigService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * vulnpluginconfig控制器层
@@ -24,8 +31,10 @@ public class VulnpluginconfigController {
 
     @Autowired
     private VulnpluginconfigService vulnpluginconfigService;
-
-
+    @Autowired
+    private VulnService vulnService;
+    @Autowired
+    private PluginconfigService pluginconfigService;
     /**
      * 查询全部数据
      *
@@ -59,6 +68,22 @@ public class VulnpluginconfigController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Vulnpluginconfig> pageList = vulnpluginconfigService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(Vulnpluginconfig -> {
+            String vulnid = Vulnpluginconfig.getVulnid();
+            if (!StringUtils.isEmpty(vulnid)) {
+                Vuln vuln = vulnService.findById(vulnid);
+                if (!Objects.isNull(vuln)) {
+                    Vulnpluginconfig.setVulnid(vuln.getName());
+                }
+            }
+            String pluginconfigid = Vulnpluginconfig.getPluginconfigid();
+            if (!StringUtils.isEmpty(pluginconfigid)) {
+                Pluginconfig pluginconfig = pluginconfigService.findById(pluginconfigid);
+                if (!Objects.isNull(pluginconfig)) {
+                    Vulnpluginconfig.setPluginconfigid(pluginconfig.getName());
+                }
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Vulnpluginconfig>(pageList.getTotalElements(), pageList.getContent()));
     }
 
@@ -119,7 +144,7 @@ public class VulnpluginconfigController {
     }
 
     /**
-     * 根据pluginId查询
+     * 根据pluginId查询所有漏洞名称
      *
      * @param pluginId pluginId
      * @return

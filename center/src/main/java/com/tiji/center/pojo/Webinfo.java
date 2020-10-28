@@ -3,6 +3,7 @@ package com.tiji.center.pojo;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -18,6 +19,14 @@ public class Webinfo implements Serializable {
     @Id
     private String id;//web信息编号
 
+
+    @Transient
+    private String assetip;
+    @Transient
+    private String url;
+
+    @Transient
+    private String assetport;//端口
 
     private String portid;//端口编号
     private String titlewhitelistid;//标题白名单编号
@@ -57,6 +66,30 @@ public class Webinfo implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getAssetip() {
+        return assetip;
+    }
+
+    public void setAssetip(String assetip) {
+        this.assetip = assetip;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getAssetport() {
+        return assetport;
+    }
+
+    public void setAssetport(String assetport) {
+        this.assetport = assetport;
     }
 
     public String getPortid() {

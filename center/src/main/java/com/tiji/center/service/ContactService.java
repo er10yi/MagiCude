@@ -2,6 +2,8 @@ package com.tiji.center.service;
 
 import com.tiji.center.dao.ContactDao;
 import com.tiji.center.pojo.Contact;
+import com.tiji.center.pojo.ContactProjectinfo;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +31,9 @@ public class ContactService {
 
     @Autowired
     private IdWorker idWorker;
+
+    @Autowired
+    private ContactProjectinfoService contactProjectinfoService;
 
     /**
      * 查询全部列表
@@ -73,7 +78,7 @@ public class ContactService {
      * @return
      */
     public Contact findById(String id) {
-        return contactDao.findById(id).get();
+        return contactDao.findById(id).orElse(null);
     }
 
     /**

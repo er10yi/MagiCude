@@ -83,7 +83,7 @@ public class UrlService {
      * @return
      */
     public Url findById(String id) {
-        return urlDao.findById(id).get();
+        return urlDao.findById(id).orElse(null);
     }
 
     /**
@@ -160,25 +160,6 @@ public class UrlService {
     }
 
     /**
-     * 根据webinfoids查询所有链接
-     *
-     * @param webinfoids
-     * @return
-     */
-    public List<String> findByWebinfoid(String[] webinfoids) {
-        List<String> linkList = new ArrayList<>();
-        for (String webinfoid : webinfoids) {
-            List<String> urlNameAndLinkList = urlDao.findByWebinfoid(webinfoid);
-            if (Objects.isNull(urlNameAndLinkList)) {
-                linkList.add(webinfoid + "#+-#" + null);
-            } else {
-                linkList.add(webinfoid + "#+-#" + urlNameAndLinkList);
-            }
-        }
-        return linkList.isEmpty() ? null : linkList;
-    }
-
-    /**
      * 根据webinfoid批量删除
      *
      * @param webinfoid
@@ -225,5 +206,12 @@ public class UrlService {
             }
         }
         return resultList;
+    }
+
+    public StringBuilder findLinksByWebinfoId(String webinfoid) {
+        StringBuilder result = new StringBuilder();
+        List<Url> urlList = urlDao.findAllByWebinfoid(webinfoid);
+        urlList.parallelStream().forEach(url -> result.append(url.getName()).append(" ").append(url.getUrl()).append("\n"));
+        return result;
     }
 }

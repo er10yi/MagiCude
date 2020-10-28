@@ -73,7 +73,7 @@ public class NotifylogService {
      * @return
      */
     public Notifylog findById(String id) {
-        return notifylogDao.findById(id).get();
+        return notifylogDao.findById(id).orElse(null);
     }
 
     /**

@@ -1,20 +1,22 @@
 package com.tiji.center.service;
 
 import com.tiji.center.dao.TaskDao;
+import com.tiji.center.pojo.Assetport;
+import com.tiji.center.pojo.Host;
 import com.tiji.center.pojo.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import util.IdWorker;
 
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.text.DecimalFormat;
+import java.util.*;
 
 /**
  * task服务层
@@ -31,6 +33,8 @@ public class TaskService {
     private IdWorker idWorker;
     @Autowired
     private NmapconfigService nmapconfigService;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     /**
      * 查询全部列表
@@ -75,7 +79,7 @@ public class TaskService {
      * @return
      */
     public Task findById(String id) {
-        return taskDao.findById(id).get();
+        return taskDao.findById(id).orElse(null);
     }
 
     /**
@@ -92,7 +96,7 @@ public class TaskService {
             task.setRate("1000");
         }
         if (Objects.isNull(task.getIpslicesize()) || task.getIpslicesize().isEmpty()) {
-            if (task.getWorktype().equals("nmap") && !task.getTargetip().equals("unknownPortSerVer") && !task.getTargetip().equals("ipAllPort")) {
+            if ((task.getWorktype().equals("nmap") || task.getWorktype().equals("mass2Nmap") || task.getWorktype().equals("mass")) && !task.getTargetip().equals("unknownPortSerVer") && !task.getTargetip().equals("ipAllPort")) {
                 task.setIpslicesize("255");
             }
         }
@@ -100,7 +104,7 @@ public class TaskService {
             if (task.getWorktype().equals("nmap") || task.getWorktype().equals("nse")) {
                 if (task.getTargetip().equals("unknownPortSerVer") || task.getTargetip().equals("ipAllPort")) {
                     // 不能带open..否则扫不到关掉端口
-                    task.setAdditionoption("-Pn  -sV --max-retries=1");
+                    task.setAdditionoption("-Pn -sV --max-retries=1");
                 } else {
                     task.setAdditionoption("-Pn -sV --max-retries=1 --open");
                 }
@@ -128,10 +132,7 @@ public class TaskService {
             if ((Objects.isNull(task.getPortslicesize()) || task.getPortslicesize().isEmpty()) && !task.getTargetip().equals("unknownPortSerVer") && !task.getTargetip().equals("ipAllPort")) {
                 task.setPortslicesize("1000");
             }
-
         }
-
-
         taskDao.save(task);
     }
 
@@ -164,6 +165,7 @@ public class TaskService {
     public void deleteAllByIds(List<String> ids) {
         ids.forEach(id -> {
             Task task = findById(id);
+            deleteAllByTaskparentid(id);
             if (task.getWorktype().equals("mass2Nmap")) {
                 //根据taskId删除nmap配置
                 nmapconfigService.deleteAllByTaskid(id);
@@ -188,7 +190,14 @@ public class TaskService {
             }
             // 任务父编号
             if (searchMap.get("taskparentid") != null && !"".equals(searchMap.get("taskparentid"))) {
-                predicateList.add(cb.like(root.get("taskparentid").as(String.class), "%" + searchMap.get("taskparentid") + "%"));
+                //if (searchMap.get("taskparentid") != null) {
+                if (searchMap.get("taskparentid").equals("notall")) {
+                    predicateList.add(cb.isNull(root.get("taskparentid").as(String.class)));
+                } else {
+                    predicateList.add(cb.like(root.get("taskparentid").as(String.class), "%" + searchMap.get("taskparentid") + "%"));
+                }
+            } else {
+
             }
             // 项目编号
             if (searchMap.get("projectid") != null && !"".equals(searchMap.get("projectid"))) {
@@ -330,5 +339,45 @@ public class TaskService {
      */
     public Task findByName(String name) {
         return taskDao.findByName(name);
+    }
+
+    /**
+     * 根据id
+     *
+     * @param taskParentId
+     */
+    @Transactional(value = "masterTransactionManager")
+    public void deleteAllByTaskparentid(String taskParentId) {
+        taskDao.deleteAllByTaskparentid(taskParentId);
+    }
+
+    /**
+     * 根据taskId获取状态
+     *
+     * @param taskId
+     * @return
+     */
+    public Double getTaskPercent(String taskId) {
+        String accomplishTaskListName = "accomplishTaskList_" + taskId;
+        String sliceIPListSizeName = "sliceIPListSize_" + taskId;
+        double taskPercent = 0;
+        Task task = findById(taskId);
+        if (Objects.isNull(task.getStarttime()) && Objects.isNull(task.getEndtime())) {
+            taskPercent = 0;
+        } else if (!Objects.isNull(task.getStarttime()) && Objects.isNull(task.getEndtime())) {
+            long accomplishTaskListSize = redisTemplate.opsForList().size(accomplishTaskListName);
+            if (redisTemplate.hasKey(sliceIPListSizeName)) {
+                long sliceIPListSize = Long.parseLong(redisTemplate.opsForValue().get(sliceIPListSizeName));
+                double taskPercentStatus = (double) accomplishTaskListSize / sliceIPListSize;
+                DecimalFormat b = new DecimalFormat("#.00");
+                taskPercent = Double.parseDouble(b.format(taskPercentStatus)) * 100;
+                if (accomplishTaskListSize == sliceIPListSize || taskPercentStatus > 100) {
+                    taskPercent = 100;
+                }
+            }
+        } else if (!Objects.isNull(task.getStarttime()) && !Objects.isNull(task.getEndtime())) {
+            taskPercent = 100;
+        }
+        return taskPercent;
     }
 }

@@ -73,7 +73,7 @@ public class UseragentService {
      * @return
      */
     public Useragent findById(String id) {
-        return useragentDao.findById(id).get();
+        return useragentDao.findById(id).orElse(null);
     }
 
     /**

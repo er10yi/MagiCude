@@ -27,4 +27,7 @@ public interface TaskDao extends JpaRepository<Task, String>, JpaSpecificationEx
     @Modifying
     @Query(value = "DELETE FROM `tb_task` WHERE id IN(?1)", nativeQuery = true)
     void deleteAllByIds(List<String> ids);
+
+    void deleteAllByTaskparentid(String taskParentId);
+
 }

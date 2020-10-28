@@ -5,6 +5,7 @@ import com.tiji.center.service.*;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * vuln控制器层
@@ -81,6 +80,15 @@ public class VulnController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Vuln> pageList = vulnService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(vuln -> {
+            String categorysecondid = vuln.getCategorysecondid();
+            if (!StringUtils.isAllEmpty(categorysecondid)) {
+                Categorysecond categorysecond = categorysecondService.findById(categorysecondid);
+                if(!Objects.isNull(categorysecond)){
+                    vuln.setCategorysecondid(categorysecond.getName());
+                }
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Vuln>(pageList.getTotalElements(), pageList.getContent()));
     }
 

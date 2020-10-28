@@ -3,6 +3,7 @@ package com.tiji.center.pojo;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -18,6 +19,10 @@ public class Task implements Serializable {
     @Id
     private String id;//任务编号
 
+    @Transient
+    private String statistic;
+    @Transient
+    private String percentage;
 
     private String taskparentid;//任务父编号
     private String projectid;//项目编号
@@ -75,6 +80,22 @@ public class Task implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getStatistic() {
+        return statistic;
+    }
+
+    public void setStatistic(String statistic) {
+        this.statistic = statistic;
+    }
+
+    public String getPercentage() {
+        return percentage;
+    }
+
+    public void setPercentage(String percentage) {
+        this.percentage = percentage;
     }
 
     public String getTaskparentid() {

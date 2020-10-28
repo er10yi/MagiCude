@@ -3,6 +3,7 @@ package com.tiji.center.pojo;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -18,6 +19,8 @@ public class Assetport implements Serializable {
     @Id
     private String id;//端口编号
 
+    @Transient
+    private String statistic;
 
     private String assetipid;//资产ip编号
     private String port;//端口
@@ -55,6 +58,14 @@ public class Assetport implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getStatistic() {
+        return statistic;
+    }
+
+    public void setStatistic(String statistic) {
+        this.statistic = statistic;
     }
 
     public String getAssetipid() {

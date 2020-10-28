@@ -11,10 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import util.IdWorker;
 
 import javax.persistence.criteria.Predicate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * assetport服务层
@@ -73,7 +70,7 @@ public class AssetportService {
      * @return
      */
     public Assetport findById(String id) {
-        return assetportDao.findById(id).get();
+        return assetportDao.findById(id).orElse(null);
     }
 
     /**
@@ -278,6 +275,7 @@ public class AssetportService {
      */
     public List<String> findByIds(String[] ids) {
         List<String> assetPortIdAndAssetIpIdList = new ArrayList<>();
+
         for (String assetportid : ids) {
             Assetport assetport = findById(assetportid);
             if (Objects.isNull(assetport)) {
@@ -339,4 +337,39 @@ public class AssetportService {
         assetportDao.deleteAllByIds(ids);
     }
 
+    /**
+     * 根据id数组查询数量
+     *
+     * @param ids
+     * @return
+     */
+    public List<String>  findCountByIds(List<String> ids) {
+        List<String> idAndCount = new ArrayList<>();
+        List<String> vulnCountList = assetportDao.findVulnCountByIds(ids);
+        List<String> vulnCountOnlineList = assetportDao.findVulnCountOnlineByIds(ids);
+
+        Map<String, String> idVulnCountMap = new LinkedHashMap<>();
+        Map<String, String> idVulnCountOnlineMap = new LinkedHashMap<>();
+
+        vulnCountList.parallelStream().forEach(temp -> {
+            String id = temp.split(",")[0];
+            String vulnCount = temp.split(",")[1];
+            idVulnCountMap.put(id, vulnCount);
+        });
+        vulnCountOnlineList.parallelStream().forEach(temp -> {
+            String id = temp.split(",")[0];
+            String vulnCount = temp.split(",")[1];
+            idVulnCountOnlineMap.put(id, vulnCount);
+        });
+
+        // id - vuln count - vuln count online
+        ids.forEach(id -> {
+            String temp;
+            temp =idVulnCountMap.getOrDefault(id, "0");
+            temp += ":" + idVulnCountOnlineMap.getOrDefault(id, "0");
+            idAndCount.add(temp);
+
+        });
+        return idAndCount.isEmpty() ? null : idAndCount;
+    }
 }

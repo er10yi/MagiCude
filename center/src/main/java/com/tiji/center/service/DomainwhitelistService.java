@@ -73,7 +73,7 @@ public class DomainwhitelistService {
      * @return
      */
     public Domainwhitelist findById(String id) {
-        return domainwhitelistDao.findById(id).get();
+        return domainwhitelistDao.findById(id).orElse(null);
     }
 
     /**

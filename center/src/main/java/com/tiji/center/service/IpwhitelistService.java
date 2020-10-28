@@ -76,7 +76,7 @@ public class IpwhitelistService {
      * @return
      */
     public Ipwhitelist findById(String id) {
-        return ipwhitelistDao.findById(id).get();
+        return ipwhitelistDao.findById(id).orElse(null);
     }
 
     /**

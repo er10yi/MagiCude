@@ -36,6 +36,7 @@ public class TargetIpSlicer {
         String targetip = task.getTargetip();
         if ("ipNoPort".equals(targetip)) {
             List<String> allAssetipNoPort = taskipService.findAllAssetipNoPort();
+            System.out.println("allAssetipNoPort " + allAssetipNoPort);
             if (allAssetipNoPort.isEmpty())
                 return null;
             TijiHelper.target2Redis(allAssetipNoPort.toString().replaceAll("[\\[\\]\\s]", ""), redisTemplate, rawIPSet);
@@ -123,6 +124,11 @@ public class TargetIpSlicer {
             taskConfig.put("maxSliceSize", String.valueOf(maxSliceSize));
 
             rabbitMessagingTemplate.convertAndSend("tijifanout", "", taskConfig);
+            return sliceIPList;
+        } else if (task.getAdditionoption().contains("-sn")) {
+            for (String targetIp : targetip.split(",")) {
+                redisTemplate.opsForList().leftPush(sliceIPList, targetIp);
+            }
             return sliceIPList;
         } else {
             TijiHelper.target2Redis(task.getTargetip(), redisTemplate, rawIPSet);

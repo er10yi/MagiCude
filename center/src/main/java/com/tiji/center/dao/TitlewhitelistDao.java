@@ -21,4 +21,6 @@ public interface TitlewhitelistDao extends JpaRepository<Titlewhitelist, String>
     @Query(value = "DELETE FROM `tb_titlewhitelist` WHERE id IN(?1)", nativeQuery = true)
     void deleteAllByIds(List<String> ids);
 
+    void deleteByTitle(String title);
+
 }

@@ -73,7 +73,7 @@ public class TaskipService {
      * @return
      */
     public Taskip findById(String id) {
-        return taskipDao.findById(id).get();
+        return taskipDao.findById(id).orElse(null);
     }
 
     /**

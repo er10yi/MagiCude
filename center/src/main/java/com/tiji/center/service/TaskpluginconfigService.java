@@ -73,7 +73,7 @@ public class TaskpluginconfigService {
      * @return
      */
     public Taskpluginconfig findById(String id) {
-        return taskpluginconfigDao.findById(id).get();
+        return taskpluginconfigDao.findById(id).orElse(null);
     }
 
     /**
@@ -166,6 +166,14 @@ public class TaskpluginconfigService {
         return taskpluginconfigDao.findAllByTaskid(taskid);
     }
 
+    /**
+     * 查询全部列表
+     *
+     * @return
+     */
+    public List<String> findPluginconfigidByTaskid(String taskid) {
+        return taskpluginconfigDao.findPluginconfigidByTaskid(taskid);
+    }
 
     /**
      * 删除

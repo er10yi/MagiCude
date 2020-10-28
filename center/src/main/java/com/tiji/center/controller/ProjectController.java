@@ -111,6 +111,8 @@ public class ProjectController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public Result delete(@PathVariable String id) {
         projectService.deleteById(id);
+        //删除任务的项目id
+        projectService.updateTaskByProjectIdSetProjectid2Null(id);
         return new Result(true, StatusCode.OK, "删除成功");
     }
 

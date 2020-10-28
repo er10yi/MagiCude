@@ -1,5 +1,6 @@
 package com.tiji.center.controller;
 
+import com.tiji.center.pojo.Assetip;
 import com.tiji.center.pojo.Assetport;
 import com.tiji.center.pojo.Checkresult;
 import com.tiji.center.pojo.Webinfo;
@@ -9,8 +10,10 @@ import entity.Result;
 import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,6 +30,9 @@ public class AssetportController {
 
     @Autowired
     private AssetportService assetportService;
+
+    @Autowired
+    private AssetipService assetipService;
 
     @Autowired
     private CheckresultService checkresultService;
@@ -70,7 +76,25 @@ public class AssetportController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Assetport> pageList = assetportService.findSearch(searchMap, page, size);
-        return new Result(true, StatusCode.OK, "查询成功", new PageResult<Assetport>(pageList.getTotalElements(), pageList.getContent()));
+        pageList.stream().parallel().forEach(assetport -> {
+            String assetipid = assetport.getAssetipid();
+            if (!StringUtils.isEmpty(assetipid)) {
+                Assetip assetip = assetipService.findById(assetipid);
+                if (!Objects.isNull(assetip)) {
+                    assetport.setAssetipid(assetip.getIpaddressv4());
+                }
+            }
+            String assetportId = assetport.getId();
+            List<String> resultList = assetportService.findCountByIds(Collections.singletonList(assetportId));
+            String port = assetport.getPort();
+            if (!StringUtils.isEmpty(port)) {
+                assetport.setPort(port);
+            }
+            if (!"0:0".equals(resultList.get(0))) {
+                assetport.setStatistic(resultList.get(0));
+            }
+        });
+        return new Result(true, StatusCode.OK, "查询成功", new PageResult<>(pageList.getTotalElements(), pageList.getContent()));
     }
 
     /**
@@ -211,5 +235,16 @@ public class AssetportController {
             });
         });
         return new Result(true, StatusCode.OK, "删除成功");
+    }
+
+    /**
+     * 根据id数组查询数量
+     *
+     * @param countbyids
+     * @return
+     */
+    @RequestMapping(value = "/countbyids", method = RequestMethod.POST)
+    public Result findCountByIds(@RequestBody List<String> countbyids) {
+        return new Result(true, StatusCode.OK, "查询成功", assetportService.findCountByIds(countbyids));
     }
 }

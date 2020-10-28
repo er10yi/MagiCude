@@ -1,17 +1,16 @@
 package com.tiji.center.controller;
 
-import com.tiji.center.pojo.Checkresult;
-import com.tiji.center.service.CheckresultService;
-import com.tiji.center.service.CheckresultVulnService;
+import com.tiji.center.pojo.*;
+import com.tiji.center.service.*;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * checkresult控制器层
@@ -27,6 +26,12 @@ public class CheckresultController {
     private CheckresultService checkresultService;
     @Autowired
     private CheckresultVulnService checkresultVulnService;
+    @Autowired
+    private AssetportService assetportService;
+    @Autowired
+    private AssetipService assetipService;
+    @Autowired
+    private VulnService vulnService;
 
     /**
      * 查询全部数据
@@ -60,7 +65,82 @@ public class CheckresultController {
      */
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
+        //根据ip查询漏洞
+        List<String> vulnPortIdList = new ArrayList<>();
+        if (searchMap.containsKey("assetip")) {
+            //ip -> assetportid
+            String ipaddressv4 = (String) searchMap.get("assetip");
+            Map<String, String> ipSearchMap = new HashMap<>();
+            ipSearchMap.put("ipaddressv4", ipaddressv4);
+            List<Assetip> assetipList = assetipService.findSearch(ipSearchMap);
+            assetipList.forEach(ip -> {
+                String ipId = ip.getId();
+                List<Assetport> assetportList = assetportService.findAllByAssetipid(ipId);
+                assetportList.forEach(assetport -> {
+                    String assetportId = assetport.getId();
+                    List<Checkresult> checkresultList = checkresultService.findAllByAssetportid(assetportId);
+                    checkresultList.forEach(checkresult -> {
+                        String checkresultAssetportid = checkresult.getAssetportid();
+                        vulnPortIdList.add(checkresultAssetportid);
+                    });
+                });
+
+            });
+            searchMap.put("assetportid", vulnPortIdList);
+        }
+
+        //根据端口查询漏洞
+        if (searchMap.containsKey("assetport")) {
+            String port = (String) searchMap.get("assetport");
+            Map<String, String> portSearchMap = new HashMap<>();
+            portSearchMap.put("port", port);
+            List<Assetport> assetportList = assetportService.findSearch(portSearchMap);
+            assetportList.forEach(assetport -> {
+                String assetportId = assetport.getId();
+                List<Checkresult> checkresultList = checkresultService.findAllByAssetportid(assetportId);
+                checkresultList.forEach(checkresult -> {
+                    String checkresultAssetportid = checkresult.getAssetportid();
+                    vulnPortIdList.add(checkresultAssetportid);
+                });
+            });
+            searchMap.put("assetportid", vulnPortIdList);
+        }
+
+        //根据漏洞名称查询漏洞
+        if (searchMap.containsKey("vulname")) {
+            String vulname = (String) searchMap.get("vulname");
+            Map<String, String> vulNameSearchMap = new HashMap<>();
+            vulNameSearchMap.put("name", vulname);
+            List<Vuln> vulnList = vulnService.findSearch(vulNameSearchMap);
+            List<String> checkResultIdList = new LinkedList<>();
+            vulnList.forEach(vuln -> {
+                String vulnId = vuln.getId();
+                checkResultIdList.addAll(checkresultVulnService.findAllCheckResultIdByVulnid(vulnId));
+
+            });
+            searchMap.put("id", checkResultIdList);
+        }
+
         Page<Checkresult> pageList = checkresultService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(checkresult -> {
+            String id = checkresult.getId();
+            String assetportid = checkresult.getAssetportid();
+            Assetport assetport = assetportService.findById(assetportid);
+            checkresult.setAssetportid(assetport.getPort());
+            String assetipid = assetport.getAssetipid();
+
+            Assetip assetip = assetipService.findById(assetipid);
+            checkresult.setAssetip(assetip.getIpaddressv4());
+
+
+            List<CheckresultVuln> checkresultVulnList = checkresultVulnService.findAllByCheckresultid(id);
+            String vulnid = checkresultVulnList.get(0).getVulnid();
+            Vuln vuln = vulnService.findById(vulnid);
+            checkresult.setVulname(vuln.getName());
+
+        });
+
+
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Checkresult>(pageList.getTotalElements(), pageList.getContent()));
     }
 
@@ -82,6 +162,13 @@ public class CheckresultController {
      */
     @RequestMapping(method = RequestMethod.POST)
     public Result add(@RequestBody Checkresult checkresult) {
+        //ip
+        //System.out.println(checkresult.getAssetip());
+        //端口
+        //System.out.println(checkresult.getAssetport());
+        //漏洞
+        //System.out.println(checkresult.getVulname());
+
         checkresultService.add(checkresult);
         return new Result(true, StatusCode.OK, "增加成功");
     }
@@ -158,5 +245,17 @@ public class CheckresultController {
             checkresultVulnService.deleteAllByCheckresultid(id);
         });
         return new Result(true, StatusCode.OK, "删除成功");
+    }
+
+
+    /**
+     * 根据id查询漏洞
+     *
+     * @param id
+     * @return 漏洞名称
+     */
+    @RequestMapping(value = "/vulname/{id}",  method = RequestMethod.GET)
+    public Result findVulNameById(@PathVariable String id) {
+        return new Result(true, StatusCode.OK, "查询成功", checkresultService.findVulNameById(id));
     }
 }

@@ -73,7 +73,7 @@ public class TaskportService {
      * @return
      */
     public Taskport findById(String id) {
-        return taskportDao.findById(id).get();
+        return taskportDao.findById(id).orElse(null);
     }
 
     /**
@@ -130,9 +130,13 @@ public class TaskportService {
         return (Specification<Taskport>) (root, query, cb) -> {
             List<Predicate> predicateList = new ArrayList<Predicate>();
             // 端口编号
+            //if (searchMap.get("id") != null && !"".equals(searchMap.get("id"))) {
+            //    predicateList.add(cb.like(root.get("id").as(String.class), "%" + searchMap.get("id") + "%"));
+            //}
             if (searchMap.get("id") != null && !"".equals(searchMap.get("id"))) {
-                predicateList.add(cb.like(root.get("id").as(String.class), "%" + searchMap.get("id") + "%"));
+                predicateList.add(cb.in(root.get("id")).value(searchMap.get("id")));
             }
+
             // 资产ip编号
             if (searchMap.get("taskipid") != null && !"".equals(searchMap.get("taskipid"))) {
                 predicateList.add(cb.like(root.get("taskipid").as(String.class), "%" + searchMap.get("taskipid") + "%"));

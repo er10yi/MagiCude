@@ -3,6 +3,7 @@ package com.tiji.center.pojo;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -18,6 +19,9 @@ public class Projectinfo implements Serializable {
     @Id
     private String id;//编号
 
+
+    @Transient
+    private String contact;
 
     private String departmentid;//部门编号
     private String projectname;//项目名称
@@ -45,6 +49,14 @@ public class Projectinfo implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
+    public void setContact(String contact) {
+        this.contact = contact;
     }
 
     public String getDepartmentid() {

@@ -1,16 +1,20 @@
 package com.tiji.center.controller;
 
 import com.tiji.center.pojo.Democode;
+import com.tiji.center.pojo.Vuln;
 import com.tiji.center.service.DemocodeService;
+import com.tiji.center.service.VulnService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * democode控制器层
@@ -25,6 +29,8 @@ public class DemocodeController {
     @Autowired
     private DemocodeService democodeService;
 
+    @Autowired
+    private VulnService vulnService;
 
     /**
      * 查询全部数据
@@ -59,6 +65,15 @@ public class DemocodeController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Democode> pageList = democodeService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(democode -> {
+            String vulnid = democode.getVulnid();
+            if (!StringUtils.isEmpty(vulnid)) {
+                Vuln vuln = vulnService.findById(vulnid);
+                if(!Objects.isNull(vuln)){
+                    democode.setVulnid(vuln.getName());
+                }
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Democode>(pageList.getTotalElements(), pageList.getContent()));
     }
 

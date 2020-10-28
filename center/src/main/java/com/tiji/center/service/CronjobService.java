@@ -72,7 +72,7 @@ public class CronjobService {
      * @return
      */
     public Cronjob findById(String id) {
-        return cronjobDao.findById(id).get();
+        return cronjobDao.findById(id).orElse(null);
     }
 
     /**

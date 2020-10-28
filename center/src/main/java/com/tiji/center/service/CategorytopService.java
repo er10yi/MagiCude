@@ -73,7 +73,7 @@ public class CategorytopService {
      * @return
      */
     public Categorytop findById(String id) {
-        return categorytopDao.findById(id).get();
+        return categorytopDao.findById(id).orElse(null);
     }
 
     /**

@@ -73,7 +73,7 @@ public class SolutionService {
      * @return
      */
     public Solution findById(String id) {
-        return solutionDao.findById(id).get();
+        return solutionDao.findById(id).orElse(null);
     }
 
     /**

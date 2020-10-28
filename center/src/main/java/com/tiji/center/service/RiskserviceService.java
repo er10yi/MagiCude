@@ -73,7 +73,7 @@ public class RiskserviceService {
      * @return
      */
     public Riskservice findById(String id) {
-        return riskserviceDao.findById(id).get();
+        return riskserviceDao.findById(id).orElse(null);
     }
 
     /**

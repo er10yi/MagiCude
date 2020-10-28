@@ -73,7 +73,7 @@ public class DemocodeService {
      * @return
      */
     public Democode findById(String id) {
-        return democodeDao.findById(id).get();
+        return democodeDao.findById(id).orElse(null);
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.tiji.center.controller;
 
+import com.tiji.center.pojo.Task;
 import com.tiji.center.pojo.Taskip;
+import com.tiji.center.service.TaskService;
 import com.tiji.center.service.TaskipService;
 import com.tiji.center.service.TaskportService;
 import entity.PageResult;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * taskip控制器层
@@ -27,6 +30,9 @@ public class TaskipController {
     private TaskipService taskipService;
     @Autowired
     private TaskportService taskportService;
+    @Autowired
+    private TaskService taskService;
+
 
     /**
      * 查询全部数据
@@ -61,6 +67,13 @@ public class TaskipController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Taskip> pageList = taskipService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(taskip -> {
+            String taskid = taskip.getTaskid();
+            Task task = taskService.findById(taskid);
+            if (!Objects.isNull(task)) {
+                taskip.setTaskid(task.getName());
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Taskip>(pageList.getTotalElements(), pageList.getContent()));
     }
 

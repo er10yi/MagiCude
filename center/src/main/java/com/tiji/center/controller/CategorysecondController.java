@@ -1,10 +1,13 @@
 package com.tiji.center.controller;
 
 import com.tiji.center.pojo.Categorysecond;
+import com.tiji.center.pojo.Categorytop;
 import com.tiji.center.service.CategorysecondService;
+import com.tiji.center.service.CategorytopService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +28,8 @@ public class CategorysecondController {
 
     @Autowired
     private CategorysecondService categorysecondService;
-
+    @Autowired
+    private CategorytopService categorytopService;
 
     /**
      * 查询全部数据
@@ -60,6 +64,15 @@ public class CategorysecondController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Categorysecond> pageList = categorysecondService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(categorysecond -> {
+            String categorytopid = categorysecond.getCategorytopid();
+            if (!StringUtils.isEmpty(categorytopid)) {
+                Categorytop categorytop = categorytopService.findById(categorytopid);
+                if (!Objects.isNull(categorytop)) {
+                    categorysecond.setCategorytopid(categorytop.getName());
+                }
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Categorysecond>(pageList.getTotalElements(), pageList.getContent()));
     }
 

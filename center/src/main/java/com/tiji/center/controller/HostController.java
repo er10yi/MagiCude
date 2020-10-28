@@ -72,7 +72,12 @@ public class HostController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Host> pageList = hostService.findSearch(searchMap, page, size);
-        return new Result(true, StatusCode.OK, "查询成功", new PageResult<Host>(pageList.getTotalElements(), pageList.getContent()));
+        pageList.stream().parallel().forEach(host -> {
+            String assetipid = host.getAssetipid();
+            Assetip assetip = assetipService.findById(assetipid);
+            host.setAssetipid(assetip.getIpaddressv4());
+        });
+        return new Result(true, StatusCode.OK, "查询成功", new PageResult<>(pageList.getTotalElements(), pageList.getContent()));
     }
 
     /**

@@ -1,15 +1,21 @@
 package com.tiji.center.controller;
 
+import com.tiji.center.pojo.Checkresult;
 import com.tiji.center.pojo.CheckresultVuln;
+import com.tiji.center.pojo.Vuln;
+import com.tiji.center.service.CheckresultService;
 import com.tiji.center.service.CheckresultVulnService;
+import com.tiji.center.service.VulnService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * checkresultVuln控制器层
@@ -23,7 +29,10 @@ public class CheckresultVulnController {
 
     @Autowired
     private CheckresultVulnService checkresultVulnService;
-
+    @Autowired
+    private CheckresultService checkresultService;
+    @Autowired
+    private VulnService vulnService;
 
     /**
      * 查询全部数据
@@ -58,6 +67,22 @@ public class CheckresultVulnController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<CheckresultVuln> pageList = checkresultVulnService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(checkresultVuln -> {
+            String vulnid = checkresultVuln.getVulnid();
+            String checkresultid = checkresultVuln.getCheckresultid();
+            if (!StringUtils.isEmpty(vulnid)) {
+                Vuln vuln = vulnService.findById(vulnid);
+                if (!Objects.isNull(vuln)) {
+                    checkresultVuln.setVulnid(vuln.getName());
+                }
+            }
+            if (!StringUtils.isEmpty(checkresultid)) {
+                Checkresult checkresult = checkresultService.findById(checkresultid);
+                if (!Objects.isNull(checkresult)) {
+                    checkresultVuln.setCheckresultid(checkresult.getName());
+                }
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<CheckresultVuln>(pageList.getTotalElements(), pageList.getContent()));
     }
 

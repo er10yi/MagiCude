@@ -73,7 +73,7 @@ public class RiskportService {
      * @return
      */
     public Riskport findById(String id) {
-        return riskportDao.findById(id).get();
+        return riskportDao.findById(id).orElse(null);
     }
 
     /**

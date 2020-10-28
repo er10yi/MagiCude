@@ -3,6 +3,7 @@ package com.tiji.center.service;
 import com.tiji.center.dispatcher.TargetIpSlicer;
 import com.tiji.center.pojo.*;
 import com.tiji.center.schedule.quartz.QuartzJobService;
+import com.tiji.center.util.TijiHelper;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
@@ -11,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import util.IdWorker;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -80,11 +82,11 @@ public class TaskDispatcherService {
      */
     public synchronized Map<String, Object> executeWork(String taskId) throws InterruptedException {
         Map<String, Object> taskInfo = new LinkedHashMap<>();
-        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
         int agentCount;
-        if (onlineAgentList.isEmpty()) {
+        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)) {
             return null;
         } else {
+            List<Agent> onlineAgentList = agentService.findAllByOnline(true);
             agentCount = onlineAgentList.size();
         }
 
@@ -134,12 +136,11 @@ public class TaskDispatcherService {
      */
     public synchronized Map<String, Object> executeCheck(String taskId) {
         Map<String, Object> taskInfo = new LinkedHashMap<>();
-
-        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
         int agentCount;
-        if (onlineAgentList.isEmpty()) {
+        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)){
             return null;
-        } else {
+        } else{
+            List<Agent> onlineAgentList = agentService.findAllByOnline(true);
             agentCount = onlineAgentList.size();
         }
 
@@ -418,11 +419,12 @@ public class TaskDispatcherService {
     }
 
     public synchronized void executeTotalCheck(String oldTaskId) {
-        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
         int agentCount;
-        if (onlineAgentList.isEmpty()) {
+        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)) {
             return;
         } else {
+            List<Agent> onlineAgentList = agentService.findAllByOnline(true);
+            System.out.println(onlineAgentList.size());
             agentCount = onlineAgentList.size();
         }
         double sliceIPListSize;
@@ -545,6 +547,7 @@ public class TaskDispatcherService {
                     });
                 }
                 if (nseSet.isEmpty()) {
+                    taskpluginconfigService.deleteAllByTaskid(taskId);
                     return;
                 }
                 //写到redis
@@ -750,7 +753,7 @@ public class TaskDispatcherService {
         //取消crontask标记
         task.setCrontask(false);
         //记录任务结束时间
-        if (!Objects.isNull(task.getStarttime())) {
+        if (!Objects.isNull(task.getStarttime())&&Objects.isNull(task.getEndtime())) {
             task.setEndtime(new Date());
         }
         taskService.update(task);
@@ -869,11 +872,11 @@ public class TaskDispatcherService {
     }
 
     public synchronized Map<String, Object> repeat(String taskId) throws InterruptedException {
-        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
         int agentCount;
-        if (onlineAgentList.isEmpty()) {
+        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)) {
             return null;
         } else {
+            List<Agent> onlineAgentList = agentService.findAllByOnline(true);
             agentCount = onlineAgentList.size();
         }
 
@@ -921,4 +924,50 @@ public class TaskDispatcherService {
         return taskInfo;
     }
 
+    public Map<String, Object> getTaskStatusPercent(String taskId) {
+        Map<String, Object> taskStatus = new LinkedHashMap<>();
+        //总任务数
+        String totalTaskListName = "totalTaskList_" + taskId;
+        //已完成任务数
+        String accomplishTaskListName = "accomplishTaskList_" + taskId;
+        //分组大小
+        String sliceIPListSizeName = "sliceIPListSize_" + taskId;
+
+        double taskPercent = 0;
+        Task task = taskService.findById(taskId);
+        //未开始，starttime和endtime都为空
+        if (Objects.isNull(task.getStarttime()) && Objects.isNull(task.getEndtime())) {
+            taskPercent = 0;
+        } else if (!Objects.isNull(task.getStarttime()) && Objects.isNull(task.getEndtime())) {
+            long accomplishTaskListSize = redisTemplate.opsForList().size(accomplishTaskListName);
+            if (redisTemplate.hasKey(sliceIPListSizeName)) {
+                long sliceIPListSize = Long.parseLong(redisTemplate.opsForValue().get(sliceIPListSizeName));
+                double taskPercentStatus = (double) accomplishTaskListSize / sliceIPListSize;
+                DecimalFormat b = new DecimalFormat("#.00");
+                taskPercent = Double.parseDouble(b.format(taskPercentStatus)) * 100;
+                if (accomplishTaskListSize == sliceIPListSize || taskPercentStatus > 100) {
+                    taskPercent = 100;
+                }
+                taskStatus.put("总数", (double) sliceIPListSize);
+                taskStatus.put("已完成", (double) accomplishTaskListSize);
+                List<String> totalTaskList = redisTemplate.opsForList().range(totalTaskListName, 0, -1);
+                List<String> accomplishTaskList = redisTemplate.opsForList().range(accomplishTaskListName, 0, -1);
+                //正在进行 = 总任务 - 已完成
+                //计算后，totalTaskList 就是 working task
+                if (totalTaskList != null && accomplishTaskList != null) {
+                    totalTaskList.removeAll(accomplishTaskList);
+                }
+                String worktype = taskService.findById(taskId).getWorktype();
+                if (!"httpp".equals(worktype) && !"selfd".equals(worktype)) {
+                    assert totalTaskList != null;
+                    taskStatus.put("进行中", (double) totalTaskList.size());
+                    taskStatus.put("PID", totalTaskList);
+                }
+            }
+        } else if (!Objects.isNull(task.getStarttime()) && !Objects.isNull(task.getEndtime())) {
+            taskPercent = 100;
+        }
+        taskStatus.put("percentage", taskPercent);
+        return taskStatus;
+    }
 }

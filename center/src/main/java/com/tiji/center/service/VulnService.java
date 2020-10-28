@@ -73,7 +73,7 @@ public class VulnService {
      * @return
      */
     public Vuln findById(String id) {
-        return vulnDao.findById(id).get();
+        return vulnDao.findById(id).orElse(null);
     }
 
     /**
@@ -191,5 +191,15 @@ public class VulnService {
             }
         }
         return vulnIdAndVulnNameList.isEmpty() ? null : vulnIdAndVulnNameList;
+    }
+
+    /**
+     * 根据id数组查询漏洞
+     *
+     * @param vulnids
+     * @return
+     */
+    public List<Vuln> findByVulnIds(List<String> vulnids) {
+        return vulnDao.findAllById(vulnids);
     }
 }

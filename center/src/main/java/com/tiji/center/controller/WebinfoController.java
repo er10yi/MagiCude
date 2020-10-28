@@ -1,8 +1,7 @@
 package com.tiji.center.controller;
 
-import com.tiji.center.pojo.Webinfo;
-import com.tiji.center.service.UrlService;
-import com.tiji.center.service.WebinfoService;
+import com.tiji.center.pojo.*;
+import com.tiji.center.service.*;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
@@ -10,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,11 @@ public class WebinfoController {
     private WebinfoService webinfoService;
     @Autowired
     private UrlService urlService;
+    @Autowired
+    private AssetportService assetportService;
+    @Autowired
+    private AssetipService assetipService;
+
 
     /**
      * 查询全部数据
@@ -60,7 +66,67 @@ public class WebinfoController {
      */
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
+        //根据ip查询webinfo
+        List<String> assetPortIdList = new ArrayList<>();
+        if (searchMap.containsKey("assetip")) {
+            //ip -> assetportid
+            String ipaddressv4 = (String) searchMap.get("assetip");
+            Map<String, String> ipSearchMap = new HashMap<>();
+            ipSearchMap.put("ipaddressv4", ipaddressv4);
+            List<Assetip> assetipList = assetipService.findSearch(ipSearchMap);
+            assetipList.forEach(ip -> {
+                String ipId = ip.getId();
+                List<Assetport> assetportList = assetportService.findAllByAssetipid(ipId);
+                assetportList.forEach(assetport -> {
+                    String assetportId = assetport.getId();
+                    List<Webinfo> webinfoList = webinfoService.findAllByAssetportid(assetportId);
+                    webinfoList.forEach(webinfo -> {
+                        String webinfoPortid = webinfo.getPortid();
+                        assetPortIdList.add(webinfoPortid);
+                    });
+                });
+
+            });
+            searchMap.put("portid", assetPortIdList);
+        }
+
+        //根据端口查询webinfo
+        if (searchMap.containsKey("assetport")) {
+            String port = (String) searchMap.get("assetport");
+            Map<String, String> portSearchMap = new HashMap<>();
+            portSearchMap.put("port", port);
+            List<Assetport> assetportList = assetportService.findSearch(portSearchMap);
+            assetportList.forEach(assetport -> {
+                String assetportId = assetport.getId();
+                List<Webinfo> webinfoList = webinfoService.findAllByAssetportid(assetportId);
+                webinfoList.forEach(webinfo -> {
+                    String webinfoPortid = webinfo.getPortid();
+                    assetPortIdList.add(webinfoPortid);
+                });
+            });
+            searchMap.put("portid", assetPortIdList);
+        }
+        System.out.println(assetPortIdList);
+
         Page<Webinfo> pageList = webinfoService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(webinfo -> {
+            String id = webinfo.getId();
+            String assetportid = webinfo.getPortid();
+            Assetport assetport = assetportService.findById(assetportid);
+            webinfo.setPortid(assetport.getPort());
+            String assetipid = assetport.getAssetipid();
+
+            Assetip assetip = assetipService.findById(assetipid);
+            webinfo.setAssetip(assetip.getIpaddressv4());
+
+
+            List<Url> allByWebinfoid = urlService.findAllByWebinfoid(id);
+            StringBuilder stringBuilder = new StringBuilder();
+            allByWebinfoid.forEach(url -> {
+                stringBuilder.append(url.getName()).append(" ").append(url.getUrl()).append("\n");
+            });
+            webinfo.setUrl(stringBuilder.toString());
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Webinfo>(pageList.getTotalElements(), pageList.getContent()));
     }
 

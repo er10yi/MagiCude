@@ -72,7 +72,7 @@ public class SendmailconfigService {
      * @return
      */
     public Sendmailconfig findById(String id) {
-        return sendmailconfigDao.findById(id).get();
+        return sendmailconfigDao.findById(id).orElse(null);
     }
 
     /**

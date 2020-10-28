@@ -72,7 +72,7 @@ public class ImvulnnotifyService {
      * @return
      */
     public Imvulnnotify findById(String id) {
-        return imvulnnotifyDao.findById(id).get();
+        return imvulnnotifyDao.findById(id).orElse(null);
     }
 
     /**

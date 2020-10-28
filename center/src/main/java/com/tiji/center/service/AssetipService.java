@@ -11,10 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import util.IdWorker;
 
 import javax.persistence.criteria.Predicate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * assetip服务层
@@ -295,6 +292,58 @@ public class AssetipService {
     @Transactional(value = "masterTransactionManager")
     public void updateAssetipSetProjectinfoidNull() {
         assetipDao.updateAssetipSetProjectinfoidNull();
+    }
+
+    /**
+     * 根据id数组查询数量
+     *
+     * @param ids
+     * @return
+     */
+    public List<String> findCountByIds(List<String> ids) {
+        List<String> idAndCount = new ArrayList<>();
+        List<String> portCountList = assetipDao.findPortCountByIds(ids);
+        List<String> portCountOnlineList = assetipDao.findPortCountOnlineByIds(ids);
+        List<String> vulnCountList = assetipDao.findVulnCountByIds(ids);
+        List<String> vulnCountOnlineList = assetipDao.findVulnCountOnlineByIds(ids);
+
+        Map<String, String> idPortCountMap = new LinkedHashMap<>();
+        Map<String, String> idPortCountOnlineMap = new LinkedHashMap<>();
+        Map<String, String> idVulnCountMap = new LinkedHashMap<>();
+        Map<String, String> idVulnCountOnlineMap = new LinkedHashMap<>();
+        // id - portcount
+        portCountList.parallelStream().forEach(temp -> {
+            String id = temp.split(",")[0];
+            String portCount = temp.split(",")[1];
+            idPortCountMap.put(id, portCount);
+        });
+        portCountOnlineList.parallelStream().forEach(temp -> {
+            String id = temp.split(",")[0];
+            String portCount = temp.split(",")[1];
+            idPortCountOnlineMap.put(id, portCount);
+        });
+        vulnCountList.parallelStream().forEach(temp -> {
+            String id = temp.split(",")[0];
+            String vulnCount = temp.split(",")[1];
+            idVulnCountMap.put(id, vulnCount);
+        });
+        vulnCountOnlineList.parallelStream().forEach(temp -> {
+            String id = temp.split(",")[0];
+            String vulnCount = temp.split(",")[1];
+            idVulnCountOnlineMap.put(id, vulnCount);
+        });
+
+        // id - vuln count
+        ids.forEach(id -> {
+            String temp;
+            temp = idPortCountMap.getOrDefault(id, "0");
+            temp += ":" + idPortCountOnlineMap.getOrDefault(id, "0");
+            temp += ":" + idVulnCountMap.getOrDefault(id, "0");
+            temp += ":" + idVulnCountOnlineMap.getOrDefault(id, "0");
+            idAndCount.add(temp);
+
+        });
+        return idAndCount.isEmpty() ? null : idAndCount;
     }
 
 }

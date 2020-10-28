@@ -1,7 +1,11 @@
 package com.tiji.center.service;
 
 import com.tiji.center.dao.ProjectinfoDao;
+import com.tiji.center.pojo.Contact;
+import com.tiji.center.pojo.ContactProjectinfo;
 import com.tiji.center.pojo.Projectinfo;
+import entity.Result;
+import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,6 +13,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import util.IdWorker;
 
 import javax.persistence.criteria.Predicate;
@@ -22,28 +29,22 @@ import java.util.*;
 @Service
 public class ProjectinfoService {
 
-    private final static String redisProjectinfoPojoList = "projectinfoPojoList_";
     @Autowired
     private ProjectinfoDao projectinfoDao;
     @Autowired
-    private RedisTemplate redisTemplate;
-    @Autowired
     private IdWorker idWorker;
+
+    @Autowired
+    private ContactProjectinfoService contactProjectinfoService;
+    @Autowired
+    private ContactService contactService;
 
     /**
      * 查询全部列表
      *
      * @return
      */
-    public List<Projectinfo> findAll() {
-        if (redisTemplate.hasKey(redisProjectinfoPojoList)) {
-            return (List<Projectinfo>) redisTemplate.opsForValue().get(redisProjectinfoPojoList);
-        } else {
-            List<Projectinfo> projectinfoList = projectinfoDao.findAll();
-            redisTemplate.opsForValue().set(redisProjectinfoPojoList, projectinfoList);
-            //redisTemplate.expire(redisProjectinfoPojoList, 2, TimeUnit.HOURS);
-            return projectinfoList;
-        }
+    public List<Projectinfo> findAll() { return  projectinfoDao.findAll();
     }
 
 
@@ -80,7 +81,7 @@ public class ProjectinfoService {
      * @return
      */
     public Projectinfo findById(String id) {
-        return projectinfoDao.findById(id).get();
+        return projectinfoDao.findById(id).orElse(null);
     }
 
     /**
@@ -89,9 +90,7 @@ public class ProjectinfoService {
      * @param projectinfo
      */
     public void add(Projectinfo projectinfo) {
-        if (Objects.isNull(projectinfo.getId())) {
-            projectinfo.setId(idWorker.nextId() + "");
-        }
+
         if (Objects.isNull(projectinfo.getCheckwhitelist())) {
             projectinfo.setCheckwhitelist(false);
         }
@@ -101,7 +100,9 @@ public class ProjectinfoService {
         if (Objects.isNull(projectinfo.getOverrideipwhitelist())) {
             projectinfo.setOverrideipwhitelist(false);
         }
-        redisTemplate.delete(redisProjectinfoPojoList);
+        if (Objects.isNull(projectinfo.getInserttime())) {
+            projectinfo.setInserttime(new Date());
+        }
         projectinfoDao.save(projectinfo);
     }
 
@@ -111,7 +112,6 @@ public class ProjectinfoService {
      * @param projectinfo
      */
     public void update(Projectinfo projectinfo) {
-        redisTemplate.delete(redisProjectinfoPojoList);
         projectinfoDao.save(projectinfo);
     }
 
@@ -121,7 +121,6 @@ public class ProjectinfoService {
      * @param id
      */
     public void deleteById(String id) {
-        redisTemplate.delete(redisProjectinfoPojoList);
         projectinfoDao.deleteById(id);
     }
 
@@ -198,24 +197,6 @@ public class ProjectinfoService {
         return projectinfoDao.findByProjectname(ProjectName);
     }
 
-    /**
-     * 查询项目id和名称
-     *
-     * @return
-     */
-    public Map<String, String> findIdAndProjectname() {
-        if (redisTemplate.hasKey("projectInfoIdAndNameMap_")) {
-            return (Map<String, String>) redisTemplate.opsForValue().get("projectInfoIdAndNameMap_");
-        } else {
-            Map<String, String> projectInfoIdAndNameMap = new HashMap<>();
-            List<String> projectInfoIdAndNameList = projectinfoDao.findIdAndProjectname();
-            for (String idAndName : projectInfoIdAndNameList) {
-                projectInfoIdAndNameMap.put(idAndName.split(",")[0], idAndName.split(",")[1]);
-            }
-            redisTemplate.opsForValue().set("projectInfoIdAndNameMap_", projectInfoIdAndNameMap);
-            return projectInfoIdAndNameMap;
-        }
-    }
 
     /**
      * 根据ProjectName查询实体
@@ -229,4 +210,43 @@ public class ProjectinfoService {
     }
 
 
+    /**
+     * 根据id数组查询
+     *
+     * @param ids
+     * @return
+     */
+    public List<String> findByIds(String[] ids) {
+        List<String> projectInfoIdAndNameList = new ArrayList<>();
+        for (String projectInfoId : ids) {
+            Projectinfo projectinfo = findById(projectInfoId);
+            if (Objects.isNull(projectinfo)) {
+                projectInfoIdAndNameList.add(projectInfoId + "-" + null);
+            } else {
+                projectInfoIdAndNameList.add(projectInfoId + "-" + projectinfo.getProjectname());
+            }
+        }
+        return projectInfoIdAndNameList.isEmpty() ? null : projectInfoIdAndNameList;
+    }
+
+    public List<Contact> findAllContactById(String id) {
+        List<Contact> resultList = new ArrayList<>();
+        List<ContactProjectinfo> contactProjectinfoList = contactProjectinfoService.findAllByProjectinfoid(id);
+        contactProjectinfoList.parallelStream().forEach(contactProjectinfo -> {
+            String contactid = contactProjectinfo.getContactid();
+            Contact contact = contactService.findById(contactid);
+            resultList.add(contact);
+        });
+        return resultList;
+    }
+
+    /**
+     * 根据项目信息id和联系人id，新增关联
+     *
+     * @param projectinfoIdAndContactId
+     * @return
+     */
+    public void addContact(String[] projectinfoIdAndContactId) {
+        contactProjectinfoService.add(new ContactProjectinfo(idWorker.nextId()+"",projectinfoIdAndContactId[1],projectinfoIdAndContactId[0]));
+    }
 }

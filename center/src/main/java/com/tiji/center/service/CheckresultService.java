@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import util.IdWorker;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import java.util.*;
 
@@ -80,7 +82,7 @@ public class CheckresultService {
      * @return
      */
     public Checkresult findById(String id) {
-        return checkresultDao.findById(id).get();
+        return checkresultDao.findById(id).orElse(null);
     }
 
     /**
@@ -132,14 +134,14 @@ public class CheckresultService {
     private Specification<Checkresult> createSpecification(Map searchMap) {
 
         return (Specification<Checkresult>) (root, query, cb) -> {
-            List<Predicate> predicateList = new ArrayList<Predicate>();
+            List<Predicate> predicateList = new ArrayList<>();
             // 检测结果编号
             if (searchMap.get("id") != null && !"".equals(searchMap.get("id"))) {
-                predicateList.add(cb.like(root.get("id").as(String.class), "%" + searchMap.get("id") + "%"));
+                predicateList.add(cb.in(root.get("id")).value(searchMap.get("id")));
             }
             // 端口编号
             if (searchMap.get("assetportid") != null && !"".equals(searchMap.get("assetportid"))) {
-                predicateList.add(cb.like(root.get("assetportid").as(String.class), "%" + searchMap.get("assetportid") + "%"));
+                predicateList.add(cb.in(root.get("assetportid")).value(searchMap.get("assetportid")));
             }
             // 检测结果名称
             if (searchMap.get("name") != null && !"".equals(searchMap.get("name"))) {
@@ -177,7 +179,7 @@ public class CheckresultService {
                 predicateList.add(cb.like(root.get("remark").as(String.class), "%" + searchMap.get("remark") + "%"));
             }
 
-            return cb.and(predicateList.toArray(new Predicate[predicateList.size()]));
+            return cb.and(predicateList.toArray(new Predicate[0]));
 
         };
 
@@ -271,5 +273,11 @@ public class CheckresultService {
             });
         }
         return resultList;
+    }
+
+    public String findVulNameById(String id) {
+        List<CheckresultVuln> checkresultVulnList = checkresultVulnService.findAllByCheckresultid(id);
+        String vulnid = checkresultVulnList.get(0).getVulnid();
+        return vulnService.findById(vulnid).getName();
     }
 }

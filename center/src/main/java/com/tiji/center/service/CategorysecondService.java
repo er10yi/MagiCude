@@ -73,7 +73,7 @@ public class CategorysecondService {
      * @return
      */
     public Categorysecond findById(String id) {
-        return categorysecondDao.findById(id).get();
+        return categorysecondDao.findById(id).orElse(null);
     }
 
     /**

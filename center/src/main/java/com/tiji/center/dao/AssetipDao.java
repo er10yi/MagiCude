@@ -46,4 +46,16 @@ public interface AssetipDao extends JpaRepository<Assetip, String>, JpaSpecifica
     @Query(value = "DELETE FROM `tb_assetip` WHERE id IN(?1)", nativeQuery = true)
     void deleteAllByIds(List<String> ids);
 
+    @Query(value = "SELECT taip.id,COUNT(*) as portCount FROM tb_assetip taip,tb_assetport tp WHERE tp.assetipid = taip.id and taip.id in (?1) GROUP BY taip.id", nativeQuery = true)
+    List<String> findPortCountByIds(List<String> ids);
+
+    @Query(value = "SELECT taip.id,COUNT(*) as portCount FROM tb_assetip taip,tb_assetport tp WHERE tp.assetipid = taip.id and taip.id in (?1) and ISNULL(tp.downtime) GROUP BY taip.id", nativeQuery = true)
+    List<String> findPortCountOnlineByIds(List<String> ids);
+
+    @Query(value = "SELECT tp.assetipid,COUNT(*) as vulnCount FROM tb_assetport tp,tb_checkresult tcl  WHERE tcl.assetportid IN(tp.id)  and tp.assetipid IN (?1) GROUP BY tp.assetipid", nativeQuery = true)
+    List<String> findVulnCountByIds(List<String> ids);
+
+
+    @Query(value = "SELECT tp.assetipid,COUNT(*) as vulnCount FROM tb_assetport tp,tb_checkresult tcl  WHERE tcl.assetportid IN(tp.id)  and tp.assetipid IN (?1) and ISNULL(tcl.passivetime) GROUP BY tp.assetipid", nativeQuery = true)
+    List<String> findVulnCountOnlineByIds(List<String> ids);
 }

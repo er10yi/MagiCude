@@ -2,6 +2,7 @@ package com.tiji.center.schedule;
 
 import com.tiji.center.pojo.Agent;
 import com.tiji.center.service.AgentService;
+import com.tiji.center.util.TijiHelper;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
@@ -59,7 +60,9 @@ public class AgentHeartbeatMonitorScheduler implements Job {
             } else {
                 //将所有agent的online标志置为false
                 agentService.updateAgentSetOnlineFalse();
-                getAgentConfigMessage(agentConfigMessage);
+                //getAgentConfigMessage(agentConfigMessage);
+                TijiHelper.getAgentConfigMessage(agentService,idWorker,agentConfigMessage);
+                //getAgentConfigMessage(agentConfigMessage);
             }
             flag2 = getHeartbeat();
             if (flag1 && flag2) {
@@ -118,7 +121,8 @@ public class AgentHeartbeatMonitorScheduler implements Job {
         while (true) {
             Message<?> agentConfigMessage = rabbitMessagingTemplate.receive("agentconfig");
             if (!Objects.isNull(agentConfigMessage)) {
-                getAgentConfigMessage(agentConfigMessage);
+                //getAgentConfigMessage(agentConfigMessage);
+                TijiHelper.getAgentConfigMessage(agentService,idWorker,agentConfigMessage);
             } else {
                 return true;
             }

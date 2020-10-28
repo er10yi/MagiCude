@@ -6,8 +6,10 @@ import com.tiji.center.util.TijiHelper;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import util.IdWorker;
@@ -82,7 +84,28 @@ public class AssetipController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Assetip> pageList = assetipService.findSearch(searchMap, page, size);
-        return new Result(true, StatusCode.OK, "查询成功", new PageResult<Assetip>(pageList.getTotalElements(), pageList.getContent()));
+        pageList.stream().parallel().forEach(assetip -> {
+            String projectinfoid = assetip.getProjectinfoid();
+            if (!StringUtils.isEmpty(projectinfoid)) {
+                Projectinfo projectinfo = projectinfoService.findById(projectinfoid);
+                assetip.setProjectinfoid(projectinfo.getProjectname());
+            }
+            String assetipId = assetip.getId();
+
+            List<String> resultList = assetipService.findCountByIds(Collections.singletonList(assetipId));
+            String ipaddressv4 = assetip.getIpaddressv4();
+            if (!StringUtils.isEmpty(ipaddressv4)) {
+                assetip.setIpaddressv4(ipaddressv4);
+            }
+            if (!"0:0:0:0".equals(resultList.get(0))) {
+                assetip.setStatistic(resultList.get(0));
+            } else {
+                assetip.setIpaddressv4(ipaddressv4);
+            }
+
+        });
+
+        return new Result(true, StatusCode.OK, "查询成功", new PageResult<>(pageList.getTotalElements(), pageList.getContent()));
     }
 
     /**
@@ -214,7 +237,7 @@ public class AssetipController {
                 } else {
                     //20201012 新增 增加无端口的ip导入格式
                     //没有端口，新增ip
-                    ipSet = IpRange2Ips.genIp(line);
+                    ipSet.addAll(IpRange2Ips.genIp(line));
                 }
 
             }
@@ -239,7 +262,7 @@ public class AssetipController {
     }
 
     /**
-     * 根据id数组查询
+     * 根据ids数组查询
      *
      * @param ids
      * @return
@@ -352,4 +375,5 @@ public class AssetipController {
         });
         return new Result(true, StatusCode.OK, "删除成功");
     }
+
 }

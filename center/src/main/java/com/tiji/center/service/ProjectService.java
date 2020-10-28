@@ -73,7 +73,7 @@ public class ProjectService {
      * @return
      */
     public Project findById(String id) {
-        return projectDao.findById(id).get();
+        return projectDao.findById(id).orElse(null);
     }
 
     /**
@@ -114,6 +114,7 @@ public class ProjectService {
     @Transactional(value = "masterTransactionManager")
     public void deleteAllByIds(List<String> ids) {
         projectDao.deleteAllByIds(ids);
+        ids.forEach(this::updateTaskByProjectIdSetProjectid2Null);
     }
 
     /**
@@ -153,5 +154,16 @@ public class ProjectService {
      */
     public Project findByIName(String name) {
         return projectDao.findByName(name);
+    }
+
+    /**
+     * 根据projectid将projectid置空
+     *
+     * @param projectid
+     * @return
+     */
+    @Transactional(value = "masterTransactionManager")
+    public void updateTaskByProjectIdSetProjectid2Null(String projectid) {
+        projectDao.updateTaskByProjectIdSetProjectid2Null(projectid);
     }
 }

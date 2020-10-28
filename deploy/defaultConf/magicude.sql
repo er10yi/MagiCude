@@ -518,7 +518,7 @@ CREATE TABLE `tb_nmapconfig`  (
 -- ----------------------------
 -- Records of tb_nmapconfig
 -- ----------------------------
-INSERT INTO `tb_nmapconfig` VALUES ('1305055496268550144', '1304327021228331008', '10', '1', '-Pn -n -sV --max-retries=1 --open');
+INSERT INTO `tb_nmapconfig` VALUES ('1305055496268550144', '1304327021228331008', '10', '1', '-Pn -sV --max-retries=1 --open');
 
 -- ----------------------------
 -- Table structure for tb_notifylog
@@ -949,16 +949,20 @@ CREATE TABLE `tb_task`  (
 -- ----------------------------
 -- Records of tb_task
 -- ----------------------------
-INSERT INTO `tb_task` VALUES ('1304326239309402112', NULL, NULL, 'nmap常规端口-demo', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -n -sV --max-retries=1 --open', NULL, '127.0.0.1', 'regular', NULL, '255', NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1304326543249641472', NULL, NULL, 'nmap所有端口-demo', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -n -sV --max-retries=1 --open', NULL, '127.0.0.1', NULL, NULL, '255', '1000', 0, 1);
-INSERT INTO `tb_task` VALUES ('1304326778726256640', NULL, NULL, 'nmap指定端口-demo', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -n -sV --max-retries=1 --open', NULL, '127.0.0.1', '80,443,6379', NULL, '255', NULL, 0, 1);
+INSERT INTO `tb_task` VALUES ('1304326239309402112', NULL, NULL, 'nmap常规端口-demo', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -sV --max-retries=1 --open', NULL, '127.0.0.1', 'regular', NULL, '255', NULL, 0, 1);
+INSERT INTO `tb_task` VALUES ('1304326543249641472', NULL, NULL, 'nmap所有端口-demo', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -sV --max-retries=1 --open', NULL, '127.0.0.1', NULL, NULL, '255', '1000', 0, 1);
+INSERT INTO `tb_task` VALUES ('1304326778726256640', NULL, NULL, 'nmap指定端口-demo', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -sV --max-retries=1 --open', NULL, '127.0.0.1', '80,443,6379', NULL, '255', NULL, 0, 1);
 INSERT INTO `tb_task` VALUES ('1304326944082497536', NULL, NULL, 'mass全端口-demo', '指定端口扫描与nmap指定端口-demo类似', NULL, 0, NULL, NULL, 'mass', NULL, '4', '1', '', '1000', '127.0.0.1', NULL, NULL, '1', NULL, 0, 1);
 INSERT INTO `tb_task` VALUES ('1304327021228331008', NULL, NULL, 'mass2Nmap全端口-demo', '指定端口扫描与nmap指定端口-demo类似', NULL, 0, NULL, NULL, 'mass2Nmap', NULL, '4', '1', '', '1000', '127.0.0.1', NULL, NULL, '1', NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1304327091386454016', NULL, NULL, 'nse启用所有插件-demo', NULL, NULL, 0, NULL, NULL, 'nse', NULL, '4', '1', '-Pn -n -sV --max-retries=1 --open', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1304327185506635776', NULL, NULL, 'nse启用smb-vuln-ms08-067插件-demo', NULL, NULL, 0, NULL, NULL, 'nse', NULL, '4', '1', '-Pn -n -sV --max-retries=1 --open', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
+INSERT INTO `tb_task` VALUES ('1304327091386454016', NULL, NULL, 'nse启用所有插件-demo', NULL, NULL, 0, NULL, NULL, 'nse', NULL, '4', '1', '-Pn -sV --max-retries=1 --open', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
+INSERT INTO `tb_task` VALUES ('1304327185506635776', NULL, NULL, 'nse启用smb-vuln-ms08-067插件-demo', NULL, NULL, 0, NULL, NULL, 'nse', NULL, '4', '1', '-Pn -sV --max-retries=1 --open', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
 INSERT INTO `tb_task` VALUES ('1304327417707499520', NULL, NULL, 'selfd启用所有插件-demo', NULL, NULL, 0, NULL, NULL, 'selfd', NULL, '4', '1', '', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
 INSERT INTO `tb_task` VALUES ('1304327508270911488', NULL, NULL, 'selfd启用JavaRedisWeakPass插件-demo', NULL, NULL, 0, NULL, NULL, 'selfd', NULL, '4', '1', '', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
 INSERT INTO `tb_task` VALUES ('1304328077727371264', NULL, NULL, 'httpp任务-demo', NULL, NULL, 0, NULL, NULL, 'httpp', NULL, '4', '1', '', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
+INSERT INTO `tb_task` VALUES ('1321449808837349376', NULL, NULL, 'nmap ping', '目标不会分组，建议目标以一个B段或者C段为单位，结果得到存活的主机，可与nmap模式的ipNoPort配合端口扫描', NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-sn', NULL, '127.0.0.1', NULL, NULL, '255', '1000', 0, 1);
+INSERT INTO `tb_task` VALUES ('1321450057333084160', NULL, NULL, 'nmap无端口的ip', '扫描所有没有端口的ip，结合ping主机发现做周期扫描', NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -sV --max-retries=1 --open', NULL, 'ipNoPort', NULL, NULL, '64', '1000', 0, 1);
+INSERT INTO `tb_task` VALUES ('1321450285897486336', NULL, NULL, 'nmap更新未知端口服务', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -sV --max-retries=1', NULL, 'unknownPortSerVer', NULL, NULL, NULL, NULL, 0, 1);
+INSERT INTO `tb_task` VALUES ('1321450645160595456', NULL, NULL, 'nmap更新所有端口', '建议半个月或一个月执行一次，如果任务频繁，可能由于网络问题，导致端口状态频繁open和closed', '0 0 0 1/14  * ?', 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -sV --max-retries=1', NULL, 'ipAllPort', NULL, NULL, NULL, NULL, 0, 1);
 
 -- ----------------------------
 -- Table structure for tb_taskip

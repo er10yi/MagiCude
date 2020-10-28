@@ -72,7 +72,7 @@ public class ProjectvulnnotifyService {
      * @return
      */
     public Projectvulnnotify findById(String id) {
-        return projectvulnnotifyDao.findById(id).get();
+        return projectvulnnotifyDao.findById(id).orElse(null);
     }
 
     /**

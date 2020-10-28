@@ -1,14 +1,17 @@
 package com.tiji.center.controller;
 
 import com.tiji.center.pojo.Contact;
+import com.tiji.center.pojo.ContactProjectinfo;
 import com.tiji.center.service.ContactProjectinfoService;
 import com.tiji.center.service.ContactService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
+import util.IdWorker;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,7 @@ public class ContactController {
 
     @Autowired
     private ContactProjectinfoService contactProjectinfoService;
+
 
     /**
      * 查询全部数据

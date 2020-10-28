@@ -73,7 +73,7 @@ public class AgentService {
      * @return
      */
     public Agent findById(String id) {
-        return agentDao.findById(id).get();
+        return agentDao.findById(id).orElse(null);
     }
 
     /**

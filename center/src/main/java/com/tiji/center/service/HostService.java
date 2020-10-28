@@ -73,7 +73,7 @@ public class HostService {
      * @return
      */
     public Host findById(String id) {
-        return hostDao.findById(id).get();
+        return hostDao.findById(id).orElse(null);
     }
 
     /**

@@ -1,16 +1,21 @@
 package com.tiji.center.controller;
 
 import com.tiji.center.pojo.Pluginassetversion;
+import com.tiji.center.pojo.Pluginconfig;
 import com.tiji.center.service.PluginassetversionService;
+import com.tiji.center.service.PluginconfigService;
+import com.tiji.center.service.VulnService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * assetversion控制器层
@@ -24,16 +29,12 @@ public class PluginassetversionController {
 
     @Autowired
     private PluginassetversionService pluginassetversionService;
+    @Autowired
+    private PluginconfigService pluginconfigService;
 
     /**
      * 查询全部数据
      *
-     * @return
-     */
-    @RequestMapping(method = RequestMethod.GET)
-    public Result findAll() {
-        return new Result(true, StatusCode.OK, "查询成功", pluginassetversionService.findAll());
-    }
 
     /**
      * 根据ID查询
@@ -58,6 +59,15 @@ public class PluginassetversionController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Pluginassetversion> pageList = pluginassetversionService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(Pluginassetversion -> {
+            String pluginconfigid = Pluginassetversion.getPluginconfigid();
+            if (!StringUtils.isEmpty(pluginconfigid)) {
+                Pluginconfig pluginconfig = pluginconfigService.findById(pluginconfigid);
+                if (!Objects.isNull(pluginconfig)) {
+                    Pluginassetversion.setPluginconfigid(pluginconfig.getName());
+                }
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Pluginassetversion>(pageList.getTotalElements(), pageList.getContent()));
     }
 

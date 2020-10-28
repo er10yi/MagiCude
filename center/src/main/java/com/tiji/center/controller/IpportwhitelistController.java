@@ -1,12 +1,15 @@
 package com.tiji.center.controller;
 
 import com.tiji.center.pojo.Ipportwhitelist;
+import com.tiji.center.pojo.Ipwhitelist;
 import com.tiji.center.service.IpportwhitelistService;
+import com.tiji.center.service.IpwhitelistService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +28,8 @@ public class IpportwhitelistController {
 
     @Autowired
     private IpportwhitelistService ipportwhitelistService;
+    @Autowired
+    private IpwhitelistService ipwhitelistService;
 
 
     /**
@@ -60,6 +65,15 @@ public class IpportwhitelistController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Ipportwhitelist> pageList = ipportwhitelistService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(ipportwhitelist -> {
+            String ipwhitelistid = ipportwhitelist.getIpwhitelistid();
+            if(!StringUtils.isEmpty(ipwhitelistid)){
+                Ipwhitelist ipwhitelist = ipwhitelistService.findById(ipwhitelistid);
+                if(!Objects.isNull(ipwhitelist)){
+                    ipportwhitelist.setIpwhitelistid(ipwhitelist.getIp());
+                }
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Ipportwhitelist>(pageList.getTotalElements(), pageList.getContent()));
     }
 

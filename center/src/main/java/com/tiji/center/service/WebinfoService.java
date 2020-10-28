@@ -75,7 +75,7 @@ public class WebinfoService {
      * @return
      */
     public Webinfo findById(String id) {
-        return webinfoDao.findById(id).get();
+        return webinfoDao.findById(id).orElse(null);
     }
 
     /**
@@ -134,7 +134,7 @@ public class WebinfoService {
             }
             // 端口编号
             if (searchMap.get("portid") != null && !"".equals(searchMap.get("portid"))) {
-                predicateList.add(cb.like(root.get("portid").as(String.class), "%" + searchMap.get("portid") + "%"));
+                predicateList.add(cb.in(root.get("portid")).value(searchMap.get("portid")));
             }
             // 标题白名单编号
             if (searchMap.get("titlewhitelistid") != null && !"".equals(searchMap.get("titlewhitelistid"))) {

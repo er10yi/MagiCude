@@ -169,4 +169,15 @@ public class TitlewhitelistController {
         return new Result(true, StatusCode.OK, "标题白名单已上传处理，请稍后查看");
 
     }
+
+    /**
+     * 删除
+     *
+     * @param title
+     */
+    @RequestMapping(value = "/title/{title}", method = RequestMethod.DELETE)
+    public Result deleteByTitle(@PathVariable String title) {
+        titlewhitelistService.deleteByTitle(title);
+        return new Result(true, StatusCode.OK, "删除成功");
+    }
 }
