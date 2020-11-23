@@ -23,6 +23,8 @@ public class Task implements Serializable {
     private String statistic;
     @Transient
     private String percentage;
+    @Transient
+    private String jobstate;
 
     private String taskparentid;//任务父编号
     private String projectid;//项目编号
@@ -88,6 +90,14 @@ public class Task implements Serializable {
 
     public void setStatistic(String statistic) {
         this.statistic = statistic;
+    }
+
+    public String getJobstate() {
+        return jobstate;
+    }
+
+    public void setJobstate(String jobstate) {
+        this.jobstate = jobstate;
     }
 
     public String getPercentage() {

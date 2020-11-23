@@ -6,7 +6,6 @@ import com.tiji.center.util.TijiHelper;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.util.StringUtils;
@@ -39,8 +38,7 @@ public class AssetipController {
     private IdWorker idWorker;
     @Autowired
     private HostService hostService;
-    @Autowired
-    private LocationService locationService;
+
     @Autowired
     private CheckresultService checkresultService;
     @Autowired
@@ -70,7 +68,13 @@ public class AssetipController {
      */
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public Result findById(@PathVariable String id) {
-        return new Result(true, StatusCode.OK, "查询成功", assetipService.findById(id));
+        Assetip assetip = assetipService.findById(id);
+        String projectinfoid = assetip.getProjectinfoid();
+        if (!StringUtils.isEmpty(projectinfoid)) {
+            Projectinfo projectinfo = projectinfoService.findById(projectinfoid);
+            assetip.setProjectname(projectinfo.getProjectname());
+        }
+        return new Result(true, StatusCode.OK, "查询成功", assetip);
     }
 
     /**
@@ -88,7 +92,9 @@ public class AssetipController {
             String projectinfoid = assetip.getProjectinfoid();
             if (!StringUtils.isEmpty(projectinfoid)) {
                 Projectinfo projectinfo = projectinfoService.findById(projectinfoid);
-                assetip.setProjectinfoid(projectinfo.getProjectname());
+                if (!Objects.isNull(projectinfo)) {
+                    assetip.setProjectname(projectinfo.getProjectname());
+                }
             }
             String assetipId = assetip.getId();
 
@@ -166,8 +172,6 @@ public class AssetipController {
         List<Assetport> assetportList = assetportService.deleteAllByAssetipid(id);
         //删除主机信息
         hostService.deleteAllByAssetipid(id);
-        //删除位置信息
-        locationService.deleteAllByAssetipid(id);
         assetportList.forEach(assetport -> {
             String assetportId = assetport.getId();
             //删除漏洞检测结果
@@ -244,7 +248,7 @@ public class AssetipController {
         } catch (IOException ignored) {
         }
         if (!resultMap.isEmpty()) {
-            TijiHelper.nmapScanResult2AssetDB(assetipService, assetportService, idWorker, resultMap);
+            TijiHelper.nmapScanResult2AssetDB(assetipService, assetportService, hostService, idWorker, resultMap);
         }
         if (!ipSet.isEmpty()) {
             ipSet.forEach(ip -> {
@@ -352,9 +356,6 @@ public class AssetipController {
             List<Assetport> assetportList = assetportService.deleteAllByAssetipid(id);
             //删除主机信息
             hostService.deleteAllByAssetipid(id);
-            //删除位置信息
-            locationService.deleteAllByAssetipid(id);
-
             assetportList.forEach(assetport -> {
                 String assetportId = assetport.getId();
                 //删除漏洞检测结果

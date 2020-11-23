@@ -1,8 +1,8 @@
 package com.tiji.center.controller;
 
+import com.tiji.center.pojo.Agent;
 import com.tiji.center.pojo.Nmapconfig;
 import com.tiji.center.pojo.Project;
-import com.tiji.center.pojo.Projectinfo;
 import com.tiji.center.pojo.Task;
 import com.tiji.center.schedule.ExecuteCheckTaskScheduler;
 import com.tiji.center.schedule.ExecuteWorkTaskScheduler;
@@ -13,9 +13,7 @@ import com.tiji.center.util.TijiHelper;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
-import org.quartz.CronExpression;
-import org.quartz.JobKey;
-import org.quartz.SchedulerException;
+import org.quartz.*;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,6 +21,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import util.IdWorker;
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +61,6 @@ public class TaskController {
     private RabbitMessagingTemplate rabbitMessagingTemplate;
     @Autowired
     private ProjectService projectService;
-
-
     /**
      * 查询全部数据
      *
@@ -99,7 +96,7 @@ public class TaskController {
         Page<Task> pageList = taskService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(task -> {
             String taskparentid = task.getTaskparentid();
-            if(!StringUtils.isEmpty(taskparentid)){
+            if (!StringUtils.isEmpty(taskparentid)) {
                 Task task1 = taskService.findById(taskparentid);
                 task.setTaskparentid(task1.getName());
             }
@@ -114,11 +111,17 @@ public class TaskController {
             }
             List<Task> childTaskList = taskService.findAllByTaskparentid(taskId);
             String name = task.getName();
-            if(!StringUtils.isEmpty(name)){
+            if (!StringUtils.isEmpty(name)) {
                 task.setStatistic(String.valueOf(childTaskList.size()));
             }
             Double taskPercent = taskService.getTaskPercent(taskId);
             task.setPercentage(String.valueOf(taskPercent));
+            try {
+                String triggerStates = quartzJobService.getTriggerStates(taskId);
+                task.setJobstate(triggerStates);
+            } catch (SchedulerException ignored) {
+            }
+
         });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<>(pageList.getTotalElements(), pageList.getContent()));
     }
@@ -191,9 +194,9 @@ public class TaskController {
      * @return
      */
     @RequestMapping(value = "/execute/{id}", method = RequestMethod.GET)
-    public Result executeTask(@PathVariable String id) throws SchedulerException, InterruptedException {
-
-        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)) {
+    public Result executeTask(@PathVariable String id) throws SchedulerException, InterruptedException, ParseException {
+        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
+        if (onlineAgentList.isEmpty()) {
             return new Result(false, StatusCode.ERROR, "没有agent在线");
         }
         Map<String, Object> taskInfo = new HashMap<>();
@@ -244,7 +247,6 @@ public class TaskController {
         return new Result(true, StatusCode.OK, "成功开始", taskInfo);
     }
 
-
     /**
      * 根据taskId开始check任务
      *
@@ -252,8 +254,9 @@ public class TaskController {
      * @return
      */
     @RequestMapping(value = "/execute/check/{id}", method = RequestMethod.GET)
-    public Result executeCheck(@PathVariable String id) throws SchedulerException {
-        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)) {
+    public Result executeCheck(@PathVariable String id) throws SchedulerException, ParseException {
+        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
+        if (onlineAgentList.isEmpty()) {
             return new Result(false, StatusCode.ERROR, "没有agent在线");
         }
         Map<String, Object> taskInfo = new HashMap<>();
@@ -317,7 +320,8 @@ public class TaskController {
      */
     @RequestMapping(value = "/repeat/{id}", method = RequestMethod.GET)
     public Result repeatTask(@PathVariable String id) throws InterruptedException {
-        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)) {
+        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
+        if (onlineAgentList.isEmpty()) {
             return new Result(false, StatusCode.ERROR, "没有agent在线");
         }
         Map<String, Object> taskInfo = taskDispatcherService.repeat(id);

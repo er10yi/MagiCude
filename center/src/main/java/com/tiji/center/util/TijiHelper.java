@@ -4,13 +4,16 @@ import com.tiji.center.pojo.*;
 import com.tiji.center.service.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.util.SubnetUtils;
+import org.quartz.CronExpression;
+import org.quartz.TriggerUtils;
+import org.quartz.impl.triggers.CronTriggerImpl;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.Message;
-import org.springframework.scheduling.support.CronSequenceGenerator;
 import org.springframework.util.DigestUtils;
 import util.IdWorker;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -29,50 +32,55 @@ public class TijiHelper {
     private static final String RE_DOMAIN = "[\\w-]+\\.(com\\.cn|net\\.cn|gov\\.cn|org\\.nz|org\\.cn|com|net|org|gov|cc|biz|info|cn|co|js)\\b()*";
     private static final Pattern DomainPattern = Pattern.compile(RE_DOMAIN, Pattern.CASE_INSENSITIVE);
 
-
-    public static Boolean agentOnline(AgentService agentService, IdWorker idWorker, RabbitMessagingTemplate rabbitMessagingTemplate) {
-        // 发agent心跳包监控
-        Map<String, String> taskConfig = new HashMap<>();
-        taskConfig.put("status", "heartbeat");
-        rabbitMessagingTemplate.convertAndSend("tijifanout", "", taskConfig);
-        // 接收
-        Message<?> agentConfigMessage = rabbitMessagingTemplate.receive("agentconfig");
-        getAgentConfigMessage(agentService, idWorker, agentConfigMessage);
-
+    public static boolean agentOnline(AgentService agentService, IdWorker idWorker, RabbitMessagingTemplate rabbitMessagingTemplate) {
         List<Agent> onlineAgentList = agentService.findAllByOnline(true);
+        // 没有agent在线，发agent心跳包监控
+        // 在线则不管，状态由AgentHeartbeatMonitorScheduler刷新
+        if (onlineAgentList.isEmpty()) {
+            Map<String, String> taskConfig = new HashMap<>();
+            taskConfig.put("status", "heartbeat");
+            rabbitMessagingTemplate.convertAndSend("tijifanout", "", taskConfig);
+            // 接收
+            Message<?> agentConfigMessage = rabbitMessagingTemplate.receive("agentconfig");
+            if (!Objects.isNull(agentConfigMessage)) {
+                getAgentConfigMessage(agentService, idWorker, agentConfigMessage);
+            }
+        }
         return !onlineAgentList.isEmpty();
     }
 
     //TODO 处理agent cpu和内存状态
     public static void getAgentConfigMessage(AgentService agentService, IdWorker idWorker, Message<?> agentConfigMessage) {
-        Map<String, String> agentConfig = (Map<String, String>) agentConfigMessage.getPayload();
-        String agentName = agentConfig.get("agentName");
-        String nmapPath = agentConfig.get("nmapPath");
-        String massPath = agentConfig.get("massPath");
-        String online = agentConfig.get("online");
-        String ipAddress = agentConfig.get("ipAddress");
-        String onlineFlag = online + ipAddress;
+        if (!Objects.isNull(agentConfigMessage)) {
+            Map<String, String> agentConfig = (Map<String, String>) agentConfigMessage.getPayload();
+            String agentName = agentConfig.get("agentName");
+            String nmapPath = agentConfig.get("nmapPath");
+            String massPath = agentConfig.get("massPath");
+            String online = agentConfig.get("online");
+            String ipAddress = agentConfig.get("ipAddress");
+            String onlineFlag = online + ipAddress;
 
-        if (!Objects.isNull(agentName) && !Objects.isNull(nmapPath) && !Objects.isNull(massPath) && !Objects.isNull(online)) {
-            Agent dbAgent = agentService.findByNameAndIpaddress(agentName, ipAddress);
-            //新增一个agent记录
-            if (Objects.isNull(dbAgent)) {
-                agentService.add(new Agent(idWorker.nextId() + "", agentName, nmapPath, massPath, ipAddress, true, "0"));
-            }
-        }
-        //
-        if (!Objects.isNull(online)) {
-            List<Agent> agentList = agentService.findAll();
-            for (Agent agent : agentList) {
-                String name = agent.getName();
-                String ipaddress = agent.getIpaddress();
-                if (!onlineFlag.equals(name + ipaddress)) {
-                    //agent.setOnline(false);
-                } else {
-                    agent.setOnline(true);
-                    agent.setTimeouts("0");
+            if (!Objects.isNull(agentName) && !Objects.isNull(nmapPath) && !Objects.isNull(massPath) && !Objects.isNull(online)) {
+                Agent dbAgent = agentService.findByNameAndIpaddress(agentName, ipAddress);
+                //新增一个agent记录
+                if (Objects.isNull(dbAgent)) {
+                    agentService.add(new Agent(idWorker.nextId() + "", agentName, nmapPath, massPath, ipAddress, true, "0"));
                 }
-                agentService.update(agent);
+            }
+            //
+            if (!Objects.isNull(online)) {
+                List<Agent> agentList = agentService.findAll();
+                for (Agent agent : agentList) {
+                    String name = agent.getName();
+                    String ipaddress = agent.getIpaddress();
+                    if (!onlineFlag.equals(name + ipaddress)) {
+                        //agent.setOnline(false);
+                    } else {
+                        agent.setOnline(true);
+                        agent.setTimeouts("0");
+                    }
+                    agentService.update(agent);
+                }
             }
         }
     }
@@ -391,6 +399,7 @@ public class TijiHelper {
                     ip = ipTemp.split(":")[0];
                     if (ipTemp.split(":").length == 2) {
                         domain = ipTemp.split(":")[1];
+
                     }
                 }
                 //ip在数据库中不存在，直接新增
@@ -528,16 +537,13 @@ public class TijiHelper {
 
 
     //nmap扫描结果直接进资产
-    public static void nmapScanResult2AssetDB(AssetipService assetipService, AssetportService assetportService, IdWorker idWorker, Map<String, Set<String>> nmapResultMap) {
+    public static void nmapScanResult2AssetDB(AssetipService assetipService, AssetportService assetportService, HostService hostService, IdWorker idWorker, Map<String, Set<String>> nmapResultMap) {
         if (nmapResultMap.size() != 0) {
             Date date = new Date();
             List<Assetip> assetipList = new LinkedList<>();
 //            for (Map.Entry<String, Set<String>> entry : nmapResultMap.entrySet()) {
             nmapResultMap.forEach((ip, portInfoSet) -> {
                 //当前ip端口列表，用于批量增加
-                List<Assetport> portList = new LinkedList<>();
-                String assetIpId;
-
                 //域名
                 String domain = null;
                 if (ip.contains(":")) {
@@ -547,6 +553,9 @@ public class TijiHelper {
                         domain = ipTemp.split(":")[1];
                     }
                 }
+                List<Assetport> portList = new LinkedList<>();
+                String assetIpId;
+
                 //查询数据库中passivetime为空且ipaddressv4等于当前ip的ip
                 Assetip assetip = assetipService.findByIpaddressv4AndPassivetimeIsNull(ip);
                 if (Objects.isNull(assetip)) {
@@ -620,6 +629,7 @@ public class TijiHelper {
                     }
                 } else {
                     //当前ip在数据库中存在,更新端口信息
+                    assetIpId = assetip.getId();
                     if (!Objects.isNull(portInfoSet)) {
                         for (String portInfoString : portInfoSet) {
 
@@ -633,13 +643,13 @@ public class TijiHelper {
                             String serviceTemp = portInfoStringArrays[3];
                             String versionTemp = portInfoStringArrays[4];
 
-                            Assetport dbAssetPort = assetportService.findByAssetipidAndPortAndDowntimeIsNull(assetip.getId(), portTemp);
+                            Assetport dbAssetPort = assetportService.findByAssetipidAndPortAndDowntimeIsNull(assetIpId, portTemp);
                             if (Objects.isNull(dbAssetPort)) {
                                 //当前端口不在DB中或者当前端口已下线，且端口状态是open，新增端口
                                 //TODO 已在数据库中ip的新增端口
                                 if ("open".equals(stateTemp)) {
                                     //portList.add(new Assetport(idWorker.nextId() + "", assetip.getId(), portTemp, protocolTemp, stateTemp, serviceTemp, versionTemp, date, null));
-                                    assetportService.add(new Assetport(idWorker.nextId() + "", assetip.getId(), portTemp, protocolTemp, stateTemp, serviceTemp, versionTemp, false, false, date, null, null));
+                                    assetportService.add(new Assetport(idWorker.nextId() + "", assetIpId, portTemp, protocolTemp, stateTemp, serviceTemp, versionTemp, false, false, date, null, null));
                                 }
                             } else {
                                 //当前端口在DB中，更新端口
@@ -693,6 +703,13 @@ public class TijiHelper {
                     }
                 }
                 //assetportService.batchAdd(portList);
+                //hostname / domain
+                if (!Objects.isNull(domain)) {
+                    Host hostname = hostService.findByHostname(domain);
+                    if (Objects.isNull(hostname)) {
+                        hostService.add(new Host(idWorker.nextId() + "", assetIpId, null, domain, null, null, null, null, new Date(), null));
+                    }
+                }
             });
             //assetipService.batchAdd(assetipList);
         }
@@ -712,11 +729,13 @@ public class TijiHelper {
     }
 
     public static Map<String, Set<String>> nmapResult2Map(String result) {
+
         //portInfo port, state, service, version;
         Map<String, Set<String>> resultMap = new LinkedHashMap<>();
-        String regex = "Nmap\\sscan\\sreport\\s|(?:^|\n)Starting\\sNmap.*|(?:^|\n)Host.*|(?:^|\n)Not shown.*|(?:^|\n)Some\\sclosed .*|(?:^|\n)PORT.*|(?:^|\n)[0-9]?\\sservice.?\\sunrecognized.*|(?:^|\n)SF.*|(?:^|\n)Starting.*|(?:^|\n)Warning.*|(?:^|\n)={14}.*|(?:^|\n)Service\\sdetection.*|(?:^|\n)Nmap done.*";
+        String regex = "MAC\\sAddress\\s|(?:^|\n)Nmap\\sscan\\sreport\\s|(?:^|\n)Starting\\sNmap.*|(?:^|\n)Host.*|(?:^|\n)Not shown.*|(?:^|\n)Some\\sclosed .*|(?:^|\n)PORT.*|(?:^|\n)[0-9]?\\sservice.?\\sunrecognized.*|(?:^|\n)SF.*|(?:^|\n)Starting.*|(?:^|\n)Warning.*|(?:^|\n)={14}.*|(?:^|\n)Service\\sdetection.*|(?:^|\n)Nmap done.*";
         result = result.replaceAll(regex, "");
-        if ((result.contains("tcp") || result.contains("udp")) && !(result.contains("rDNS record") || result.contains("Other addresses for")||result.contains("("))) {
+
+        if ((result.contains("tcp") || result.contains("udp")) && !(result.contains("rDNS record") || result.contains("Other addresses for"))) {
             //端口扫描
             //正则采用NFA，递归过深会导致Exception in thread "main" java.lang.StackOverflowError
             //{1,500}限制单个ip匹配端口数，测试中超过770个就会导致栈溢出
@@ -734,10 +753,9 @@ public class TijiHelper {
                 String[] lineStatus = status.split("\n");
                 resultMap.put(ip, lineStatus2Set(lineStatus));
             }
-        } else if (result.contains("rDNS record") || result.contains("Other addresses for")||result.contains("(")) {
+        } else if (result.contains("rDNS record") || result.contains("Other addresses for") || result.contains("(")) {
             String replaceRegex = "Other\\saddresses\\sfor.*|(?:^|\n)rDNS\\srecord\\sfor.*|(?:^|\n)Nmap\\sscan\\sreport\\s|(?:^|\n)Starting\\sNmap.*|(?:^|\n)Host.*|(?:^|\n)Not shown.*|(?:^|\n)Some\\sclosed .*|(?:^|\n)PORT.*|(?:^|\n)[0-9]?\\sservice.?\\sunrecognized.*|(?:^|\n)SF.*|(?:^|\n)Starting.*|(?:^|\n)Warning.*|(?:^|\n)={14}.*|(?:^|\n)Service\\sdetection.*|(?:^|\n)Nmap done.*";
             result = result.replaceAll(replaceRegex, "");
-
             //20201014 增加 用域名扫端口
             String mulRegex = "for\\s(.*)\n?(((?:^|\n)[0-9].*){1,500})";
             Pattern pattern = Pattern.compile(mulRegex);
@@ -755,8 +773,9 @@ public class TijiHelper {
                 String[] lineStatus = status.split("\n");
                 resultMap.put(ip + ":" + domain, lineStatus2Set(lineStatus));
             }
-        } else {
-            //20201014 增加 nmap -sn，ping扫描
+        }
+        //nmap -sn，ping扫描
+        if (!result.contains("tcp") && !result.contains("udp")) {
             String ipRegex = "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})";
             Pattern pattern = Pattern.compile(ipRegex);
             Matcher matcher = pattern.matcher(result);
@@ -929,40 +948,24 @@ public class TijiHelper {
         return ((num >> 24) & 0xff) + "." + ((num >> 16) & 0xff) + "." + ((num >> 8) & 0xff) + "." + (num & 0xff);
     }
 
-    public static Map<String, Object> cronParseResult(String cronExpression) {
+    public static Map<String, Object> cronParseResult(String cronExpression) throws ParseException {
         Map<String, Object> runResultMap = new LinkedHashMap<>();
         Map<String, String> resultMap = new LinkedHashMap<>();
-        //只支持6位
-        try {
-            CronSequenceGenerator cronSequenceGenerator = new CronSequenceGenerator(cronExpression);
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Date date = new Date();
-            String format = sdf.format(date);
-            Date date1 = cronSequenceGenerator.next(date);
-            Date date2 = cronSequenceGenerator.next(date1);
-            Date date3 = cronSequenceGenerator.next(date2);
-            Date date4 = cronSequenceGenerator.next(date3);
-            Date date5 = cronSequenceGenerator.next(date4);
-            Date date6 = cronSequenceGenerator.next(date5);
-            Date date7 = cronSequenceGenerator.next(date6);
-            Date date8 = cronSequenceGenerator.next(date7);
-            Date date9 = cronSequenceGenerator.next(date8);
-            resultMap.put("目前时间 ", format);
-            resultMap.put("第1次执行", sdf.format(date1));
-            resultMap.put("第2次执行", sdf.format(date2));
-            resultMap.put("第3次执行", sdf.format(date3));
-            resultMap.put("第4次执行", sdf.format(date4));
-            resultMap.put("第5次执行", sdf.format(date5));
-            resultMap.put("第6次执行", sdf.format(date6));
-            resultMap.put("第7次执行", sdf.format(date7));
-            resultMap.put("第8次执行", sdf.format(date8));
-            resultMap.put("第9次执行", sdf.format(date9));
-
-            runResultMap.put("注意事项", "如果任务只执行一次，执行成功后请手动删除计划任务。");
-        } catch (IllegalArgumentException e) {
-            resultMap.put("模拟解析", "Cron表达式模拟解析失败。");
-            resultMap.put("温馨提示", "如果在线解析正确，可以忽略该提示。");
-            resultMap.put(" ~^-^~ ", "任务会正确执行。");
+        if (org.springframework.util.StringUtils.isEmpty(cronExpression) || !CronExpression.isValidExpression(cronExpression)) {
+            runResultMap.put("解析失败", "Cron表达式错误");
+            return runResultMap;
+        }
+        CronTriggerImpl cronTriggerImpl = new CronTriggerImpl();
+        cronTriggerImpl.setCronExpression(cronExpression);
+        List<Date> dates = TriggerUtils.computeFireTimes(cronTriggerImpl, null, 10);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date dateNow = new Date();
+        String now = sdf.format(dateNow);
+        resultMap.put("当前时间", now);
+        for (int i = 1; i <= dates.size(); i++) {
+            if (!Objects.isNull(dates.get(i - 1))) {
+                resultMap.put("第" + i + "次执行", sdf.format(dates.get(i - 1)));
+            }
         }
         runResultMap.put("解析结果", resultMap);
         return runResultMap;

@@ -6,11 +6,13 @@ import com.tiji.center.schedule.*;
 import com.tiji.center.schedule.quartz.QuartzJob;
 import com.tiji.center.schedule.quartz.QuartzJobService;
 import com.tiji.center.service.*;
+import com.tiji.center.util.TijiHelper;
 import org.quartz.Job;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -53,7 +55,6 @@ public class MonitorApplicationRunner implements ApplicationRunner {
     private RedisTemplate<String, String> redisTemplate;
     @Autowired
     private IdWorker idWorker;
-
     @Override
     public void run(ApplicationArguments args) {
 

@@ -131,9 +131,13 @@ public class HostService {
                 predicateList.add(cb.like(root.get("id").as(String.class), "%" + searchMap.get("id") + "%"));
             }
             // 资产ip编号
+            //if (searchMap.get("assetipid") != null && !"".equals(searchMap.get("assetipid"))) {
+            //    predicateList.add(cb.like(root.get("assetipid").as(String.class), "%" + searchMap.get("assetipid") + "%"));
+            //}
             if (searchMap.get("assetipid") != null && !"".equals(searchMap.get("assetipid"))) {
-                predicateList.add(cb.like(root.get("assetipid").as(String.class), "%" + searchMap.get("assetipid") + "%"));
+                predicateList.add(cb.in(root.get("assetipid")).value(searchMap.get("assetipid")));
             }
+
             // mac地址
             if (searchMap.get("macaddress") != null && !"".equals(searchMap.get("macaddress"))) {
                 predicateList.add(cb.like(root.get("macaddress").as(String.class), "%" + searchMap.get("macaddress") + "%"));

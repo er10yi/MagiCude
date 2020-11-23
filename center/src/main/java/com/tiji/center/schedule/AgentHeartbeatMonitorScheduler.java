@@ -2,7 +2,6 @@ package com.tiji.center.schedule;
 
 import com.tiji.center.pojo.Agent;
 import com.tiji.center.service.AgentService;
-import com.tiji.center.util.TijiHelper;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
@@ -60,8 +59,8 @@ public class AgentHeartbeatMonitorScheduler implements Job {
             } else {
                 //将所有agent的online标志置为false
                 agentService.updateAgentSetOnlineFalse();
-                //getAgentConfigMessage(agentConfigMessage);
-                TijiHelper.getAgentConfigMessage(agentService,idWorker,agentConfigMessage);
+                getAgentConfigMessage(agentConfigMessage);
+                //TijiHelper.getAgentConfigMessage(agentService,idWorker,agentConfigMessage);
                 //getAgentConfigMessage(agentConfigMessage);
             }
             flag2 = getHeartbeat();
@@ -85,34 +84,36 @@ public class AgentHeartbeatMonitorScheduler implements Job {
 
     //TODO 处理agent cpu和内存状态
     private void getAgentConfigMessage(Message<?> agentConfigMessage) {
-        Map<String, String> agentConfig = (Map<String, String>) agentConfigMessage.getPayload();
-        String agentName = agentConfig.get("agentName");
-        String nmapPath = agentConfig.get("nmapPath");
-        String massPath = agentConfig.get("massPath");
-        String online = agentConfig.get("online");
-        String ipAddress = agentConfig.get("ipAddress");
-        String onlineFlag = online + ipAddress;
+        if (!Objects.isNull(agentConfigMessage)) {
+            Map<String, String> agentConfig = (Map<String, String>) agentConfigMessage.getPayload();
+            String agentName = agentConfig.get("agentName");
+            String nmapPath = agentConfig.get("nmapPath");
+            String massPath = agentConfig.get("massPath");
+            String online = agentConfig.get("online");
+            String ipAddress = agentConfig.get("ipAddress");
+            String onlineFlag = online + ipAddress;
 
-        if (!Objects.isNull(agentName) && !Objects.isNull(nmapPath) && !Objects.isNull(massPath) && !Objects.isNull(online)) {
-            Agent dbAgent = agentService.findByNameAndIpaddress(agentName, ipAddress);
-            //新增一个agent记录
-            if (Objects.isNull(dbAgent)) {
-                agentService.add(new Agent(idWorker.nextId() + "", agentName, nmapPath, massPath, ipAddress, true, "0"));
-            }
-        }
-        //
-        if (!Objects.isNull(online)) {
-            List<Agent> agentList = agentService.findAll();
-            for (Agent agent : agentList) {
-                String name = agent.getName();
-                String ipaddress = agent.getIpaddress();
-                if (!onlineFlag.equals(name + ipaddress)) {
-                    //agent.setOnline(false);
-                } else {
-                    agent.setOnline(true);
-                    agent.setTimeouts("0");
+            if (!Objects.isNull(agentName) && !Objects.isNull(nmapPath) && !Objects.isNull(massPath) && !Objects.isNull(online)) {
+                Agent dbAgent = agentService.findByNameAndIpaddress(agentName, ipAddress);
+                //新增一个agent记录
+                if (Objects.isNull(dbAgent)) {
+                    agentService.add(new Agent(idWorker.nextId() + "", agentName, nmapPath, massPath, ipAddress, true, "0"));
                 }
-                agentService.update(agent);
+            }
+            //
+            if (!Objects.isNull(online)) {
+                List<Agent> agentList = agentService.findAll();
+                for (Agent agent : agentList) {
+                    String name = agent.getName();
+                    String ipaddress = agent.getIpaddress();
+                    if (!onlineFlag.equals(name + ipaddress)) {
+                        //agent.setOnline(false);
+                    } else {
+                        agent.setOnline(true);
+                        agent.setTimeouts("0");
+                    }
+                    agentService.update(agent);
+                }
             }
         }
     }
@@ -121,8 +122,8 @@ public class AgentHeartbeatMonitorScheduler implements Job {
         while (true) {
             Message<?> agentConfigMessage = rabbitMessagingTemplate.receive("agentconfig");
             if (!Objects.isNull(agentConfigMessage)) {
-                //getAgentConfigMessage(agentConfigMessage);
-                TijiHelper.getAgentConfigMessage(agentService,idWorker,agentConfigMessage);
+                getAgentConfigMessage(agentConfigMessage);
+                //TijiHelper.getAgentConfigMessage(agentService,idWorker,agentConfigMessage);
             } else {
                 return true;
             }

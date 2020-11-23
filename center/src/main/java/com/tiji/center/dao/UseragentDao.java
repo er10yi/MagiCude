@@ -21,7 +21,7 @@ public interface UseragentDao extends JpaRepository<Useragent, String>, JpaSpeci
     Useragent findByUseragent(String ua);
 
     @Modifying
-    @Query(value = "DELETE FROM `Useragent` WHERE id IN(?1)", nativeQuery = true)
+    @Query(value = "DELETE FROM `tb_useragent` WHERE id IN(?1)", nativeQuery = true)
     void deleteAllByIds(List<String> ids);
 
 }

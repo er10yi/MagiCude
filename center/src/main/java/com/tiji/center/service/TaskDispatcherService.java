@@ -83,10 +83,10 @@ public class TaskDispatcherService {
     public synchronized Map<String, Object> executeWork(String taskId) throws InterruptedException {
         Map<String, Object> taskInfo = new LinkedHashMap<>();
         int agentCount;
-        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)) {
+        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
+        if (onlineAgentList.isEmpty()) {
             return null;
         } else {
-            List<Agent> onlineAgentList = agentService.findAllByOnline(true);
             agentCount = onlineAgentList.size();
         }
 
@@ -137,10 +137,10 @@ public class TaskDispatcherService {
     public synchronized Map<String, Object> executeCheck(String taskId) {
         Map<String, Object> taskInfo = new LinkedHashMap<>();
         int agentCount;
-        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)){
+        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
+        if (onlineAgentList.isEmpty()) {
             return null;
-        } else{
-            List<Agent> onlineAgentList = agentService.findAllByOnline(true);
+        } else {
             agentCount = onlineAgentList.size();
         }
 
@@ -420,13 +420,14 @@ public class TaskDispatcherService {
 
     public synchronized void executeTotalCheck(String oldTaskId) {
         int agentCount;
-        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)) {
+        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
+        if (onlineAgentList.isEmpty()) {
             return;
         } else {
-            List<Agent> onlineAgentList = agentService.findAllByOnline(true);
             System.out.println(onlineAgentList.size());
             agentCount = onlineAgentList.size();
         }
+
         double sliceIPListSize;
         Map<String, String> taskConfig;
         Task oldTask = taskService.findById(oldTaskId);
@@ -753,7 +754,7 @@ public class TaskDispatcherService {
         //取消crontask标记
         task.setCrontask(false);
         //记录任务结束时间
-        if (!Objects.isNull(task.getStarttime())&&Objects.isNull(task.getEndtime())) {
+        if (!Objects.isNull(task.getStarttime()) && Objects.isNull(task.getEndtime())) {
             task.setEndtime(new Date());
         }
         taskService.update(task);
@@ -873,13 +874,12 @@ public class TaskDispatcherService {
 
     public synchronized Map<String, Object> repeat(String taskId) throws InterruptedException {
         int agentCount;
-        if (!TijiHelper.agentOnline(agentService, idWorker, rabbitMessagingTemplate)) {
+        List<Agent> onlineAgentList = agentService.findAllByOnline(true);
+        if (onlineAgentList.isEmpty()) {
             return null;
         } else {
-            List<Agent> onlineAgentList = agentService.findAllByOnline(true);
             agentCount = onlineAgentList.size();
         }
-
 
         Task oldTask = taskService.findById(taskId);
         String newTaskId = idWorker.nextId() + "";
@@ -943,7 +943,7 @@ public class TaskDispatcherService {
             if (redisTemplate.hasKey(sliceIPListSizeName)) {
                 long sliceIPListSize = Long.parseLong(redisTemplate.opsForValue().get(sliceIPListSizeName));
                 double taskPercentStatus = (double) accomplishTaskListSize / sliceIPListSize;
-                DecimalFormat b = new DecimalFormat("#.00");
+                DecimalFormat b = new DecimalFormat("#.000000");
                 taskPercent = Double.parseDouble(b.format(taskPercentStatus)) * 100;
                 if (accomplishTaskListSize == sliceIPListSize || taskPercentStatus > 100) {
                     taskPercent = 100;

@@ -13,10 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * assetport控制器层
@@ -75,6 +72,22 @@ public class AssetportController {
      */
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
+        //根据ip查询端口
+        List<String> assetipIdList = new ArrayList<>();
+        if (searchMap.containsKey("assetip")) {
+            //ip -> assetportid
+            String ipaddressv4 = (String) searchMap.get("assetip");
+            Map<String, String> ipSearchMap = new HashMap<>();
+            ipSearchMap.put("ipaddressv4", ipaddressv4);
+            List<Assetip> assetipList = assetipService.findSearch(ipSearchMap);
+            assetipList.forEach(ip -> {
+                String ipId = ip.getId();
+                assetipIdList.add(ipId);
+            });
+            searchMap.put("assetipid", assetipIdList);
+        }
+
+
         Page<Assetport> pageList = assetportService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(assetport -> {
             String assetipid = assetport.getAssetipid();

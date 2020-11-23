@@ -3,6 +3,7 @@ package com.tiji.center.pojo;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 
 /**
@@ -18,6 +19,9 @@ public class Cronjob implements Serializable {
     private String id;//编号
 
 
+    @Transient
+    private String jobstate;
+
     private String name;//名称
     private String cronexpression;//cron表达式
 
@@ -28,6 +32,14 @@ public class Cronjob implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getJobstate() {
+        return jobstate;
+    }
+
+    public void setJobstate(String jobstate) {
+        this.jobstate = jobstate;
     }
 
     public String getName() {

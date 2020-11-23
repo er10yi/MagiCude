@@ -124,8 +124,11 @@ public class AssetportService {
                 predicateList.add(cb.like(root.get("id").as(String.class), "%" + searchMap.get("id") + "%"));
             }
             // 资产ip编号
+            //if (searchMap.get("assetipid") != null && !"".equals(searchMap.get("assetipid"))) {
+            //    predicateList.add(cb.equal(root.get("assetipid").as(String.class), searchMap.get("assetipid")));
+            //}
             if (searchMap.get("assetipid") != null && !"".equals(searchMap.get("assetipid"))) {
-                predicateList.add(cb.equal(root.get("assetipid").as(String.class), searchMap.get("assetipid")));
+                predicateList.add(cb.in(root.get("assetipid")).value(searchMap.get("assetipid")));
             }
             // 端口
             if (searchMap.get("port") != null && !"".equals(searchMap.get("port"))) {
@@ -343,7 +346,7 @@ public class AssetportService {
      * @param ids
      * @return
      */
-    public List<String>  findCountByIds(List<String> ids) {
+    public List<String> findCountByIds(List<String> ids) {
         List<String> idAndCount = new ArrayList<>();
         List<String> vulnCountList = assetportDao.findVulnCountByIds(ids);
         List<String> vulnCountOnlineList = assetportDao.findVulnCountOnlineByIds(ids);
@@ -365,7 +368,7 @@ public class AssetportService {
         // id - vuln count - vuln count online
         ids.forEach(id -> {
             String temp;
-            temp =idVulnCountMap.getOrDefault(id, "0");
+            temp = idVulnCountMap.getOrDefault(id, "0");
             temp += ":" + idVulnCountOnlineMap.getOrDefault(id, "0");
             idAndCount.add(temp);
 

@@ -1,9 +1,11 @@
 package com.tiji.center.schedule.quartz;
 
+import ch.qos.logback.classic.util.LogbackMDCAdapter;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -12,6 +14,23 @@ public class QuartzJobService {
 
     @Autowired
     private Scheduler scheduler;
+    private static final Map<String, String> jobStateMap = new LinkedHashMap<>();
+
+    static {
+        jobStateMap.put("BLOCKED", "阻塞");
+        jobStateMap.put("COMPLETE", "完成");
+        jobStateMap.put("ERROR", "出错");
+        jobStateMap.put("NONE", "");
+        jobStateMap.put("NORMAL", "正常");
+        jobStateMap.put("PAUSED", "暂停");
+
+        jobStateMap.put("4", "阻塞");
+        jobStateMap.put("2", "完成");
+        jobStateMap.put("3", "出错");
+        jobStateMap.put("-1", "");
+        jobStateMap.put("0", "正常");
+        jobStateMap.put("1", "暂停");
+    }
 
     /**
      * scheduleJob
@@ -76,4 +95,16 @@ public class QuartzJobService {
         return dataMap == null ? new JobDataMap() : new JobDataMap(dataMap);
     }
 
+
+    /**
+     * @param jobName 根据jobName获取job的状态
+     */
+    public String getTriggerStates(String jobName) throws SchedulerException {
+        String jobKeyName = "jobKeyName_" + jobName;
+        String jobKeyGroup = "jobKeyGroup_" + jobName;
+        JobKey jobKey = JobKey.jobKey(jobKeyName, jobKeyGroup);
+        TriggerKey triggerKey = TriggerKey.triggerKey(jobKey.getName(), jobKey.getGroup());
+        String state = String.valueOf(scheduler.getTriggerState(triggerKey));
+        return jobStateMap.get(state);
+    }
 }

@@ -72,6 +72,8 @@ public class ScanResultReceiver {
     private ImvulnnotifyService imvulnnotifyService;
     @Autowired
     private AgentService agentService;
+    @Autowired
+    private HostService hostService;
 
     @RabbitHandler
     public void getMessage(Map<String, String> resultMap) {
@@ -191,7 +193,7 @@ public class ScanResultReceiver {
                             TijiHelper.nmapScanResult2DB(nmapResultMap, taskipService, taskportService, idWorker, taskId);
                             //任务结果，合并到资产库
                             if (taskService.findById(taskId).getMerge2asset()) {
-                                TijiHelper.nmapScanResult2AssetDB(assetipService, assetportService, idWorker, nmapResultMap);
+                                TijiHelper.nmapScanResult2AssetDB(assetipService, assetportService,hostService, idWorker, nmapResultMap);
                             }
                             break;
                         }

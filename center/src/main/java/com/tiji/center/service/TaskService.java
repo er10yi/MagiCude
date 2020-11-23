@@ -95,11 +95,13 @@ public class TaskService {
         if ((task.getWorktype().equals("mass") || task.getWorktype().equals("mass2Nmap")) && (Objects.isNull(task.getRate()) || task.getRate().isEmpty())) {
             task.setRate("1000");
         }
+
         if (Objects.isNull(task.getIpslicesize()) || task.getIpslicesize().isEmpty()) {
             if ((task.getWorktype().equals("nmap") || task.getWorktype().equals("mass2Nmap") || task.getWorktype().equals("mass")) && !task.getTargetip().equals("unknownPortSerVer") && !task.getTargetip().equals("ipAllPort")) {
                 task.setIpslicesize("255");
             }
         }
+
         if ((Objects.isNull(task.getAdditionoption()) || task.getAdditionoption().isEmpty())) {
             if (task.getWorktype().equals("nmap") || task.getWorktype().equals("nse")) {
                 if (task.getTargetip().equals("unknownPortSerVer") || task.getTargetip().equals("ipAllPort")) {
@@ -112,6 +114,7 @@ public class TaskService {
                 task.setAdditionoption("");
             }
         }
+
         if (Objects.isNull(task.getCrontask())) {
             task.setCrontask(false);
         }
@@ -127,6 +130,7 @@ public class TaskService {
         if (Objects.isNull(task.getSingleipscantime()) || task.getSingleipscantime().isEmpty()) {
             task.setSingleipscantime("1");
         }
+
 
         if (task.getWorktype().equals("nmap") && (Objects.isNull(task.getTargetport()) || task.getTargetport().isEmpty())) {
             if ((Objects.isNull(task.getPortslicesize()) || task.getPortslicesize().isEmpty()) && !task.getTargetip().equals("unknownPortSerVer") && !task.getTargetip().equals("ipAllPort")) {
@@ -152,7 +156,7 @@ public class TaskService {
      */
     @Transactional(value = "masterTransactionManager")
     public void deleteById(String id) {
-
+        nmapconfigService.deleteAllByTaskid(id);
         taskDao.deleteById(id);
     }
 
@@ -369,7 +373,7 @@ public class TaskService {
             if (redisTemplate.hasKey(sliceIPListSizeName)) {
                 long sliceIPListSize = Long.parseLong(redisTemplate.opsForValue().get(sliceIPListSizeName));
                 double taskPercentStatus = (double) accomplishTaskListSize / sliceIPListSize;
-                DecimalFormat b = new DecimalFormat("#.00");
+                DecimalFormat b = new DecimalFormat("#.000000");
                 taskPercent = Double.parseDouble(b.format(taskPercentStatus)) * 100;
                 if (accomplishTaskListSize == sliceIPListSize || taskPercentStatus > 100) {
                     taskPercent = 100;

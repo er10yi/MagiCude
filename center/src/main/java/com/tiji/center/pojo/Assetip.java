@@ -22,7 +22,7 @@ public class Assetip implements Serializable {
     @Transient
     private String statistic;
     @Transient
-    private String label;
+    private String projectname;
 
     private String projectinfoid;//联系表编号
     private String ipaddressv4;//ip地址
@@ -65,12 +65,12 @@ public class Assetip implements Serializable {
         this.statistic = statistic;
     }
 
-    public String getLabel() {
-        return label;
+    public String getProjectname() {
+        return projectname;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setProjectname(String projectname) {
+        this.projectname = projectname;
     }
 
     public String getProjectinfoid() {

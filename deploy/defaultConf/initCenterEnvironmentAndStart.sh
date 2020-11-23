@@ -114,6 +114,8 @@ if [ $existFlag -ne 0 ] ;then
     fi
     let "choice--"
     centerRealIp="${ipArray[choice]}"
+    logInfo "centerip写入centerip.bak文件"
+    echo $centerRealIp > centerip.bak
     logInfo "替换前端api地址"
     sed -i "s/127.0.0.1/$centerRealIp/g" dist/static/js/app.*.js
     logInfo "替换agent.yml中的地址"
@@ -334,7 +336,7 @@ done
 
 logInfo "docker"
 # docker pull镜像并验证
-existFlag=`cat /etc/docker/daemon.json | grep ustc |wc -L`
+existFlag=`cat /etc/docker/daemon.json | grep ustc |wc -L` >/dev/null 2>&1
 if [ $existFlag -eq 0 ] ;then
     echo -n "docker非中科大镜像，是否修改成中科大镜像(10秒后默认N)? [y/N]: "
     read -t 10 checkYes

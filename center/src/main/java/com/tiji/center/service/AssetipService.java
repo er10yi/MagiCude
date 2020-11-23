@@ -138,6 +138,12 @@ public class AssetipService {
             if (searchMap.get("projectinfoid") != null && !"".equals(searchMap.get("projectinfoid"))) {
                 predicateList.add(cb.equal(root.get("projectinfoid").as(String.class), searchMap.get("projectinfoid")));
             }
+
+            // ipv4精准
+            if (searchMap.get("ipv4") != null && !"".equals(searchMap.get("ipv4"))) {
+                predicateList.add(cb.equal(root.get("ipaddressv4").as(String.class), searchMap.get("ipv4")));
+            }
+
             // ipv4地址
             if (searchMap.get("ipaddressv4") != null && !"".equals(searchMap.get("ipaddressv4"))) {
                 predicateList.add(cb.like(root.get("ipaddressv4").as(String.class), "%" + searchMap.get("ipaddressv4") + "%"));

@@ -104,10 +104,10 @@ public class AgentGatherHelper {
         String title = doc.title();
         resultMap.put("title", title);
 
-//        Map<String, String> headersMap = response.headers();
-//        headersMap.forEach((key, value) -> {
-//            System.out.println(key + " : " + value);
-//        });
+        Map<String, String> headersMap = response.headers();
+        headersMap.forEach((key, value) -> {
+            System.out.println(key + " : " + value);
+        });
         //响应头
         //Server
         //X-Powered-By

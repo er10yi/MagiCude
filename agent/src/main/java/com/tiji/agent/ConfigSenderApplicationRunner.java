@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import util.ExcpUtil;
 
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class ConfigSenderApplicationRunner implements ApplicationRunner {
     private String massPath;
     @Autowired
     private RabbitMessagingTemplate rabbitMessagingTemplate;
+    private String allAddress;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -53,7 +55,12 @@ public class ConfigSenderApplicationRunner implements ApplicationRunner {
             agentConfig.put("nmapPath", nmapPath);
             agentConfig.put("massPath", massPath);
             agentConfig.put("online", agentName);
-            agentConfig.put("ipAddress", agentGatherHelper.getAllAddress());
+            try {
+                allAddress = agentGatherHelper.getAllAddress();
+            } catch (SocketException e) {
+                allAddress = e.getLocalizedMessage();
+            }
+            agentConfig.put("ipAddress", allAddress);
 
             rabbitMessagingTemplate.convertAndSend("agentconfig", agentConfig);
         } catch (Exception e) {

@@ -1,14 +1,18 @@
 package com.tiji.center.controller;
 
 import com.tiji.center.pojo.Assetip;
+import com.tiji.center.pojo.Assetport;
+import com.tiji.center.pojo.Checkresult;
 import com.tiji.center.pojo.Host;
 import com.tiji.center.service.AssetipService;
+import com.tiji.center.service.AssetportService;
 import com.tiji.center.service.HostService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import util.IdWorker;
@@ -38,6 +42,9 @@ public class HostController {
 
     @Autowired
     private IdWorker idWorker;
+
+    @Autowired
+    private AssetportService assetportService;
 
     /**
      * 查询全部数据
@@ -71,11 +78,30 @@ public class HostController {
      */
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
+        //根据ip查询主机
+        List<String> assetipIdList = new ArrayList<>();
+        if (searchMap.containsKey("assetip")) {
+            //ip -> assetportid
+            String ipaddressv4 = (String) searchMap.get("assetip");
+            Map<String, String> ipSearchMap = new HashMap<>();
+            ipSearchMap.put("ipaddressv4", ipaddressv4);
+            List<Assetip> assetipList = assetipService.findSearch(ipSearchMap);
+            assetipList.forEach(ip -> {
+                String ipId = ip.getId();
+                assetipIdList.add(ipId);
+            });
+            searchMap.put("assetipid", assetipIdList);
+        }
+
         Page<Host> pageList = hostService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(host -> {
             String assetipid = host.getAssetipid();
-            Assetip assetip = assetipService.findById(assetipid);
-            host.setAssetipid(assetip.getIpaddressv4());
+            if (!StringUtils.isEmpty(assetipid)) {
+                Assetip assetip = assetipService.findById(assetipid);
+                if (!Objects.isNull(assetip)){
+                    host.setAssetipid(assetip.getIpaddressv4());
+                }
+            }
         });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<>(pageList.getTotalElements(), pageList.getContent()));
     }

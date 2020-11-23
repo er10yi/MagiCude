@@ -59,7 +59,7 @@ public class AgentController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Agent> pageList = agentService.findSearch(searchMap, page, size);
-        return new Result(true, StatusCode.OK, "查询成功", new PageResult<Agent>(pageList.getTotalElements(), pageList.getContent()));
+        return new Result(true, StatusCode.OK, "查询成功", new PageResult<>(pageList.getTotalElements(), pageList.getContent()));
     }
 
     /**

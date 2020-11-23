@@ -4,19 +4,18 @@ import com.tiji.center.pojo.Cronjob;
 import com.tiji.center.schedule.quartz.QuartzJob;
 import com.tiji.center.schedule.quartz.QuartzJobService;
 import com.tiji.center.service.CronjobService;
+import com.tiji.center.util.TijiHelper;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
-import org.quartz.CronExpression;
-import org.quartz.Job;
-import org.quartz.JobKey;
-import org.quartz.SchedulerException;
+import org.quartz.*;
+import org.quartz.impl.triggers.CronTriggerImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.scheduling.support.CronSequenceGenerator;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -80,6 +79,16 @@ public class CronjobController {
     @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Cronjob> pageList = cronjobService.findSearch(searchMap, page, size);
+        pageList.stream().parallel().forEach(cronjob -> {
+            String cronjobName = cronjob.getName();
+            String jobClassString = JOB_CLASS_STRING_WHITELIST_MAP.get(cronjobName);
+            String jobClassName = jobClassString + "Scheduler";
+            try {
+                String triggerStates = quartzJobService.getTriggerStates(jobClassName);
+                cronjob.setJobstate(triggerStates);
+            } catch (SchedulerException ignored) {
+            }
+        });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Cronjob>(pageList.getTotalElements(), pageList.getContent()));
     }
 
@@ -171,38 +180,22 @@ public class CronjobController {
      * cronExpression模拟解析
      */
     @RequestMapping(value = "/parse", method = RequestMethod.POST)
-    public Result parse(@RequestBody Map searchMap) {
+    public Result parse(@RequestBody Map searchMap) throws ParseException {
         String cronExpression = (String) searchMap.get("cronExpression");
         if (StringUtils.isEmpty(cronExpression) || !CronExpression.isValidExpression(cronExpression)) {
             return new Result(false, StatusCode.ERROR, "解析失败：Cron表达式错误");
         }
-        List<Object> resultList = new LinkedList<>();
-        //只支持6位
-        CronSequenceGenerator cronSequenceGenerator = new CronSequenceGenerator(cronExpression);
+        List<String> resultList = new ArrayList<>();
+        CronTriggerImpl cronTriggerImpl = new CronTriggerImpl();
+        cronTriggerImpl.setCronExpression(cronExpression);
+        List<Date> dates = TriggerUtils.computeFireTimes(cronTriggerImpl, null, 10);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = new Date();
-        String format = sdf.format(date);
-        Date date1 = cronSequenceGenerator.next(date);
-        Date date2 = cronSequenceGenerator.next(date1);
-        Date date3 = cronSequenceGenerator.next(date2);
-        Date date4 = cronSequenceGenerator.next(date3);
-        Date date5 = cronSequenceGenerator.next(date4);
-        Date date6 = cronSequenceGenerator.next(date5);
-        Date date7 = cronSequenceGenerator.next(date6);
-        Date date8 = cronSequenceGenerator.next(date7);
-        Date date9 = cronSequenceGenerator.next(date8);
-        Date date10 = cronSequenceGenerator.next(date9);
-        resultList.add(format);
-        resultList.add(sdf.format(date1));
-        resultList.add(sdf.format(date2));
-        resultList.add(sdf.format(date3));
-        resultList.add(sdf.format(date4));
-        resultList.add(sdf.format(date5));
-        resultList.add(sdf.format(date6));
-        resultList.add(sdf.format(date7));
-        resultList.add(sdf.format(date8));
-        resultList.add(sdf.format(date9));
-        resultList.add(sdf.format(date10));
+        Date dateNow = new Date();
+        String now = sdf.format(dateNow);
+        resultList.add(now);
+        for (Date date : dates) {
+            resultList.add(sdf.format(date));
+        }
         return new Result(true, StatusCode.OK, "解析成功", resultList);
     }
 }
