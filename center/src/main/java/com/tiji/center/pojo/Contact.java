@@ -18,7 +18,6 @@ public class Contact implements Serializable {
     @Id
     private String id;//编号
 
-
     @Transient
     private String projectinfoid;
     private String name;//联系人

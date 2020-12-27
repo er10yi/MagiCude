@@ -12,19 +12,31 @@
         <java.version>15</java.version>
         <!--docker私服地址-->
         <docker.repository>192.168.12.138:5000</docker.repository>
+        <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
+        <mysql-connector-java.version>8.0.22</mysql-connector-java.version>
+        <commons-lang3.version>3.11</commons-lang3.version>
+        <jjwt.version>0.9.1</jjwt.version>
+        <poi.version>4.1.2</poi.version>
+        <poi-ooxml.version>4.1.2</poi-ooxml.version>
+        <druid-spring-boot-starter.version>1.2.4</druid-spring-boot-starter.version>
+        <devutility.internal.version>1.3.8.1</devutility.internal.version>
+        <httpclient.version>4.5.13</httpclient.version>
+        <gson.version>2.8.6</gson.version>
+        <dnsjava.version>3.2.2</dnsjava.version>
+        <RoaringBitmap.version>0.9.3</RoaringBitmap.version>
     </properties>
 
     <build>
         <finalName>centerapp</finalName>
         <!--		本机运行时要去掉resources标签-->
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>application.yml</exclude>
-                </excludes>
-            </resource>
-        </resources>
+<!--        <resources>-->
+<!--            <resource>-->
+<!--                <directory>src/main/resources</directory>-->
+<!--                <excludes>-->
+<!--                    <exclude>application.yml</exclude>-->
+<!--                </excludes>-->
+<!--            </resource>-->
+<!--        </resources>-->
 
         <plugins>
             <plugin>
@@ -42,7 +54,7 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>dockerfile-maven-plugin</artifactId>
-                <version>1.4.13</version>
+                <version>${dockerfile-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>default</id>
@@ -92,7 +104,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.21</version>
+            <version>${mysql-connector-java.version}</version>
         </dependency>
 
 
@@ -104,7 +116,8 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.11</version>
+            <version>${commons-lang3.version}</version>
+
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -118,7 +131,7 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
-            <version>0.9.1</version>
+            <version>${jjwt.version}</version>
         </dependency>
 
         <dependency>
@@ -133,13 +146,13 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>4.1.2</version>
+            <version>${poi.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>4.1.2</version>
+            <version>${poi-ooxml.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -149,30 +162,37 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid-spring-boot-starter</artifactId>
-            <version>1.1.22</version>
+            <version>${druid-spring-boot-starter.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.github.eagle6688/devutility.internal -->
         <dependency>
             <groupId>com.github.eagle6688</groupId>
             <artifactId>devutility.internal</artifactId>
-            <version>1.3.8.1</version>
+            <version>${devutility.internal.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.8.6</version>
+            <version>${gson.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/dnsjava/dnsjava -->
         <dependency>
             <groupId>dnsjava</groupId>
             <artifactId>dnsjava</artifactId>
-            <version>3.2.2</version>
+            <version>${dnsjava.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.roaringbitmap/RoaringBitmap -->
+        <dependency>
+            <groupId>org.roaringbitmap</groupId>
+            <artifactId>RoaringBitmap</artifactId>
+            <version>${RoaringBitmap.version}</version>
         </dependency>
 
     </dependencies>

@@ -59,6 +59,9 @@ public class ParserThread implements Runnable {
                     resultMap.put("bodyWholeText", parserResultMap.get("bodyWholeText"));
                     resultMap.put("scanResult", parserResultMap.get("urlNameAndLink"));
 
+                    resultMap.put("header", parserResultMap.get("header"));
+                    resultMap.put("response", parserResultMap.get("response"));
+
                     if (!currentThread().isInterrupted()) {
                         rabbitMessagingTemplate.convertAndSend("scanresult", resultMap);
 

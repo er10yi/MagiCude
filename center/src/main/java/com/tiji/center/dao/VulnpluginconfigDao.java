@@ -24,4 +24,5 @@ public interface VulnpluginconfigDao extends JpaRepository<Vulnpluginconfig, Str
     @Query(value = "DELETE FROM `tb_vulnpluginconfig` WHERE id IN(?1)", nativeQuery = true)
     void deleteAllByIds(List<String> ids);
 
+    void deleteByPluginconfigidAndVulnid(String pluginId, String vulnId);
 }

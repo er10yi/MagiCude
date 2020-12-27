@@ -5,10 +5,11 @@ import com.tiji.center.service.*;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import util.IdWorker;
 
 import java.util.*;
 
@@ -32,13 +33,15 @@ public class CheckresultController {
     private AssetipService assetipService;
     @Autowired
     private VulnService vulnService;
+    @Autowired
+    private IdWorker idWorker;
 
     /**
      * 查询全部数据
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", checkresultService.findAll());
     }
@@ -49,9 +52,19 @@ public class CheckresultController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
-        return new Result(true, StatusCode.OK, "查询成功", checkresultService.findById(id));
+        Checkresult checkresult = checkresultService.findById(id);
+        String assetportid = checkresult.getAssetportid();
+        Assetport assetport = assetportService.findById(assetportid);
+        String assetipid = assetport.getAssetipid();
+        checkresult.setAssetipid(assetipid);
+
+        List<CheckresultVuln> checkresultVulnList = checkresultVulnService.findAllByCheckresultid(id);
+        String vulnid = checkresultVulnList.get(0).getVulnid();
+        checkresult.setVulnid(vulnid);
+
+        return new Result(true, StatusCode.OK, "查询成功", checkresult);
     }
 
 
@@ -63,7 +76,7 @@ public class CheckresultController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+    @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         //根据ip查询漏洞
         List<String> vulnPortIdList = new ArrayList<>();
@@ -139,8 +152,6 @@ public class CheckresultController {
             checkresult.setVulname(vuln.getName());
 
         });
-
-
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Checkresult>(pageList.getTotalElements(), pageList.getContent()));
     }
 
@@ -150,7 +161,7 @@ public class CheckresultController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", checkresultService.findSearch(searchMap));
     }
@@ -160,15 +171,26 @@ public class CheckresultController {
      *
      * @param checkresult
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Checkresult checkresult) {
-        //ip
-        //System.out.println(checkresult.getAssetip());
-        //端口
-        //System.out.println(checkresult.getAssetport());
-        //漏洞
-        //System.out.println(checkresult.getVulname());
-
+        String assetipid = checkresult.getAssetipid();
+        String assetportid = checkresult.getAssetportid();
+        System.out.println("assetportid: " + assetportid);
+        if (StringUtils.isEmpty(checkresult.getVulnid()) || StringUtils.isEmpty(assetportid) || StringUtils.isEmpty(assetipid)) {
+            return new Result(false, StatusCode.ERROR, "ip端口漏洞名称不能为空");
+        }
+        Assetport assetport = assetportService.findByIdAndAndAssetipidAndDowntimeIsNull(assetportid, assetipid);
+        if (Objects.isNull(assetport)) {
+            String portTemp = assetportid;
+            assetportid = idWorker.nextId() + "";
+            assetportService.add(new Assetport(assetportid, assetipid, portTemp, null, null, null, null, null, null, new Date(), null, null));
+        } else {
+            assetportid = assetport.getId();
+        }
+        String checkresultid = idWorker.nextId() + "";
+        checkresult.setId(checkresultid);
+        checkresult.setAssetportid(assetportid);
+        checkresultVulnService.add(new CheckresultVuln(idWorker.nextId() + "", checkresultid, checkresult.getVulnid()));
         checkresultService.add(checkresult);
         return new Result(true, StatusCode.OK, "增加成功");
     }
@@ -178,19 +200,23 @@ public class CheckresultController {
      *
      * @param checkresult
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Checkresult checkresult, @PathVariable String id) {
         checkresult.setId(id);
+        if (StringUtils.isEmpty(checkresult.getVulnid()) || StringUtils.isEmpty(checkresult.getAssetportid()) || StringUtils.isEmpty(checkresult.getAssetipid())) {
+            return new Result(false, StatusCode.ERROR, "ip端口漏洞名称不能为空");
+        }
         checkresultService.update(checkresult);
         return new Result(true, StatusCode.OK, "修改成功");
     }
+
 
     /**
      * 删除
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         checkresultService.deleteById(id);
         //删除检测结果的同时，删除中间表关联
@@ -206,7 +232,22 @@ public class CheckresultController {
      */
     @RequestMapping(value = "/assetport/{assetportid}", method = RequestMethod.GET)
     public Result findAllByAssetportid(@PathVariable String assetportid) {
-        return new Result(true, StatusCode.OK, "查询成功", checkresultService.findAllByAssetportid(assetportid));
+        List<Checkresult> checkresultList = checkresultService.findAllByAssetportid(assetportid);
+        checkresultList.stream().parallel().forEach(checkresult -> {
+            String id = checkresult.getId();
+            List<CheckresultVuln> vulnList = checkresultVulnService.findAllByCheckresultid(id);
+            if (!vulnList.isEmpty()) {
+                String vulnid = vulnList.get(0).getVulnid();
+                Vuln vuln = vulnService.findById(vulnid);
+                if (!Objects.isNull(vuln)) {
+                    String vulnName = vuln.getName();
+                    if (!StringUtils.isEmpty(vulnName)) {
+                        checkresult.setVulname(vulnName);
+                    }
+                }
+            }
+        });
+        return new Result(true, StatusCode.OK, "查询成功", checkresultList);
     }
 
     /**
@@ -215,7 +256,7 @@ public class CheckresultController {
      * @param ids ids
      * @return id-漏洞名称
      */
-    @RequestMapping(value = "/ids", method = RequestMethod.POST)
+    @PostMapping(value = "/ids")
     public Result findAllByIds(@RequestBody String[] ids) {
         return new Result(true, StatusCode.OK, "查询成功", checkresultService.findAllByIds(ids));
     }
@@ -228,7 +269,22 @@ public class CheckresultController {
      */
     @RequestMapping(value = "/assetportids/{assetportids}", method = RequestMethod.GET)
     public Result findAllByAssetportIds(@PathVariable String[] assetportids) {
-        return new Result(true, StatusCode.OK, "查询成功", checkresultService.findAllByAssetportIds(assetportids));
+        List<Checkresult> checkresultList = checkresultService.findAllByAssetportIds(assetportids);
+        checkresultList.stream().parallel().forEach(checkresult -> {
+            String id = checkresult.getId();
+            List<CheckresultVuln> vulnList = checkresultVulnService.findAllByCheckresultid(id);
+            if (!vulnList.isEmpty()) {
+                String vulnid = vulnList.get(0).getVulnid();
+                Vuln vuln = vulnService.findById(vulnid);
+                if (!Objects.isNull(vuln)) {
+                    String vulnName = vuln.getName();
+                    if (!StringUtils.isEmpty(vulnName)) {
+                        checkresult.setVulname(vulnName);
+                    }
+                }
+            }
+        });
+        return new Result(true, StatusCode.OK, "查询成功", checkresultList);
     }
 
     /**
@@ -236,7 +292,7 @@ public class CheckresultController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         checkresultService.deleteAllByIds(ids);
         ids.forEach(id -> {
@@ -254,7 +310,7 @@ public class CheckresultController {
      * @param id
      * @return 漏洞名称
      */
-    @RequestMapping(value = "/vulname/{id}",  method = RequestMethod.GET)
+    @RequestMapping(value = "/vulname/{id}", method = RequestMethod.GET)
     public Result findVulNameById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", checkresultService.findVulNameById(id));
     }

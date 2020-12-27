@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import util.IdWorker;
 
 import javax.persistence.criteria.Predicate;
@@ -182,6 +183,10 @@ public class AssetipService {
                 predicateList.add(cb.lessThanOrEqualTo(root.get("passivetime").as(String.class), passivetimeList.get(1)));
                 //predicateList.add(cb.like(root.get("passivetime").as(String.class), "%" + searchMap.get("passivetime") + "%"));
             }
+            // 标签bitmap
+            if (!StringUtils.isEmpty(searchMap.get("tabbitmap"))) {
+                predicateList.add(cb.like(root.get("tabbitmap").as(String.class), "%" + searchMap.get("tabbitmap") + "%"));
+            }
             return cb.and(predicateList.toArray(new Predicate[predicateList.size()]));
 
         };
@@ -351,5 +356,6 @@ public class AssetipService {
         });
         return idAndCount.isEmpty() ? null : idAndCount;
     }
+
 
 }

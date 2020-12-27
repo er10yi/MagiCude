@@ -38,7 +38,7 @@ public class PluginassetserviceController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", pluginassetserviceService.findAll());
     }
@@ -49,7 +49,7 @@ public class PluginassetserviceController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", pluginassetserviceService.findById(id));
     }
@@ -63,7 +63,7 @@ public class PluginassetserviceController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Pluginassetservice> pageList = pluginassetserviceService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(pluginassetservice -> {
@@ -84,7 +84,7 @@ public class PluginassetserviceController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", pluginassetserviceService.findSearch(searchMap));
     }
@@ -94,7 +94,7 @@ public class PluginassetserviceController {
      *
      * @param assetservice
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Pluginassetservice assetservice) {
         pluginassetserviceService.add(assetservice);
         return new Result(true, StatusCode.OK, "增加成功");
@@ -105,7 +105,7 @@ public class PluginassetserviceController {
      *
      * @param assetservice
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Pluginassetservice assetservice, @PathVariable String id) {
         assetservice.setId(id);
         pluginassetserviceService.update(assetservice);
@@ -117,7 +117,7 @@ public class PluginassetserviceController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         pluginassetserviceService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -128,7 +128,7 @@ public class PluginassetserviceController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         pluginassetserviceService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");

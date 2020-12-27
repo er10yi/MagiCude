@@ -1,5 +1,6 @@
 package com.tiji.center.schedule;
 
+import com.tiji.center.pojo.Notifylog;
 import com.tiji.center.pojo.Sendmailconfig;
 import com.tiji.center.service.NotifylogService;
 import com.tiji.center.service.SendmailconfigService;
@@ -53,6 +54,8 @@ public class AssetNotifyScheduler implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {
+        List<Notifylog> notifyLogList = new ArrayList<>();
+        Date date = new Date();
         try {
             long allAssetsCount = taskipService.findAllAssetsCount();
             if (allAssetsCount > 0) {
@@ -90,19 +93,19 @@ public class AssetNotifyScheduler implements Job {
                 String firstFileNameAll = "所有";
                 String fileNameAll = timePrefix + firstFileNameAll + "-" + lastFileName + ".xlsx";
                 File fileAll = new File(path + fileNameAll);
-                db2Excel(pageSize, author, firstFileNameAll, lastFileName, titleArraysWithContact, fileAll);
+                db2Excel(pageSize, author, firstFileNameAll, lastFileName, titleArraysWithContact, fileAll,notifyLogList);
 
                 //有联系人资产报告
                 String firstFileNameAllWithContact = "有项目联系人";
                 String fileNameAllWithContact = timePrefix + firstFileNameAllWithContact + "-" + lastFileName + ".xlsx";
                 File fileAllWithContact = new File(path + fileNameAllWithContact);
-                db2Excel(pageSize, author, firstFileNameAllWithContact, lastFileName, titleArraysWithContact, fileAllWithContact);
+                db2Excel(pageSize, author, firstFileNameAllWithContact, lastFileName, titleArraysWithContact, fileAllWithContact,notifyLogList);
 
                 //无联系人资产报告
                 String firstFileNameAllNoContact = "无项目联系人";
                 String fileNameAllNoContact = timePrefix + firstFileNameAllNoContact + "-" + lastFileName + ".xlsx";
                 File fileAllNoContact = new File(path + fileNameAllNoContact);
-                db2Excel(pageSize, author, firstFileNameAllNoContact, lastFileName, titleArraysWithContact, fileAllNoContact);
+                db2Excel(pageSize, author, firstFileNameAllNoContact, lastFileName, titleArraysWithContact, fileAllNoContact,notifyLogList);
 
                 //发邮件
                 Map<String, File> fileMap = new LinkedHashMap<>();
@@ -110,11 +113,13 @@ public class AssetNotifyScheduler implements Job {
                 fileMap.put(fileAllWithContact.getName(), fileAllWithContact);
                 fileMap.put(fileAllNoContact.getName(), fileAllNoContact);
                 if (!fileMap.isEmpty()) {
-                    //默认提醒不记录发邮件日志
+                    //20201221默认提醒增加提醒日志
                     for (String mail : sendToArray) {
                         try {
-                            NotifyUtil.sendMail(mailSender, sendFrom, mail, sendMailConfigAssetSubject, sendMailConfigAssetContent, fileMap);
+                            NotifyUtil.sendMailWithAttach(mailSender, sendFrom, mail, sendMailConfigAssetSubject, sendMailConfigAssetContent, fileMap);
+                            notifyLogList.add(new Notifylog(idWorker.nextId() + "", "E", null, mail, fileNameAll + " " + fileNameAllWithContact + " " + fileNameAllNoContact, true, null, date));
                         } catch (Exception e) {
+                            notifyLogList.add(new Notifylog(idWorker.nextId() + "", "E", null, mail, fileNameAll + " " + fileNameAllWithContact + " " + fileNameAllNoContact, false, "默认提醒邮箱资产报告发送失败，异常消息：" + e.getMessage(), date));
                             logger.info("all asset notify Exception here: " + e);
                         }
                     }
@@ -216,6 +221,7 @@ public class AssetNotifyScheduler implements Job {
                         workbookInMap.write(fileOutputStream);
                         workbookInMap.close();
                     } catch (IOException e) {
+                        notifyLogList.add(new Notifylog(idWorker.nextId() + "", "E", null, null, null, false, "资产报告无法写入文件，异常消息：" + e.getMessage(), date));
                         logger.info("File2disk Asset owner Exception here: " + e);
                     }
                     projectInfoNameAndFileMap.put(projectInfoName, file);
@@ -249,11 +255,13 @@ public class AssetNotifyScheduler implements Job {
             }
 
         } catch (Exception e) {
+            notifyLogList.add(new Notifylog(idWorker.nextId() + "", "E", null, null, null, false, "默认提醒邮箱资产报告发送失败，异常消息：" + e.getMessage(), date));
             logger.error("AssetNotifyScheduler Exception here: " + ExcpUtil.buildErrorMessage(e));
         }
+        notifylogService.batchAdd(notifyLogList);
     }
 
-    private void db2Excel(long pageSize, String author, String firstFileName, String lastFileName, String[] titleArraysWithContact, File file) {
+    private void db2Excel(long pageSize, String author, String firstFileName, String lastFileName, String[] titleArraysWithContact, File file, List<Notifylog> notifyLogList) {
         //分页导出资产数据
         long allAssetsCount = taskipService.findAllAssetsCount();
         if (allAssetsCount > 0) {
@@ -315,6 +323,7 @@ public class AssetNotifyScheduler implements Job {
                 workbook.write(fileOutputStream);
                 workbook.close();
             } catch (IOException e) {
+                notifyLogList.add(new Notifylog(idWorker.nextId() + "", "E", null, null, null, false, "资产导出到Excel失败，异常消息：" + e.getMessage(), new Date()));
                 logger.info("asset report 2Excel Exception here: " + e);
             }
         }

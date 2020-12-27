@@ -37,7 +37,7 @@ public class NmapconfigController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", nmapconfigService.findAll());
     }
@@ -48,7 +48,7 @@ public class NmapconfigController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", nmapconfigService.findById(id));
     }
@@ -62,7 +62,7 @@ public class NmapconfigController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Nmapconfig> pageList = nmapconfigService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(nmapconfig -> {
@@ -83,7 +83,7 @@ public class NmapconfigController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", nmapconfigService.findSearch(searchMap));
     }
@@ -93,7 +93,7 @@ public class NmapconfigController {
      *
      * @param nmapconfig
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Nmapconfig nmapconfig) {
         nmapconfigService.add(nmapconfig);
         return new Result(true, StatusCode.OK, "增加成功");
@@ -104,7 +104,7 @@ public class NmapconfigController {
      *
      * @param nmapconfig
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Nmapconfig nmapconfig, @PathVariable String id) {
         nmapconfig.setId(id);
         nmapconfigService.update(nmapconfig);
@@ -116,7 +116,7 @@ public class NmapconfigController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         nmapconfigService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -139,7 +139,7 @@ public class NmapconfigController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         nmapconfigService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");

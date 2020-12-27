@@ -146,6 +146,10 @@ public class HostService {
             if (searchMap.get("hostname") != null && !"".equals(searchMap.get("hostname"))) {
                 predicateList.add(cb.like(root.get("hostname").as(String.class), "%" + searchMap.get("hostname") + "%"));
             }
+            // 子域名
+            if (searchMap.get("subdomain") != null && !"".equals(searchMap.get("subdomain"))) {
+                predicateList.add(cb.like(root.get("subdomain").as(String.class), "%" + searchMap.get("subdomain") + "%"));
+            }
             // 操作系统类型
             if (searchMap.get("ostype") != null && !"".equals(searchMap.get("ostype"))) {
                 predicateList.add(cb.like(root.get("ostype").as(String.class), "%" + searchMap.get("ostype") + "%"));
@@ -219,6 +223,15 @@ public class HostService {
      */
     public Host findByHostname(String hostname) {
         return hostDao.findByHostname(hostname);
+    }
+    /**
+     * 根据macaddress查询实体
+     *
+     * @param macaddress
+     * @return
+     */
+    public Host findByMacaddress(String macaddress) {
+        return hostDao.findByMacaddress(macaddress);
     }
 
     /**

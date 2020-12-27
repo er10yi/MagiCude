@@ -105,32 +105,21 @@ public class AgentGatherHelper {
         resultMap.put("title", title);
 
         Map<String, String> headersMap = response.headers();
-        headersMap.forEach((key, value) -> {
-            System.out.println(key + " : " + value);
-        });
+        StringBuilder headerBuilder = new StringBuilder();
+        headersMap.forEach((key, value) -> headerBuilder.append(key).append(" : ").append(value).append("\n"));
+        resultMap.put("header", headerBuilder.toString());
+        resultMap.put("response", body.toString());
+
         //响应头
         //Server
         //X-Powered-By
         //Set-Cookie
         //WWW-Authenticate
-        String server = response.header("Server");
-        String x_Powered_By = response.header("X-Powered-By");
-        String set_Cookie = response.header("Set-Cookie");
-        String www_Authenticate = response.header("WWW-Authenticate");
+        resultMap.put("server", headersMap.get("Server"));
+        resultMap.put("x_Powered_By", headersMap.get("X-Powered-By"));
+        resultMap.put("set_Cookie", headersMap.get("Set-Cookie"));
+        resultMap.put("www_Authenticate", headersMap.get("WWW-Authenticate"));
 
-
-        resultMap.put("server", server);
-        resultMap.put("x_Powered_By", x_Powered_By);
-        resultMap.put("set_Cookie", set_Cookie);
-        resultMap.put("www_Authenticate", www_Authenticate);
-
-        //获取全部响应头
-        //StrBuilder reStrBuilder = new StrBuilder();
-        //Map<String, String> responseHeadersMap = response.headers();
-        //for (Map.Entry<String, String> entry : responseHeadersMap.entrySet()) {
-        //    reStrBuilder.append(entry.getKey() + ":" + entry.getValue()).append("\n");
-        //}
-        //resultMap.put("responseServer", reStrBuilder.toString());
 
         //TODO title为空，动态js解析一下？
         //感觉没必要....

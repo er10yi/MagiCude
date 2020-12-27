@@ -40,7 +40,7 @@ public class VulnpluginconfigController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", vulnpluginconfigService.findAll());
     }
@@ -51,7 +51,7 @@ public class VulnpluginconfigController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", vulnpluginconfigService.findById(id));
     }
@@ -65,7 +65,7 @@ public class VulnpluginconfigController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Vulnpluginconfig> pageList = vulnpluginconfigService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(Vulnpluginconfig -> {
@@ -93,7 +93,7 @@ public class VulnpluginconfigController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", vulnpluginconfigService.findSearch(searchMap));
     }
@@ -103,7 +103,7 @@ public class VulnpluginconfigController {
      *
      * @param vulnpluginconfig
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Vulnpluginconfig vulnpluginconfig) {
         vulnpluginconfigService.add(vulnpluginconfig);
         return new Result(true, StatusCode.OK, "增加成功");
@@ -114,7 +114,7 @@ public class VulnpluginconfigController {
      *
      * @param vulnpluginconfig
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Vulnpluginconfig vulnpluginconfig, @PathVariable String id) {
         vulnpluginconfig.setId(id);
         vulnpluginconfigService.update(vulnpluginconfig);
@@ -126,7 +126,7 @@ public class VulnpluginconfigController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         vulnpluginconfigService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -137,7 +137,7 @@ public class VulnpluginconfigController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         vulnpluginconfigService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -163,6 +163,18 @@ public class VulnpluginconfigController {
     @RequestMapping(value = "/plugin/{pluginId}", method = RequestMethod.DELETE)
     public Result deleteAllByPluginId(@PathVariable String pluginId) {
         vulnpluginconfigService.deleteAllByPluginconfigid(pluginId);
+        return new Result(true, StatusCode.OK, "删除成功");
+    }
+
+    /**
+     * 根据pluginId vulnid删除
+     *
+     * @param pluginId vulnId
+     * @return
+     */
+    @RequestMapping(value = "/plugin/{pluginId}/{vulnId}", method = RequestMethod.DELETE)
+    public Result deleteByPluginIdVulnId(@PathVariable String pluginId,@PathVariable String vulnId) {
+        vulnpluginconfigService.deleteByPluginIdVulnId(pluginId,vulnId);
         return new Result(true, StatusCode.OK, "删除成功");
     }
 }

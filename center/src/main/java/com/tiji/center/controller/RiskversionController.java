@@ -7,6 +7,7 @@ import entity.Result;
 import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import util.IdWorker;
@@ -33,13 +34,15 @@ public class RiskversionController {
     private RiskversionService riskversionService;
     @Autowired
     private IdWorker idWorker;
-
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+    private String riskVersionSetKey = "riskVersionSet";
     /**
      * 查询全部数据
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", riskversionService.findAll());
     }
@@ -50,7 +53,7 @@ public class RiskversionController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", riskversionService.findById(id));
     }
@@ -64,7 +67,7 @@ public class RiskversionController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Riskversion> pageList = riskversionService.findSearch(searchMap, page, size);
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Riskversion>(pageList.getTotalElements(), pageList.getContent()));
@@ -76,7 +79,7 @@ public class RiskversionController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", riskversionService.findSearch(searchMap));
     }
@@ -86,12 +89,13 @@ public class RiskversionController {
      *
      * @param riskversion
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Riskversion riskversion) {
         String version = riskversion.getVersion();
         Riskversion riskversionInDb = riskversionService.findByVersion(version);
         if (Objects.isNull(riskversionInDb)) {
             riskversionService.add(riskversion);
+            redisTemplate.delete(riskVersionSetKey);
             return new Result(true, StatusCode.OK, "增加成功");
         } else {
             return new Result(false, StatusCode.ERROR, "增加失败：版本重复");
@@ -103,10 +107,11 @@ public class RiskversionController {
      *
      * @param riskversion
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Riskversion riskversion, @PathVariable String id) {
         riskversion.setId(id);
         riskversionService.update(riskversion);
+        redisTemplate.delete(riskVersionSetKey);
         return new Result(true, StatusCode.OK, "修改成功");
     }
 
@@ -115,9 +120,10 @@ public class RiskversionController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         riskversionService.deleteById(id);
+        redisTemplate.delete(riskVersionSetKey);
         return new Result(true, StatusCode.OK, "删除成功");
     }
 
@@ -127,16 +133,17 @@ public class RiskversionController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         riskversionService.deleteAllByIds(ids);
+        redisTemplate.delete(riskVersionSetKey);
         return new Result(true, StatusCode.OK, "删除成功");
     }
 
     /**
      * 批量导入高危服务
      */
-    @RequestMapping(value = "/batchAdd", method = RequestMethod.POST)
+    @PostMapping(value = "/batchAdd")
     public Result batchAdd(@RequestParam("file") MultipartFile file) {
         if (Objects.isNull(file) || file.getSize() == 0) {
             return new Result(false, StatusCode.ERROR, "文件为空");
@@ -168,6 +175,7 @@ public class RiskversionController {
             }
         } catch (IOException ignored) {
         }
+        redisTemplate.delete(riskVersionSetKey);
         return new Result(true, StatusCode.OK, "高危版本已上传处理，请稍后查看");
 
     }

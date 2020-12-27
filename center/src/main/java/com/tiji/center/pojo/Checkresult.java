@@ -24,7 +24,11 @@ public class Checkresult implements Serializable {
     @Transient
     private String assetip;
     @Transient
+    private String assetipid;
+    @Transient
     private String vulname;
+    @Transient
+    private String vulnid;
     @Transient
     private String assetport;//端口
 
@@ -136,6 +140,22 @@ public class Checkresult implements Serializable {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getAssetipid() {
+        return assetipid;
+    }
+
+    public void setAssetipid(String assetipid) {
+        this.assetipid = assetipid;
+    }
+
+    public String getVulnid() {
+        return vulnid;
+    }
+
+    public void setVulnid(String vulnid) {
+        this.vulnid = vulnid;
     }
 }
 

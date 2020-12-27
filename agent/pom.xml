@@ -8,12 +8,20 @@
     </parent>
     <artifactId>agent</artifactId>
 
+    <properties>
+        <java.version>15</java.version>
+        <!--docker私服地址-->
+        <docker.repository>192.168.12.138:5000</docker.repository>
+        <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
+        <jep.version>3.9.1</jep.version>
+        <gson.version>2.8.6</gson.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.tiji</groupId>
             <artifactId>common</artifactId>
             <version>1.0-SNAPSHOT</version>
-
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -31,11 +39,11 @@
 
 
         <!-- https://mvnrepository.com/artifact/net.sourceforge.htmlunit/htmlunit -->
-        <!--<dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
-            <artifactId>htmlunit</artifactId>
-            <version>2.36.0</version>
-        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>net.sourceforge.htmlunit</groupId>-->
+<!--            <artifactId>htmlunit</artifactId>-->
+<!--            <version>2.45.0</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.tiji</groupId>
             <artifactId>plugin</artifactId>
@@ -47,33 +55,29 @@
         <dependency>
             <groupId>black.ninia</groupId>
             <artifactId>jep</artifactId>
-            <version>3.9.0</version>
+            <version>${jep.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.8.6</version>
+            <version>${gson.version}</version>
         </dependency>
     </dependencies>
 
-    <properties>
-        <java.version>15</java.version>
-        <!--docker私服地址-->
-        <docker.repository>192.168.12.138:5000</docker.repository>
-    </properties>
+
     <build>
 
         <finalName>agentapp</finalName>
         <!--		本机运行时要去掉resources标签-->
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>application.yml</exclude>
-                </excludes>
-            </resource>
-        </resources>
+<!--        <resources>-->
+<!--            <resource>-->
+<!--                <directory>src/main/resources</directory>-->
+<!--                <excludes>-->
+<!--                    <exclude>application.yml</exclude>-->
+<!--                </excludes>-->
+<!--            </resource>-->
+<!--        </resources>-->
 
         <plugins>
             <plugin>
@@ -94,7 +98,7 @@
 
                 <groupId>com.spotify</groupId>
                 <artifactId>dockerfile-maven-plugin</artifactId>
-                <version>1.4.13</version>
+                <version>${dockerfile-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>default</id>

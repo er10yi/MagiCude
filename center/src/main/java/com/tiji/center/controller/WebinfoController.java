@@ -32,14 +32,15 @@ public class WebinfoController {
     private AssetportService assetportService;
     @Autowired
     private AssetipService assetipService;
-
+    @Autowired
+    private WebrawdataService webrawdataService;
 
     /**
      * 查询全部数据
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", webinfoService.findAll());
     }
@@ -50,7 +51,7 @@ public class WebinfoController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", webinfoService.findById(id));
     }
@@ -64,7 +65,7 @@ public class WebinfoController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+    @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         //根据ip查询webinfo
         List<String> assetPortIdList = new ArrayList<>();
@@ -106,7 +107,6 @@ public class WebinfoController {
             });
             searchMap.put("portid", assetPortIdList);
         }
-        System.out.println(assetPortIdList);
 
         Page<Webinfo> pageList = webinfoService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(webinfo -> {
@@ -123,11 +123,22 @@ public class WebinfoController {
             List<Url> allByWebinfoid = urlService.findAllByWebinfoid(id);
             StringBuilder stringBuilder = new StringBuilder();
             allByWebinfoid.forEach(url -> {
-                stringBuilder.append(url.getName()).append(" ").append(url.getUrl()).append("\n");
+                stringBuilder.append(url.getName()).append("==").append(url.getUrl()).append("<+>\n");
             });
             webinfo.setUrl(stringBuilder.toString());
+
+            StringBuilder headerBuilder = new StringBuilder();
+            StringBuilder responseBuilder = new StringBuilder();
+            List<Webrawdata> webrawdataList = webrawdataService.findAllByWebinfoid(id);
+            webrawdataList.forEach(webrawdata -> {
+                headerBuilder.append(webrawdata.getHeader());
+                responseBuilder.append(webrawdata.getResponse());
+            });
+
+            webinfo.setHeader(headerBuilder.toString());
+            webinfo.setResponse(responseBuilder.toString());
         });
-        return new Result(true, StatusCode.OK, "查询成功", new PageResult<Webinfo>(pageList.getTotalElements(), pageList.getContent()));
+        return new Result(true, StatusCode.OK, "查询成功", new PageResult<>(pageList.getTotalElements(), pageList.getContent()));
     }
 
     /**
@@ -136,7 +147,7 @@ public class WebinfoController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", webinfoService.findSearch(searchMap));
     }
@@ -146,7 +157,7 @@ public class WebinfoController {
      *
      * @param webinfo
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Webinfo webinfo) {
         webinfoService.add(webinfo);
         return new Result(true, StatusCode.OK, "增加成功");
@@ -157,7 +168,7 @@ public class WebinfoController {
      *
      * @param webinfo
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Webinfo webinfo, @PathVariable String id) {
         webinfo.setId(id);
         webinfoService.update(webinfo);
@@ -169,11 +180,13 @@ public class WebinfoController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         webinfoService.deleteById(id);
         //删除web信息同时，删除url
         urlService.deleteAllByWebinfoid(id);
+        //删除原始响应和头信息
+        webrawdataService.deleteAllByWebinfoid(id);
         return new Result(true, StatusCode.OK, "删除成功");
     }
 
@@ -182,12 +195,14 @@ public class WebinfoController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         webinfoService.deleteAllByIds(ids);
         ids.forEach(id -> {
             //删除web信息同时，删除url
             urlService.deleteAllByWebinfoid(id);
+            //删除原始响应和头信息
+            webrawdataService.deleteAllByWebinfoid(id);
         });
         return new Result(true, StatusCode.OK, "删除成功");
     }
@@ -198,7 +213,7 @@ public class WebinfoController {
      * @param assetportid assetportid
      * @return
      */
-    @RequestMapping(value = "/assetport/{assetportid}", method = RequestMethod.GET)
+    @GetMapping(value = "/assetport/{assetportid}")
     public Result findAllByAssetportid(@PathVariable String assetportid) {
         return new Result(true, StatusCode.OK, "查询成功", webinfoService.findAllByAssetportid(assetportid));
     }

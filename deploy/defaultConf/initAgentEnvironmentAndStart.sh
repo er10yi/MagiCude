@@ -154,7 +154,7 @@ type java >/dev/null 2>&1
 if [ $? -eq 0 ];then
     # 存在java环境
     java_version=`java -version 2>&1 | sed '1!d' | sed -e 's/"//g' | awk '{print $3}'`
-    if [ $java_version != $openjdkVersion ];then
+    if [ $java_version != $openjdkCheckVersion ];then
         logError "当前已存在java $java_version 环境，请将其卸载后，重新执行 $0"
     fi
 fi
@@ -263,7 +263,7 @@ if [ ! -f $openjdk ]; then
     while ( [ $i -lt 5 ] )
     do
         # http://jdk.java.net/
-        wget https://mirrors.huaweicloud.com/openjdk/$openjdkVersion/$openjdk >/dev/null 2>&1
+        wget https://mirrors.huaweicloud.com/openjdk/$openjdkDownloadVersion/$openjdk >/dev/null 2>&1
         let "i++"
         if [ -f $openjdk ]; then
             break

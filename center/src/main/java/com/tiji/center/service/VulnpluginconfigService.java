@@ -193,4 +193,15 @@ public class VulnpluginconfigService {
     public Vulnpluginconfig findByVulnidAndPluginconfigid(String vulnid, String pluginconfigid) {
         return vulnpluginconfigDao.findByVulnidAndPluginconfigid(vulnid, pluginconfigid);
     }
+
+    /**
+     * 根据pluginId vulnId 删除
+     *
+     * @param pluginId
+     * @param vulnId
+     */
+    @Transactional(value = "masterTransactionManager")
+    public void deleteByPluginIdVulnId(String pluginId,String vulnId) {
+        vulnpluginconfigDao.deleteByPluginconfigidAndVulnid(pluginId,vulnId);
+    }
 }

@@ -86,7 +86,7 @@ public class TijiHelper {
     }
 
     //http parser 结果进数据库
-    public static void httppResult2Db(WebinfoService webinfoService, UrlService urlService, IdWorker idWorker, TitlewhitelistService titlewhitelistService, DomainwhitelistService domainwhitelistService, Map<String, String> resultMap, String scanResult) {
+    public static void httppResult2Db(WebinfoService webinfoService, UrlService urlService, IdWorker idWorker, TitlewhitelistService titlewhitelistService, DomainwhitelistService domainwhitelistService, WebrawdataService webrawdataService, Map<String, String> resultMap, String scanResult) {
         Date date = new Date();
         String webInfoId = idWorker.nextId() + "";
         String assetPortId = resultMap.get("assetPortId");
@@ -96,6 +96,9 @@ public class TijiHelper {
         String x_Powered_By = resultMap.get("x_Powered_By");
         String set_Cookie = resultMap.get("set_Cookie");
         String www_Authenticate = resultMap.get("www_Authenticate");
+
+        String header = resultMap.get("header");
+        String response = resultMap.get("response");
 
 
         List<Titlewhitelist> allTitlewhitelist = titlewhitelistService.findAll();
@@ -141,6 +144,7 @@ public class TijiHelper {
             //title为空也直接记录，防止title和body的text都为空时访问的记录丢失
             webinfoService.add(new Webinfo(webInfoId, assetPortId, titleWhiteListId, title, bodyWholeText,
                     server, x_Powered_By, set_Cookie, www_Authenticate, null, null, null, date));
+            webrawdataService.add(new Webrawdata(idWorker.nextId() + "", webInfoId, header, response));
             if (!Objects.isNull(bodyWholeText)) {
                 //此时scanResult只有urlNameAndLink
                 if (!Objects.isNull(scanResult) && !scanResult.isEmpty()) {
@@ -262,33 +266,11 @@ public class TijiHelper {
                         checkresultVulnService.add(new CheckresultVuln(idWorker.nextId() + "", checkResultId, vulnId));
                     });
 
-                    Imvulnnotify imvulnnotify = imvulnnotifyService.findAll().get(0);
-                    Boolean notify = imvulnnotify.getNotify();
-                    //判断通知标志
-                    if (!Objects.isNull(notify) && notify) {
-                        //判断risk
-                        if (imvulnnotify.getRisk().contains(risk)) {
-                            String service = assetport.getService();
-                            String version = assetport.getVersion();
-                            Map<String, Object> resultMap = new LinkedHashMap<>();
-                            resultMap.put("projectinfoid", assetip.getProjectinfoid());
-                            resultMap.put("vulnIdList", vulnIdList);
-                            resultMap.put("risk", risk);
-                            resultMap.put("ip", ip);
-                            resultMap.put("port", port);
-                            resultMap.put("service", service);
-                            resultMap.put("version", version);
-                            resultMap.put("pluginName", pluginName);
-                            rabbitMessagingTemplate.convertAndSend("imresult", resultMap);
-                        }
-                    }
-
+                    sendCheckResutl2ImResultQueue(imvulnnotifyService, redisTemplate, rabbitMessagingTemplate, ip, port, pluginName, assetip, assetport, risk, vulnIdList);
                     //vulnResultList:[Redis未授权访问] 192.168.12.138 6379 redis Redis key-value store RedisInfo 高危
-
                     //漏洞名称	风险	ip	端口	服务	版本	检测插件名称
-
                     //System.out.println("vulnResultList:" + vulnResultList + " " + risk + " " + ip + " " + port + " " + service + " " + version + " " + pluginName);
-                    //TODO 立即发送邮件和即时消息
+                    //TODO 立即发送邮件
 
                     break;
                 }
@@ -308,6 +290,71 @@ public class TijiHelper {
                 //TODO 已修复漏洞
                 checkresult.setPassivetime(date);
                 checkresultService.update(checkresult);
+            }
+        }
+    }
+
+    private static void sendCheckResutl2ImResultQueue(ImvulnnotifyService imvulnnotifyService, RedisTemplate<String, String> redisTemplate, RabbitMessagingTemplate rabbitMessagingTemplate, String ip, String port, String pluginName, Assetip assetip, Assetport assetport, String risk, List<String> vulnIdList) {
+        boolean sendWFlag = false;
+        boolean sendDFlag = false;
+
+        String wechatnotifyKey = "wechatnotify";
+        String dingtalknotifyKey = "dingtalknotify";
+        String riskKey = "risk";
+
+        Boolean wechatnotifyFlagExist = redisTemplate.hasKey(wechatnotifyKey);
+        if (!Objects.isNull(wechatnotifyFlagExist) && wechatnotifyFlagExist) {
+            String wechatnotify = redisTemplate.opsForValue().get(wechatnotifyKey);
+            if (!Objects.isNull(wechatnotify) && "true".equals(wechatnotify)) {
+                sendWFlag = true;
+            }
+        }
+
+        Boolean dingtalknotifyFlagExist = redisTemplate.hasKey(dingtalknotifyKey);
+        if (!Objects.isNull(dingtalknotifyFlagExist) && dingtalknotifyFlagExist) {
+            String dingtalknotify = redisTemplate.opsForValue().get(wechatnotifyKey);
+            if (!Objects.isNull(dingtalknotify) && "true".equals(dingtalknotify)) {
+                sendDFlag = true;
+            }
+        } else {
+            Imvulnnotify imvulnnotify = imvulnnotifyService.findAll().get(0);
+            //钉钉
+            Boolean dingtalknotify = imvulnnotify.getDingtalknotify();
+            if (!Objects.isNull(dingtalknotify) && dingtalknotify) {
+                sendDFlag = true;
+                redisTemplate.opsForValue().set(dingtalknotifyKey, "true");
+            }
+            //企微
+            Boolean wechatnotify = imvulnnotify.getWechatnotify();
+            if (!Objects.isNull(wechatnotify) && wechatnotify) {
+                sendWFlag = true;
+                redisTemplate.opsForValue().set(wechatnotifyKey, "true");
+            }
+        }
+        if (sendDFlag || sendWFlag) {
+            Boolean riskKeyFlagExist = redisTemplate.hasKey(riskKey);
+            String notifyRisk;
+            if (!Objects.isNull(riskKeyFlagExist) && riskKeyFlagExist) {
+                notifyRisk = redisTemplate.opsForValue().get(riskKey);
+            } else {
+                Imvulnnotify imvulnnotify = imvulnnotifyService.findAll().get(0);
+                notifyRisk = imvulnnotify.getRisk();
+                redisTemplate.opsForValue().set(riskKey, notifyRisk);
+            }
+            //判断risk
+            if (!StringUtils.isEmpty(notifyRisk) && notifyRisk.contains(risk)) {
+                String service = assetport.getService();
+                String version = assetport.getVersion();
+                Map<String, Object> resultMap = new LinkedHashMap<>();
+                resultMap.put("projectinfoid", assetip.getProjectinfoid());
+                resultMap.put("vulnIdList", vulnIdList);
+                resultMap.put("risk", risk);
+                resultMap.put("ip", ip);
+                resultMap.put("port", port);
+                resultMap.put("service", service);
+                resultMap.put("version", version);
+                resultMap.put("pluginName", pluginName);
+                rabbitMessagingTemplate.convertAndSend("imresult", resultMap);
             }
         }
     }
@@ -384,24 +431,15 @@ public class TijiHelper {
     }
 
     //nmap扫描结果进数据库
-    public static void nmapScanResult2DB(Map<String, Set<String>> resultMap, TaskipService taskipService, TaskportService taskportService, IdWorker idWorker, String taskId) {
-        if (resultMap.size() != 0) {
+    public static void nmapScanResult2DB(Map<Map<String, String>, Set<String>> resultMap, TaskipService taskipService, TaskportService taskportService, IdWorker idWorker, String taskId) {
+        if (!Objects.isNull(resultMap)&&!resultMap.isEmpty()) {
             List<Taskip> taskipList = new LinkedList<>();
 //            for (Map.Entry<String, Set<String>> entry : resultMap.entrySet()) {
-            resultMap.forEach((ip, portInfoSet) -> {
+            resultMap.forEach((map, portInfoSet) -> {
                 List<Taskport> taskPortList = new LinkedList<>();
+                String ip = map.get("ip");
                 Taskip taskip = taskipService.findByTaskidAndIpaddressv4(taskId, ip);
                 String taskIpId;
-                // 域名
-                String domain = null;
-                if (ip.contains(":")) {
-                    String ipTemp = ip;
-                    ip = ipTemp.split(":")[0];
-                    if (ipTemp.split(":").length == 2) {
-                        domain = ipTemp.split(":")[1];
-
-                    }
-                }
                 //ip在数据库中不存在，直接新增
                 if (Objects.isNull(taskip)) {
                     //TODO 本次任务新增的ip和端口
@@ -418,8 +456,6 @@ public class TijiHelper {
                 if (!Objects.isNull(portInfoSet)) {
                     portInfoSet2Db(taskportService, idWorker, portInfoSet, taskIpId);
                 }
-
-                //TODO 增加域名信息
             });
             //taskipService.batchAdd(taskipList);
         }
@@ -481,7 +517,7 @@ public class TijiHelper {
     }
 
     //mass扫描结果直接进资产
-    public static void massScanResult2AssetDB(AssetipService assetipService, AssetportService assetportService, IdWorker idWorker, Map<String, Set<String>> massResultMap) {
+    public static void massScanResult2AssetDB(AssetipService assetipService, AssetportService assetportService, IdWorker idWorker, RabbitMessagingTemplate rabbitMessagingTemplate, Set<String> riskPortSet, Set<String> riskServiceSet, Set<String> riskVersionSet, Map<String, Set<String>> massResultMap) {
         if (massResultMap.size() != 0) {
             Date date = new Date();
             List<Assetip> assetipList = new LinkedList<>();
@@ -503,6 +539,8 @@ public class TijiHelper {
                     portInfoSet.forEach(portInfoString -> {
                         //portList.add(new Assetport(idWorker.nextId() + "", assetIpId, portInfoString, null, "open", null, null, date, null));
                         assetportService.add(new Assetport(idWorker.nextId() + "", assetIpId, portInfoString, "tcp", "open", null, null, false, false, date, null, null));
+                        //新增高危信息端口发送到IM
+                        sendRiskPort2IM(rabbitMessagingTemplate, riskPortSet, riskServiceSet, riskVersionSet, "**" + ip + "**", portInfoString, "tcp", null, null);
                     });
                 } else {
                     //当前ip在数据库中存在,更新端口信息
@@ -514,6 +552,8 @@ public class TijiHelper {
                             //TODO 已存在数据库中ip的新增端口
                             //portList.add(new Assetport(idWorker.nextId() + "", assetip.getId(), portInfoString, null, "open", null, null, date, null));
                             assetportService.add(new Assetport(idWorker.nextId() + "", assetip.getId(), portInfoString, "tcp", "open", null, null, false, false, date, null, null));
+                            //新增高危信息端口发送到IM
+                            sendRiskPort2IM(rabbitMessagingTemplate, riskPortSet, riskServiceSet, riskVersionSet, ip, portInfoString, "tcp", null, null);
                         } else {
                             //当前端口在DB中，更新端口状态
                             boolean flag = false;
@@ -537,22 +577,240 @@ public class TijiHelper {
 
 
     //nmap扫描结果直接进资产
-    public static void nmapScanResult2AssetDB(AssetipService assetipService, AssetportService assetportService, HostService hostService, IdWorker idWorker, Map<String, Set<String>> nmapResultMap) {
+    public static void nmapScanResult2AssetDB(AssetipService assetipService, AssetportService assetportService, HostService hostService, IdWorker idWorker, RabbitMessagingTemplate rabbitMessagingTemplate, Set<String> riskPortSet, Set<String> riskServiceSet, Set<String> riskVersionSet, Map<Map<String, String>, Set<String>> nmapResultMap) {
+        if (!Objects.isNull(nmapResultMap)&&!nmapResultMap.isEmpty()) {
+            Date date = new Date();
+            List<Assetip> assetipList = new LinkedList<>();
+//            for (Map.Entry<String, Set<String>> entry : nmapResultMap.entrySet()) {
+            nmapResultMap.forEach((map, portInfoSet) -> {
+                //当前ip端口列表，用于批量增加
+                String ip = map.get("ip");
+                List<Assetport> portList = new LinkedList<>();
+                String assetIpId;
+
+                //查询数据库中passivetime为空且ipaddressv4等于当前ip的ip
+                Assetip assetip = assetipService.findByIpaddressv4AndPassivetimeIsNull(ip);
+                if (Objects.isNull(assetip)) {
+                    //如果结果返回空
+                    //数据库中没有当前ip或者所有的ip都已下线，新增ip及端口
+                    //TODO nmap扫描新增ip和端口
+                    assetIpId = idWorker.nextId() + "";
+                    assetip = new Assetip(assetIpId, null, ip, null, false, false, date, null, null);
+                    //assetipList.add(assetip);
+                    assetipService.add(assetip);
+                    if (!Objects.isNull(portInfoSet)) {
+                        for (String portInfoString : portInfoSet) {
+                            String[] portInfoStringArrays = portInfoString.split(",");
+                            String portTemp = portInfoStringArrays[0];
+                            String protocolTemp = portInfoStringArrays[1];
+                            String stateTemp = portInfoStringArrays[2];
+                            String serviceTemp = portInfoStringArrays[3];
+                            String versionTemp = portInfoStringArrays[4];
+                            //状态为open的端口才进资产库
+                            if ("open".equals(stateTemp)) {
+                                Assetport dbAssetPort = assetportService.findByAssetipidAndPortAndDowntimeIsNull(assetip.getId(), portTemp);
+                                //批量导入时，如果单个ip端口重复，数据库中端口会重复
+                                //需要判断端口是否在数据库中才新增
+                                if (Objects.isNull(dbAssetPort)) {
+                                    assetportService.add(new Assetport(idWorker.nextId() + "", assetip.getId(), portTemp, protocolTemp, stateTemp, serviceTemp, versionTemp, false, false, date, null, null));
+                                    //新增高危信息端口发送到IM
+                                    sendRiskPort2IM(rabbitMessagingTemplate, riskPortSet, riskServiceSet, riskVersionSet, "**" + ip + "**", portTemp, protocolTemp, serviceTemp, versionTemp);
+                                    //portList.add(new Assetport(idWorker.nextId() + "", assetip.getId(), portTemp, protocolTemp, stateTemp, serviceTemp, versionTemp, date, null));
+                                } else {
+                                    //当前端口在DB中，更新端口
+                                    boolean flag = false;
+                                    //更新protocol
+                                    if (!Objects.isNull(protocolTemp) && (Objects.isNull(dbAssetPort.getProtocol()) || "null".equals(dbAssetPort.getProtocol()))) {
+                                        dbAssetPort.setProtocol(protocolTemp);
+                                        flag = true;
+                                    }
+                                    //更新tcp/udp
+                                    if (!Objects.isNull(protocolTemp) && !Objects.isNull(dbAssetPort.getProtocol()) && !"null".equals(dbAssetPort.getProtocol())) {
+                                        if (!dbAssetPort.getProtocol().contains("/")) {
+                                            if (("tcp".equals(protocolTemp) && "udp".equals(dbAssetPort.getProtocol())) || "udp".equals(protocolTemp) && "tcp".equals(dbAssetPort.getProtocol())) {
+                                                dbAssetPort.setProtocol("tcp/udp");
+                                                flag = true;
+                                            }
+                                        }
+                                    }
+                                    //更新state
+                                    if ((Objects.isNull(dbAssetPort.getState()) || !"open".equals(dbAssetPort.getState()))) {
+                                        dbAssetPort.setState(stateTemp);
+                                        flag = true;
+                                    }
+                                    //更新service
+                                    if (
+                                            (!Objects.isNull(serviceTemp) && !"tcpwrapped".equals(serviceTemp) && !"unknown".equals(serviceTemp) && !serviceTemp.contains("?"))
+                                                    && (Objects.isNull(dbAssetPort.getService()) || "tcpwrapped".equals(dbAssetPort.getService()) || "unknown".equals(dbAssetPort.getService()) || dbAssetPort.getService().contains("?") || "null".equals(dbAssetPort.getService()) || !serviceTemp.equals(dbAssetPort.getService()))
+                                    ) {
+                                        dbAssetPort.setService(serviceTemp);
+                                        flag = true;
+                                    }
+                                    //version为空或者null，才更新version
+                                    //加新verison
+                                    if ((!Objects.isNull(versionTemp) && !"null".equals(versionTemp))
+                                            && (Objects.isNull(dbAssetPort.getVersion()) || "null".equals(dbAssetPort.getVersion()) || !versionTemp.equals(dbAssetPort.getVersion()))) {
+                                        dbAssetPort.setVersion(versionTemp);
+                                        flag = true;
+                                    }
+                                    if (flag) {
+                                        dbAssetPort.setChangedtime(date);
+                                        assetportService.update(dbAssetPort);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+                } else {
+                    //当前ip在数据库中存在,更新端口信息
+                    assetIpId = assetip.getId();
+                    if (!Objects.isNull(portInfoSet)) {
+                        for (String portInfoString : portInfoSet) {
+
+                            //nmap扫描结果
+                            //port,protocol,state,service,version
+                            //3306,tcp,open,mysql,MySQL 5.7.24-log
+                            String[] portInfoStringArrays = portInfoString.split(",");
+                            String portTemp = portInfoStringArrays[0];
+                            String protocolTemp = portInfoStringArrays[1];
+                            String stateTemp = portInfoStringArrays[2];
+                            String serviceTemp = portInfoStringArrays[3];
+                            String versionTemp = portInfoStringArrays[4];
+
+                            Assetport dbAssetPort = assetportService.findByAssetipidAndPortAndDowntimeIsNull(assetIpId, portTemp);
+                            if (Objects.isNull(dbAssetPort)) {
+                                //当前端口不在DB中或者当前端口已下线，且端口状态是open，新增端口
+                                //TODO 已在数据库中ip的新增端口
+                                if ("open".equals(stateTemp)) {
+                                    //portList.add(new Assetport(idWorker.nextId() + "", assetip.getId(), portTemp, protocolTemp, stateTemp, serviceTemp, versionTemp, date, null));
+                                    assetportService.add(new Assetport(idWorker.nextId() + "", assetIpId, portTemp, protocolTemp, stateTemp, serviceTemp, versionTemp, false, false, date, null, null));
+                                    //已在数据库中的ip 新增高危信息端口发送到IM
+                                    sendRiskPort2IM(rabbitMessagingTemplate, riskPortSet, riskServiceSet, riskVersionSet, ip, portTemp, protocolTemp, serviceTemp, versionTemp);
+                                }
+                            } else {
+                                //当前端口在DB中，更新端口
+                                boolean flag = false;
+                                boolean sendFlag = false;
+                                //如果扫描到端口已关闭，将端口下线
+                                if ("closed".equals(stateTemp)) {
+                                    dbAssetPort.setState("closed");
+                                    dbAssetPort.setDowntime(date);
+                                    flag = true;
+                                } else {
+                                    //更新protocol
+                                    if (!Objects.isNull(protocolTemp) && (Objects.isNull(dbAssetPort.getProtocol()) || "null".equals(dbAssetPort.getProtocol()))) {
+                                        dbAssetPort.setProtocol(protocolTemp);
+                                        flag = true;
+                                    }
+                                    //更新tcp/udp
+                                    if (!Objects.isNull(protocolTemp) && !Objects.isNull(dbAssetPort.getProtocol()) && !"null".equals(dbAssetPort.getProtocol())) {
+                                        if (!dbAssetPort.getProtocol().contains("/")) {
+                                            if (("tcp".equals(protocolTemp) && "udp".equals(dbAssetPort.getProtocol())) || "udp".equals(protocolTemp) && "tcp".equals(dbAssetPort.getProtocol())) {
+                                                dbAssetPort.setProtocol("tcp/udp");
+                                                flag = true;
+                                            }
+                                        }
+                                    }
+                                    //更新state
+                                    if ("open".equals(stateTemp) && (Objects.isNull(dbAssetPort.getState()) || !"open".equals(dbAssetPort.getState()))) {
+                                        dbAssetPort.setState(stateTemp);
+                                        flag = true;
+                                        sendFlag = true;
+                                    }
+                                    //更新service
+                                    if (
+                                            (!Objects.isNull(serviceTemp) && !"tcpwrapped".equals(serviceTemp) && !"unknown".equals(serviceTemp) && !serviceTemp.contains("?"))
+                                                    && (Objects.isNull(dbAssetPort.getService()) || "tcpwrapped".equals(dbAssetPort.getService()) || "unknown".equals(dbAssetPort.getService()) || dbAssetPort.getService().contains("?") || "null".equals(dbAssetPort.getService()) || !serviceTemp.equals(dbAssetPort.getService()))
+                                    ) {
+                                        dbAssetPort.setService(serviceTemp);
+                                        flag = true;
+                                        sendFlag = true;
+                                    }
+                                    //更新version
+                                    if ((!Objects.isNull(versionTemp) && !"null".equals(versionTemp))
+                                            && (Objects.isNull(dbAssetPort.getVersion()) || "null".equals(dbAssetPort.getVersion())) || !versionTemp.equals(dbAssetPort.getVersion())) {
+                                        dbAssetPort.setVersion(versionTemp);
+                                        flag = true;
+                                        sendFlag = true;
+                                    }
+                                }
+                                if (flag) {
+                                    dbAssetPort.setChangedtime(date);
+                                    assetportService.update(dbAssetPort);
+                                }
+                                //已在数据库中的ip，已存在的端口，新增高危信息端口发送到IM
+                                if (sendFlag) {
+                                    sendRiskPort2IM(rabbitMessagingTemplate, riskPortSet, riskServiceSet, riskVersionSet, ip, portTemp, protocolTemp, serviceTemp, versionTemp);
+                                }
+                            }
+
+                        }
+                    }
+                }
+                //assetportService.batchAdd(portList);
+                //hostname / domain
+                //域名
+                String domain = map.get("domain");
+                if (!Objects.isNull(domain)) {
+                    Host hostname = hostService.findByHostname(domain);
+                    if (Objects.isNull(hostname)) {
+                        hostService.add(new Host(idWorker.nextId() + "", assetIpId, map.get("macAddress"), domain, null, null, map.get("type"), null, new Date(), null));
+                    }
+                }
+                String macAddress = map.get("macAddress");
+                if (!Objects.isNull(macAddress)) {
+                    Host macaddress = hostService.findByMacaddress(macAddress);
+                    if (Objects.isNull(macaddress)) {
+                        hostService.add(new Host(idWorker.nextId() + "", assetIpId, map.get("macAddress"), map.get("domain"), null, null, map.get("type"), null, new Date(), null));
+                    }
+                }
+            });
+            //assetipService.batchAdd(assetipList);
+        }
+    }
+
+    private static void sendRiskPort2IM(RabbitMessagingTemplate rabbitMessagingTemplate, Set<String> riskPortSet, Set<String> riskServiceSet, Set<String> riskVersionSet, String ip, String portTemp, String protocolTemp, String serviceTemp, String versionTemp) {
+        if (!riskPortSet.isEmpty() || !riskServiceSet.isEmpty() || !riskVersionSet.isEmpty()) {
+            boolean sendFlag = false;
+            Map<String, Object> imResultMap = new HashMap<>();
+            //端口在高危设置中，服务和版本也要一起推送
+            if (riskPortSet.contains(portTemp) || riskServiceSet.contains(serviceTemp) || riskVersionSet.contains(versionTemp)) {
+                if (!StringUtils.isEmpty(portTemp)) {
+                    imResultMap.put("port", portTemp);
+                    sendFlag = true;
+                }
+                if (!StringUtils.isEmpty(serviceTemp)) {
+                    imResultMap.put("service", serviceTemp);
+                    sendFlag = true;
+                }else {
+                    imResultMap.put("service", "null");
+                }
+                if (!StringUtils.isEmpty(versionTemp)) {
+                    imResultMap.put("version", versionTemp);
+                    sendFlag = true;
+                }else {
+                    imResultMap.put("version", "null");
+                }
+            }
+            if (sendFlag) {
+                //新增ip的高危端口信息
+                imResultMap.put("ip", ip);
+                imResultMap.put("protocol", protocolTemp);
+                rabbitMessagingTemplate.convertAndSend("imresult", imResultMap);
+            }
+        }
+    }
+
+    //批量导入
+    public static void batchNmapScanResult2AssetDB(AssetipService assetipService, AssetportService assetportService, HostService hostService, IdWorker idWorker, Map<String, Set<String>> nmapResultMap) {
         if (nmapResultMap.size() != 0) {
             Date date = new Date();
             List<Assetip> assetipList = new LinkedList<>();
 //            for (Map.Entry<String, Set<String>> entry : nmapResultMap.entrySet()) {
             nmapResultMap.forEach((ip, portInfoSet) -> {
                 //当前ip端口列表，用于批量增加
-                //域名
-                String domain = null;
-                if (ip.contains(":")) {
-                    String ipTemp = ip;
-                    ip = ipTemp.split(":")[0];
-                    if (ipTemp.split(":").length == 2) {
-                        domain = ipTemp.split(":")[1];
-                    }
-                }
                 List<Assetport> portList = new LinkedList<>();
                 String assetIpId;
 
@@ -703,13 +961,6 @@ public class TijiHelper {
                     }
                 }
                 //assetportService.batchAdd(portList);
-                //hostname / domain
-                if (!Objects.isNull(domain)) {
-                    Host hostname = hostService.findByHostname(domain);
-                    if (Objects.isNull(hostname)) {
-                        hostService.add(new Host(idWorker.nextId() + "", assetIpId, null, domain, null, null, null, null, new Date(), null));
-                    }
-                }
             });
             //assetipService.batchAdd(assetipList);
         }
@@ -728,66 +979,116 @@ public class TijiHelper {
         massRawMap.put(key, set);
     }
 
-    public static Map<String, Set<String>> nmapResult2Map(String result) {
-
+    public static Map<Map<String, String>, Set<String>> nmapResult2Map(String result) {
         //portInfo port, state, service, version;
-        Map<String, Set<String>> resultMap = new LinkedHashMap<>();
-        String regex = "MAC\\sAddress\\s|(?:^|\n)Nmap\\sscan\\sreport\\s|(?:^|\n)Starting\\sNmap.*|(?:^|\n)Host.*|(?:^|\n)Not shown.*|(?:^|\n)Some\\sclosed .*|(?:^|\n)PORT.*|(?:^|\n)[0-9]?\\sservice.?\\sunrecognized.*|(?:^|\n)SF.*|(?:^|\n)Starting.*|(?:^|\n)Warning.*|(?:^|\n)={14}.*|(?:^|\n)Service\\sdetection.*|(?:^|\n)Nmap done.*";
+        Map<Map<String, String>, Set<String>> resultMap = new LinkedHashMap<>();
+        String regex = "All\\s.*|(?:^|are\\sclosed\n)MAC\\sAddress\\s|(?:^|\n)Nmap\\sscan\\sreport\\s|(?:^|\n)Starting\\sNmap.*|(?:^|\n)Host.*|(?:^|\n)Not shown.*|(?:^|\n)Some\\sclosed .*|(?:^|\n)PORT.*|(?:^|\n)[0-9]?\\sservice.?\\sunrecognized.*|(?:^|\n)SF.*|(?:^|\n)Starting.*|(?:^|\n)Warning.*|(?:^|\n)={14}.*|(?:^|\n)Service\\sdetection.*|(?:^|\n)Nmap done.*";
         result = result.replaceAll(regex, "");
+        if (result.length() != 1) {
+            if ((result.contains("tcp") || result.contains("udp"))) {
+                //端口扫描
+                //正则采用NFA，递归过深会导致Exception in thread "main" java.lang.StackOverflowError
+                //{1,500}限制单个ip匹配端口数，测试中超过770个就会导致栈溢出
+                //匹配IP及对应服务
+                //String mulRegex = "for\\s(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\n?(((?:^|\n)[0-9].*){1,500})";
+                String ipRegex = "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})";
+                String[] tempResults = result.split("\\n");
+                String singleLine = tempResults[0];
+                singleLine = singleLine.replaceAll(ipRegex, "");
+                singleLine = singleLine.replaceAll("[()]", "");
+                String[] split = singleLine.split("\\s");
+                //没有域名
+                if (split.length == 1) {
+                    String mulRegex = "for\\s(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\n?(((?:^|\n)[0-9].*){1,500})";
+                    Pattern pattern = Pattern.compile(mulRegex);
+                    Matcher matcher = pattern.matcher(result);
+                    while (matcher.find()) {
+                        //singleStatus[0]:PORT，singleStatus[1]:STATE，singleStatus[2]:SERVICE，singleStatus[3]:VERSION
+                        String ip = matcher.group(1);
+                        String status = matcher.group(2);
+                        //单行IP状态，PORT     STATE    SERVICE       VERSION
+                        //用于保存分割后的状态
+                        //将lineStatus分解成单个数组元素，并保存到singleStatus中
+                        String[] lineStatus = status.split("\n");
+                        if (!org.springframework.util.StringUtils.isEmpty(ip)) {
+                            Map<String, String> map = new HashMap<>();
+                            map.put("ip", ip);
+                            macAddress2Map(result, resultMap, tempResults, lineStatus, map);
+                        }
+                    }
+                } else {
+                    String replaceRegex = "Other\\saddresses\\sfor.*|(?:^|\n)rDNS\\srecord\\sfor.*|(?:^|\n)Nmap\\sscan\\sreport\\s|(?:^|\n)Starting\\sNmap.*|(?:^|\n)Host.*|(?:^|\n)Not shown.*|(?:^|\n)Some\\sclosed .*|(?:^|\n)PORT.*|(?:^|\n)[0-9]?\\sservice.?\\sunrecognized.*|(?:^|\n)SF.*|(?:^|\n)Starting.*|(?:^|\n)Warning.*|(?:^|\n)={14}.*|(?:^|\n)Service\\sdetection.*|(?:^|\n)Nmap done.*";
+                    result = result.replaceAll(replaceRegex, "");
+                    String mulRegex = "for\\s(.*)\n?(((?:^|\n)[0-9].*){1,500})";
+                    Pattern pattern = Pattern.compile(mulRegex);
+                    Matcher matcher = pattern.matcher(result);
+                    while (matcher.find()) {
+                        //singleStatus[0]:PORT，singleStatus[1]:STATE，singleStatus[2]:SERVICE，singleStatus[3]:VERSION
+                        String domainAndIp = matcher.group(1);
+                        String domain = domainAndIp.replaceAll("[()]", "").split("\\s")[0];
+                        String ip = domainAndIp.replaceAll("[()]", "").split("\\s")[1];
+                        String status = matcher.group(2);
+                        //单行IP状态，PORT     STATE    SERVICE       VERSION
+                        //用于保存分割后的状态
+                        //将lineStatus分解成单个数组元素，并保存到singleStatus中
+                        String[] lineStatus = status.split("\n");
+                        if (!org.springframework.util.StringUtils.isEmpty(ip)) {
+                            Map<String, String> map = new HashMap<>();
+                            map.put("ip", ip);
+                            map.put("domain", domain);
+                            macAddress2Map(result, resultMap, tempResults, lineStatus, map);
+                        }
+                    }
+                }
 
-        if ((result.contains("tcp") || result.contains("udp")) && !(result.contains("rDNS record") || result.contains("Other addresses for"))) {
-            //端口扫描
-            //正则采用NFA，递归过深会导致Exception in thread "main" java.lang.StackOverflowError
-            //{1,500}限制单个ip匹配端口数，测试中超过770个就会导致栈溢出
-            //匹配IP及对应服务
-            String mulRegex = "for\\s(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\n?(((?:^|\n)[0-9].*){1,500})";
-            Pattern pattern = Pattern.compile(mulRegex);
-            Matcher matcher = pattern.matcher(result);
-            while (matcher.find()) {
-                //singleStatus[0]:PORT，singleStatus[1]:STATE，singleStatus[2]:SERVICE，singleStatus[3]:VERSION
-                String ip = matcher.group(1);
-                String status = matcher.group(2);
-                //单行IP状态，PORT     STATE    SERVICE       VERSION
-                //用于保存分割后的状态
-                //将lineStatus分解成单个数组元素，并保存到singleStatus中
-                String[] lineStatus = status.split("\n");
-                resultMap.put(ip, lineStatus2Set(lineStatus));
-            }
-        } else if (result.contains("rDNS record") || result.contains("Other addresses for") || result.contains("(")) {
-            String replaceRegex = "Other\\saddresses\\sfor.*|(?:^|\n)rDNS\\srecord\\sfor.*|(?:^|\n)Nmap\\sscan\\sreport\\s|(?:^|\n)Starting\\sNmap.*|(?:^|\n)Host.*|(?:^|\n)Not shown.*|(?:^|\n)Some\\sclosed .*|(?:^|\n)PORT.*|(?:^|\n)[0-9]?\\sservice.?\\sunrecognized.*|(?:^|\n)SF.*|(?:^|\n)Starting.*|(?:^|\n)Warning.*|(?:^|\n)={14}.*|(?:^|\n)Service\\sdetection.*|(?:^|\n)Nmap done.*";
-            result = result.replaceAll(replaceRegex, "");
-            //20201014 增加 用域名扫端口
-            String mulRegex = "for\\s(.*)\n?(((?:^|\n)[0-9].*){1,500})";
-            Pattern pattern = Pattern.compile(mulRegex);
-            Matcher matcher = pattern.matcher(result);
 
-            while (matcher.find()) {
-                //singleStatus[0]:PORT，singleStatus[1]:STATE，singleStatus[2]:SERVICE，singleStatus[3]:VERSION
-                String domainAndIp = matcher.group(1);
-                String domain = domainAndIp.replaceAll("[()]", "").split("\\s")[0];
-                String ip = domainAndIp.replaceAll("[()]", "").split("\\s")[1];
-                String status = matcher.group(2);
-                //单行IP状态，PORT     STATE    SERVICE       VERSION
-                //用于保存分割后的状态
-                //将lineStatus分解成单个数组元素，并保存到singleStatus中
-                String[] lineStatus = status.split("\n");
-                resultMap.put(ip + ":" + domain, lineStatus2Set(lineStatus));
+            } else if (!result.contains("tcp") && !result.contains("udp")) { //nmap -sn，ping扫描
+                result = result.replaceAll("\\)for\\s", "<+>");
+                result = result.replaceAll("for\\s", "");
+                result = result.replaceAll("\n", "");
+                Set<String> resultSet = new HashSet<>(0);
+                String[] ipAndMacAddr = result.split("<\\+>");
+                for (String line : ipAndMacAddr) {
+                    if (!org.springframework.util.StringUtils.isEmpty(line)) {
+                        Map<String, String> map = new HashMap<>();
+                        String ip = line;
+                        if (line.contains("MAC Address: ")) {
+                            ip = line.split("MAC Address: ")[0];
+                            String temp = line.split("MAC Address: ")[1];
+                            if (temp.contains("(")) {
+                                String macAddr = temp.split("\\s\\(")[0];
+                                String type = temp.split("\\s\\(")[1];
+                                map.put("macAddress", macAddr);
+                                map.put("type", type);
+                            }
+                        }
+                        if (!org.springframework.util.StringUtils.isEmpty(ip)) {
+                            map.put("ip", ip);
+                            resultMap.put(map, resultSet);
+                        }
+                    }
+                }
             }
         }
-        //nmap -sn，ping扫描
-        if (!result.contains("tcp") && !result.contains("udp")) {
-            String ipRegex = "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})";
-            Pattern pattern = Pattern.compile(ipRegex);
-            Matcher matcher = pattern.matcher(result);
-            Set<String> resultSet = new HashSet<>(0);
-            while (matcher.find()) {
-                String ip = matcher.group(0);
-                //结果只有ip，加个空的set
-                resultMap.put(ip, resultSet);
-            }
-        }
-        return resultMap;
+        return resultMap.isEmpty() ? null : resultMap;
     }
+
+    private static void macAddress2Map(String result, Map<Map<String, String>, Set<String>> resultMap, String[] tempResults, String[] lineStatus, Map<String, String> map) {
+        if (result.contains("MAC Address")) {
+            String macAddrTemp = tempResults[tempResults.length - 1];
+            String s = macAddrTemp.split(":\\s")[1];
+            String macAddr = s;
+            if (s.contains("(")) {
+                String type = s.split("\\s\\(")[1];
+                type = type.replace(")", "");
+                map.put("type", type);
+                macAddr = s.split("\\s\\(")[0];
+            }
+            map.put("macAddress", macAddr);
+        }
+        resultMap.put(map, lineStatus2Set(lineStatus));
+    }
+
 
     private static Set<String> lineStatus2Set(String[] targetLine) {
         Set<String> resultSet = new HashSet<>();

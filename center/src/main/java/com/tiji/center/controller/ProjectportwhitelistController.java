@@ -37,7 +37,7 @@ public class ProjectportwhitelistController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", projectportwhitelistService.findAll());
     }
@@ -48,7 +48,7 @@ public class ProjectportwhitelistController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", projectportwhitelistService.findById(id));
     }
@@ -62,7 +62,7 @@ public class ProjectportwhitelistController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Projectportwhitelist> pageList = projectportwhitelistService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(projectportwhitelist -> {
@@ -81,7 +81,7 @@ public class ProjectportwhitelistController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", projectportwhitelistService.findSearch(searchMap));
     }
@@ -91,7 +91,7 @@ public class ProjectportwhitelistController {
      *
      * @param projectportwhitelist
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Projectportwhitelist projectportwhitelist) {
         String port = projectportwhitelist.getPort();
         Projectportwhitelist projectportwhitelistInDb = projectportwhitelistService.findByProjectinfoidAndPort(projectportwhitelist.getProjectinfoid(), port);
@@ -108,7 +108,7 @@ public class ProjectportwhitelistController {
      *
      * @param projectportwhitelist
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Projectportwhitelist projectportwhitelist, @PathVariable String id) {
         projectportwhitelist.setId(id);
         projectportwhitelistService.update(projectportwhitelist);
@@ -120,7 +120,7 @@ public class ProjectportwhitelistController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         projectportwhitelistService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -132,7 +132,7 @@ public class ProjectportwhitelistController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         projectportwhitelistService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");

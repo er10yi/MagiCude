@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author 贰拾壹
  * @create 2019-09-05 15:29
@@ -18,13 +21,10 @@ public class ApplicationConfig extends WebMvcConfigurationSupport {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(jwtFilter)
-                .addPathPatterns("/**")
-                //login不需要经过filter
-                .excludePathPatterns("/**/login")
-                //插件HTTP辅助验证不需要经过filter
-                .excludePathPatterns("/**/pluginchecker");
-        //.excludePathPatterns("/**/logout")
-        //.excludePathPatterns("/**/info");
+        //拦截所有请求
+        String[] addPathPatterns = {"/**"};
+        //不需要拦截的请求
+        String[] excludePathPatterns = {"/user/login", "/pluginchecker"};
+        registry.addInterceptor(jwtFilter).addPathPatterns(addPathPatterns).excludePathPatterns(excludePathPatterns);
     }
 }

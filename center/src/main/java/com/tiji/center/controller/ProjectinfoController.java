@@ -50,7 +50,7 @@ public class ProjectinfoController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", projectinfoService.findAll());
     }
@@ -61,9 +61,12 @@ public class ProjectinfoController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
-        return new Result(true, StatusCode.OK, "查询成功", projectinfoService.findById(id));
+        //departmentidname
+        Projectinfo projectinfo = projectinfoService.findById(id);
+        projectinfo.setDepartmentidname(projectinfo.getDepartmentid());
+        return new Result(true, StatusCode.OK, "查询成功", projectinfo);
     }
 
 
@@ -78,7 +81,7 @@ public class ProjectinfoController {
     @Autowired
     private ContactService contactService;
 
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+    @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Projectinfo> pageList = projectinfoService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(projectinfo -> {
@@ -111,7 +114,7 @@ public class ProjectinfoController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", projectinfoService.findSearch(searchMap));
     }
@@ -121,20 +124,40 @@ public class ProjectinfoController {
      *
      * @param projectinfo
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Projectinfo projectinfo) {
-        String departmentid = projectinfo.getDepartmentid();
-        Projectinfo projectinfoInDb = projectinfoService.findByDepartmentidAndProjectname(departmentid, projectinfo.getProjectname());
+        String projectname = projectinfo.getProjectname();
+        String departmentidSubmit = projectinfo.getDepartmentid();
+        String departmentid;
+        if (!StringUtils.isEmpty(departmentidSubmit)) {
+            Department department = departmentService.findById(departmentidSubmit);
+            if (Objects.isNull(department)) {
+                departmentid = idWorker.nextId() + "";
+                Department departmentInDb = departmentService.findByDepartmentname(departmentidSubmit);
+                if (Objects.isNull(departmentInDb)) {
+                    departmentService.add(new Department(departmentid, departmentidSubmit));
+                } else {
+                    return new Result(false, StatusCode.ERROR, "增加失败：部门名称重复");
+                }
+            } else {
+                departmentid = department.getId();
+            }
+        } else {
+            departmentid = null;
+        }
+
+        Projectinfo projectinfoInDb = projectinfoService.findByDepartmentidAndProjectname(departmentid, projectname);
         if (Objects.isNull(projectinfoInDb)) {
             String id = projectinfo.getId();
             if (Objects.isNull(id)) {
                 id = idWorker.nextId() + "";
                 projectinfo.setId(id);
             }
+            projectinfo.setDepartmentid(departmentid);
             projectinfoService.add(projectinfo);
             return new Result(true, StatusCode.OK, "增加成功", id);
         } else {
-            return new Result(false, StatusCode.ERROR, "增加失败：部门和项目信息重复");
+            return new Result(false, StatusCode.ERROR, "增加失败：部门和项目组重复");
         }
     }
 
@@ -143,11 +166,46 @@ public class ProjectinfoController {
      *
      * @param projectinfo
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Projectinfo projectinfo, @PathVariable String id) {
         projectinfo.setId(id);
-        projectinfoService.update(projectinfo);
-        return new Result(true, StatusCode.OK, "修改成功");
+        String projectname = projectinfo.getProjectname();
+        String departmentidSubmit = projectinfo.getDepartmentid();
+        String departmentid;
+        if (!StringUtils.isEmpty(departmentidSubmit)) {
+            Department department = departmentService.findById(departmentidSubmit);
+            if (Objects.isNull(department)) {
+                departmentid = idWorker.nextId() + "";
+                String departmentname = departmentidSubmit;
+                Department departmentInDb = departmentService.findByDepartmentname(departmentname);
+                if (Objects.isNull(departmentInDb)) {
+                    departmentService.add(new Department(departmentid, departmentidSubmit));
+                } else {
+                    return new Result(false, StatusCode.ERROR, "增加失败：部门名称重复");
+                }
+            } else {
+                departmentid = department.getId();
+            }
+        } else {
+            departmentid = null;
+        }
+        Projectinfo projectinfoOld = projectinfoService.findById(id);
+        if(projectinfo.getProjectname().equals(projectinfoOld.getProjectname())){
+            projectinfo.setDepartmentid(departmentid);
+            projectinfoService.update(projectinfo);
+            return new Result(true, StatusCode.OK, "修改成功");
+        }else {
+            Projectinfo projectinfoInDb = projectinfoService.findByDepartmentidAndProjectname(departmentid, projectname);
+            if (Objects.isNull(projectinfoInDb)) {
+                projectinfo.setDepartmentid(departmentid);
+                projectinfoService.update(projectinfo);
+                return new Result(true, StatusCode.OK, "修改成功");
+            } else {
+                return new Result(false, StatusCode.ERROR, "修改失败：部门和项目组重复");
+            }
+        }
+
+
     }
 
     /**
@@ -155,7 +213,7 @@ public class ProjectinfoController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         projectinfoService.deleteById(id);
         //删除项目信息的同时，删除与联系人关联
@@ -173,7 +231,7 @@ public class ProjectinfoController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         projectinfoService.deleteAllByIds(ids);
         ids.forEach(id -> {
@@ -190,7 +248,7 @@ public class ProjectinfoController {
     /**
      * 批量导入项目信息端口白名单
      */
-    @RequestMapping(value = "/batchAdd", method = RequestMethod.POST)
+    @PostMapping(value = "/batchAdd")
     public Result batchAdd(@RequestParam("file") MultipartFile file) throws IOException {
         if (Objects.isNull(file) || file.getSize() == 0) {
             return new Result(false, StatusCode.ERROR, "文件为空");
@@ -276,7 +334,7 @@ public class ProjectinfoController {
      *
      * @return
      */
-    @RequestMapping(value = "/batchUpdate", method = RequestMethod.GET)
+    @GetMapping(value = "/batchUpdate")
     public Result batchUpdate() {
 
         List<Projectinfo> projectinfoList = projectinfoService.findAll();
@@ -346,7 +404,7 @@ public class ProjectinfoController {
      * @param ids
      * @return
      */
-    @RequestMapping(value = "/ids", method = RequestMethod.POST)
+    @PostMapping(value = "/ids")
     public Result findByAssetIpIds(@RequestBody String[] ids) {
         return new Result(true, StatusCode.OK, "查询成功", projectinfoService.findByIds(ids));
     }
@@ -372,7 +430,7 @@ public class ProjectinfoController {
     public Result addContact(@RequestBody String[] projectinfoIdAndContactId) {
         String projectinfoId = projectinfoIdAndContactId[0];
         String contactId = projectinfoIdAndContactId[1];
-        if(!StringUtils.isEmpty((projectinfoId))&&!StringUtils.isEmpty((contactId))){
+        if (!StringUtils.isEmpty((projectinfoId)) && !StringUtils.isEmpty((contactId))) {
             ContactProjectinfo contactProjectinfo = contactProjectinfoService.findByContactidAndProjectinfoid(contactId, projectinfoId);
             if (Objects.isNull(contactProjectinfo)) {
                 projectinfoService.addContact(projectinfoIdAndContactId);

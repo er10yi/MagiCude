@@ -149,7 +149,7 @@ type java >/dev/null 2>&1
 if [ $? -eq 0 ];then
     # 存在java环境
     java_version=`java -version 2>&1 | sed '1!d' | sed -e 's/"//g' | awk '{print $3}'`
-    if [ $java_version != $openjdkVersion ];then
+    if [ $java_version != $openjdkCheckVersion ];then
         logErrorNotExit "当前已存在 java $java_version 环境"
         logError "请将其卸载后，重新执行 $0"
     fi
@@ -172,7 +172,7 @@ fi
 logInfo "更新系统，时间可能较久"
 yum -y update >/dev/null 2>&1
 logInfo "安装依赖，时间可能较久"
-yum -y install wget fontconfig stix-fonts ntpdate docker gcc make libpcap libpcap-dev clang git >/dev/null 2>&1
+yum -y install wget fontconfig stix-fonts ntpdate docker gcc make libpcap libpcap-dev clang git unzip >/dev/null 2>&1
 logInfo "验证依赖是否成功安装"
 dependArrays=("wget" "docker" "make" "gcc" "clang" "git")
 for dependName in ${dependArrays[@]} ; do
@@ -265,7 +265,7 @@ if [ ! -f $openjdk ]; then
     while ( [ $i -lt 5 ] )
     do
         # http://jdk.java.net/
-        wget https://mirrors.huaweicloud.com/openjdk/$openjdkVersion/$openjdk >/dev/null 2>&1
+        wget https://mirrors.huaweicloud.com/openjdk/$openjdkDownloadVersion/$openjdk >/dev/null 2>&1
         let "i++"
         if [ -f $openjdk ]; then
             break

@@ -30,7 +30,7 @@ public class StatisticsController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", statisticsService.findAll());
     }
@@ -41,7 +41,7 @@ public class StatisticsController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", statisticsService.findById(id));
     }
@@ -55,7 +55,7 @@ public class StatisticsController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Statistics> pageList = statisticsService.findSearch(searchMap, page, size);
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Statistics>(pageList.getTotalElements(), pageList.getContent()));
@@ -67,7 +67,7 @@ public class StatisticsController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", statisticsService.findSearch(searchMap));
     }
@@ -77,7 +77,7 @@ public class StatisticsController {
      *
      * @param statistics
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Statistics statistics) {
         statisticsService.add(statistics);
         return new Result(true, StatusCode.OK, "增加成功");
@@ -88,7 +88,7 @@ public class StatisticsController {
      *
      * @param statistics
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Statistics statistics, @PathVariable String id) {
         statistics.setId(id);
         statisticsService.update(statistics);
@@ -100,7 +100,7 @@ public class StatisticsController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         statisticsService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");

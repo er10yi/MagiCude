@@ -52,7 +52,7 @@ public class VulnController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", vulnService.findAll());
     }
@@ -63,7 +63,7 @@ public class VulnController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", vulnService.findById(id));
     }
@@ -77,7 +77,7 @@ public class VulnController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Vuln> pageList = vulnService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(vuln -> {
@@ -98,7 +98,7 @@ public class VulnController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", vulnService.findSearch(searchMap));
     }
@@ -108,7 +108,7 @@ public class VulnController {
      *
      * @param vuln
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Vuln vuln) {
         String name = vuln.getName();
         Vuln vulnInDb = vulnService.findByName(name);
@@ -132,7 +132,7 @@ public class VulnController {
      *
      * @param vuln
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Vuln vuln, @PathVariable String id) {
         vuln.setId(id);
         vulnService.update(vuln);
@@ -144,7 +144,7 @@ public class VulnController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         vulnService.deleteById(id);
         //删除示例代码
@@ -159,7 +159,7 @@ public class VulnController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         vulnService.deleteAllByIds(ids);
         ids.forEach(id -> {
@@ -355,7 +355,7 @@ public class VulnController {
      * @param ids
      * @return
      */
-    @RequestMapping(value = "/ids", method = RequestMethod.POST)
+    @PostMapping(value = "/ids")
     public Result findByAssetIpIds(@RequestBody String[] ids) {
         return new Result(true, StatusCode.OK, "查询成功", vulnService.findByIds(ids));
     }

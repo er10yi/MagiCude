@@ -7,10 +7,10 @@ import com.tiji.center.service.TaskportService;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
-import org.checkerframework.checker.units.qual.A;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.util.StringUtils;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -37,7 +37,7 @@ public class TaskportController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", taskportService.findAll());
     }
@@ -48,7 +48,7 @@ public class TaskportController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", taskportService.findById(id));
     }
@@ -62,7 +62,7 @@ public class TaskportController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+    @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
 
         //根据任务名称查询端口
@@ -112,7 +112,7 @@ public class TaskportController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", taskportService.findSearch(searchMap));
     }
@@ -122,7 +122,7 @@ public class TaskportController {
      *
      * @param taskport
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Taskport taskport) {
         taskportService.add(taskport);
         return new Result(true, StatusCode.OK, "增加成功");
@@ -133,7 +133,7 @@ public class TaskportController {
      *
      * @param taskport
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Taskport taskport, @PathVariable String id) {
         taskport.setId(id);
         taskportService.update(taskport);
@@ -145,7 +145,7 @@ public class TaskportController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         taskportService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -156,7 +156,7 @@ public class TaskportController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         taskportService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");

@@ -4,9 +4,10 @@
 # 如果第一次部署，一直不重连ssh，脚本执行完java和python3的命令就用不了
 
 pythonVersionArrays=("3.9.0" "3.8.5")
-openjdkVersion="15"
-openjdkDirName="jdk-15"
-openjdk="openjdk-15_linux-x64_bin.tar.gz"
+openjdkCheckVersion="15.0.1"
+openjdkDownloadVersion="15.0.1"
+openjdkDirName="jdk-15.0.1"
+openjdk="openjdk-15.0.1_linux-x64_bin.tar.gz"
 nmapUrl="https://nmap.org/dist/nmap-7.90-1.x86_64.rpm"
 
 export JAVA_HOME=/root/MagiCude/$openjdkDirName

@@ -1,11 +1,14 @@
 package com.tiji.center.pojo;
 
+import com.tiji.center.pojo.category.CategoryTab;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * assetport实体类
@@ -33,10 +36,19 @@ public class Assetport implements Serializable {
     private java.util.Date uptime;//端口发现时间
     private java.util.Date downtime;//端口关闭时间
     private java.util.Date changedtime;//修改时间
-
+    //标签bitmap
+    private String tabbitmap;
+    //标签名
+    @Transient
+    private String tabname;
+    //标签
+    @Transient
+    private List<CategoryTab> tabList;
     public Assetport() {
     }
-
+    @Transient
+    //应用系统名称
+    private String appsysname;
     public Assetport(String id, String assetipid, String port, String protocol, String state, String service, String version, Boolean checkwhitelist, Boolean assetnotifywhitelist, Date uptime, Date downtime, Date changedtime) {
         this.id = id;
         this.assetipid = assetipid;
@@ -154,5 +166,37 @@ public class Assetport implements Serializable {
 
     public void setChangedtime(Date changedtime) {
         this.changedtime = changedtime;
+    }
+
+    public String getTabbitmap() {
+        return tabbitmap;
+    }
+
+    public void setTabbitmap(String tabbitmap) {
+        this.tabbitmap = tabbitmap;
+    }
+
+    public String getTabname() {
+        return tabname;
+    }
+
+    public void setTabname(String tabname) {
+        this.tabname = tabname;
+    }
+
+    public List<CategoryTab> getTabList() {
+        return tabList;
+    }
+
+    public void setTabList(List<CategoryTab> tabList) {
+        this.tabList = tabList;
+    }
+
+    public String getAppsysname() {
+        return appsysname;
+    }
+
+    public void setAppsysname(String appsysname) {
+        this.appsysname = appsysname;
     }
 }

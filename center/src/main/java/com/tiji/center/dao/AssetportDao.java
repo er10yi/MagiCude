@@ -25,6 +25,8 @@ public interface AssetportDao extends JpaRepository<Assetport, String>, JpaSpeci
 
     Assetport findByAssetipidAndPortAndDowntimeIsNull(String assetipid, String assetport);
 
+    Assetport findByIdAndAndAssetipidAndDowntimeIsNull(String id, String assetipid);
+
     List<Assetport> findByServiceLikeAndDowntimeIsNullAndCheckwhitelistIsFalseAndStateEquals(String version, String state);
 
     List<Assetport> findByVersionLikeAndDowntimeIsNullAndCheckwhitelistIsFalseAndStateEquals(String version, String state);
@@ -52,4 +54,8 @@ public interface AssetportDao extends JpaRepository<Assetport, String>, JpaSpeci
 
     @Query(value = "SELECT tp.id,COUNT(*) as vulnCount FROM tb_assetport tp,tb_checkresult tcl  WHERE tcl.assetportid IN(tp.id) and ISNULL(tcl.passivetime) and tp.id in(?1) GROUP BY tp.id ", nativeQuery = true)
     List<String> findVulnCountOnlineByIds(List<String> ids);
+
+    @Modifying
+    @Query(value = "UPDATE tb_assetip_appsys_hostdomain SET assetportid =null WHERE assetportid=?1", nativeQuery = true)
+    void updateMiddByAssetportidSetAssetportid2Null(String id);
 }

@@ -3,6 +3,7 @@ package com.tiji.center.pojo;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -22,12 +23,18 @@ public class Host implements Serializable {
     private String assetipid;//资产ip编号
     private String macaddress;//mac地址
     private String hostname;//主机名
+    private String subdomain;//子域名
     private String ostype;//操作系统类型
     private String osversion;//操作系统版本
     private String type;//主机类型
     private String owner;//主机所有者
     private java.util.Date activetime;//主机发现时间
     private String remark;//备注，标记非dns反向解析
+
+    @Transient
+    //应用系统名称
+    private String appsysname;
+
 
     public Host() {
     }
@@ -123,5 +130,21 @@ public class Host implements Serializable {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getAppsysname() {
+        return appsysname;
+    }
+
+    public void setAppsysname(String appsysname) {
+        this.appsysname = appsysname;
+    }
+
+    public String getSubdomain() {
+        return subdomain;
+    }
+
+    public void setSubdomain(String subdomain) {
+        this.subdomain = subdomain;
     }
 }

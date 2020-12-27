@@ -12,7 +12,7 @@ import java.util.Map;
  * @create 2020-04-30 12:24
  */
 public class JavaSambaWeakPass {
-    public StringBuilder start(String ip, String port, String cmd, String timeout, Map<String, List<String>> payloadMap) {
+    public StringBuilder check(String ip, String port, String cmd, String timeout, Map<String, List<String>> payloadMap) {
         List<String> usernameList = payloadMap.get("username");
         List<String> passwordList = payloadMap.get("password");
         StringBuilder resultStringBuilder = new StringBuilder();

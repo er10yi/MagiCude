@@ -54,7 +54,7 @@ public class IpwhitelistController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", ipwhitelistService.findAll());
     }
@@ -65,7 +65,7 @@ public class IpwhitelistController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", ipwhitelistService.findById(id));
     }
@@ -79,7 +79,7 @@ public class IpwhitelistController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Ipwhitelist> pageList = ipwhitelistService.findSearch(searchMap, page, size);
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Ipwhitelist>(pageList.getTotalElements(), pageList.getContent()));
@@ -91,7 +91,7 @@ public class IpwhitelistController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", ipwhitelistService.findSearch(searchMap));
     }
@@ -101,7 +101,7 @@ public class IpwhitelistController {
      *
      * @param ipwhitelist
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Ipwhitelist ipwhitelist) {
         String ip = ipwhitelist.getIp();
         Ipwhitelist ipwhitelistInDb = ipwhitelistService.findByIp(ip);
@@ -118,7 +118,7 @@ public class IpwhitelistController {
      *
      * @param ipwhitelist
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Ipwhitelist ipwhitelist, @PathVariable String id) {
         ipwhitelist.setId(id);
         ipwhitelistService.update(ipwhitelist);
@@ -130,7 +130,7 @@ public class IpwhitelistController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         ipwhitelistService.deleteById(id);
         //删除端口白名单
@@ -144,7 +144,7 @@ public class IpwhitelistController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         ipwhitelistService.deleteAllByIds(ids);
         ids.forEach(id -> {
@@ -157,7 +157,7 @@ public class IpwhitelistController {
     /**
      * 批量导入ip端口白名单
      */
-    @RequestMapping(value = "/batchAdd", method = RequestMethod.POST)
+    @PostMapping(value = "/batchAdd")
     public Result batchAdd(@RequestParam("file") MultipartFile file) throws IOException {
         if (Objects.isNull(file) || file.getSize() == 0) {
             return new Result(false, StatusCode.ERROR, "文件为空");
@@ -241,7 +241,7 @@ public class IpwhitelistController {
      *
      * @return
      */
-    @RequestMapping(value = "/batchUpdate", method = RequestMethod.GET)
+    @GetMapping(value = "/batchUpdate")
     public Result batchUpdate() {
         List<Assetip> assetipList = new ArrayList<>();
         List<Assetport> assetPortList = new ArrayList<>();

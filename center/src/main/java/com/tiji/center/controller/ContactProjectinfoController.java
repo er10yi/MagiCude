@@ -42,7 +42,7 @@ public class ContactProjectinfoController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", contactProjectinfoService.findAll());
     }
@@ -53,7 +53,7 @@ public class ContactProjectinfoController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", contactProjectinfoService.findById(id));
     }
@@ -67,7 +67,7 @@ public class ContactProjectinfoController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<ContactProjectinfo> pageList = contactProjectinfoService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(contactProjectinfo -> {
@@ -95,7 +95,7 @@ public class ContactProjectinfoController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", contactProjectinfoService.findSearch(searchMap));
     }
@@ -105,7 +105,7 @@ public class ContactProjectinfoController {
      *
      * @param contactProjectinfo
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody ContactProjectinfo contactProjectinfo) {
         ContactProjectinfo contactProjectinfoInDb = contactProjectinfoService.findByContactidAndProjectinfoid(contactProjectinfo.getContactid(), contactProjectinfo.getProjectinfoid());
         if (Objects.isNull(contactProjectinfoInDb)) {
@@ -121,7 +121,7 @@ public class ContactProjectinfoController {
      *
      * @param contactProjectinfo
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody ContactProjectinfo contactProjectinfo, @PathVariable String id) {
         contactProjectinfo.setId(id);
         contactProjectinfoService.update(contactProjectinfo);
@@ -133,7 +133,7 @@ public class ContactProjectinfoController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         contactProjectinfoService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -144,7 +144,7 @@ public class ContactProjectinfoController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         contactProjectinfoService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");

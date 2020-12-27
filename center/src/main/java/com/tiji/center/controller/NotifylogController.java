@@ -31,7 +31,7 @@ public class NotifylogController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", notifylogService.findAll());
     }
@@ -42,7 +42,7 @@ public class NotifylogController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", notifylogService.findById(id));
     }
@@ -56,7 +56,7 @@ public class NotifylogController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Notifylog> pageList = notifylogService.findSearch(searchMap, page, size);
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Notifylog>(pageList.getTotalElements(), pageList.getContent()));
@@ -68,7 +68,7 @@ public class NotifylogController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", notifylogService.findSearch(searchMap));
     }
@@ -78,7 +78,7 @@ public class NotifylogController {
      *
      * @param notifylog
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Notifylog notifylog) {
         notifylogService.add(notifylog);
         return new Result(true, StatusCode.OK, "增加成功");
@@ -89,7 +89,7 @@ public class NotifylogController {
      *
      * @param notifylog
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Notifylog notifylog, @PathVariable String id) {
         notifylog.setId(id);
         notifylogService.update(notifylog);
@@ -101,7 +101,7 @@ public class NotifylogController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         notifylogService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -113,7 +113,7 @@ public class NotifylogController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         notifylogService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");

@@ -22,6 +22,8 @@ public class Projectinfo implements Serializable {
 
     @Transient
     private String contact;
+    @Transient
+    private String departmentidname;
 
     private String departmentid;//部门编号
     private String projectname;//项目名称
@@ -42,6 +44,8 @@ public class Projectinfo implements Serializable {
         this.inserttime = inserttime;
         this.overrideipwhitelist = overrideipwhitelist;
     }
+
+
 
     public String getId() {
         return id;
@@ -105,5 +109,13 @@ public class Projectinfo implements Serializable {
 
     public void setOverrideipwhitelist(Boolean overrideipwhitelist) {
         this.overrideipwhitelist = overrideipwhitelist;
+    }
+
+    public String getDepartmentidname() {
+        return departmentidname;
+    }
+
+    public void setDepartmentidname(String departmentidname) {
+        this.departmentidname = departmentidname;
     }
 }

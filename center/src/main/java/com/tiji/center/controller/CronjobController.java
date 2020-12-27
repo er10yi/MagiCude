@@ -4,15 +4,14 @@ import com.tiji.center.pojo.Cronjob;
 import com.tiji.center.schedule.quartz.QuartzJob;
 import com.tiji.center.schedule.quartz.QuartzJobService;
 import com.tiji.center.service.CronjobService;
-import com.tiji.center.util.TijiHelper;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.*;
 import org.quartz.impl.triggers.CronTriggerImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -39,6 +38,7 @@ public class CronjobController {
         JOB_CLASS_STRING_WHITELIST_MAP.put("邮件漏洞报告", "VulnNotify");
         JOB_CLASS_STRING_WHITELIST_MAP.put("每天执行一次的任务", "MidnightTask");
         JOB_CLASS_STRING_WHITELIST_MAP.put("统计报表数据", "Statistics");
+        JOB_CLASS_STRING_WHITELIST_MAP.put("IM通知", "IMNotify");
     }
 
     @Autowired
@@ -51,7 +51,7 @@ public class CronjobController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", cronjobService.findAll());
     }
@@ -62,7 +62,7 @@ public class CronjobController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", cronjobService.findById(id));
     }
@@ -76,7 +76,7 @@ public class CronjobController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+    @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Cronjob> pageList = cronjobService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(cronjob -> {
@@ -98,7 +98,7 @@ public class CronjobController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", cronjobService.findSearch(searchMap));
     }
@@ -108,7 +108,7 @@ public class CronjobController {
      *
      * @param cronjob
      */
-    //@RequestMapping(method = RequestMethod.POST)
+    //@PostMapping
     public Result add(@RequestBody Cronjob cronjob) {
         cronjobService.add(cronjob);
         return new Result(true, StatusCode.OK, "增加成功");
@@ -119,8 +119,8 @@ public class CronjobController {
      *
      * @param cronjob
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public Result update(@RequestBody Cronjob cronjob, @PathVariable String id) throws ClassNotFoundException, SchedulerException {
+    @PutMapping(value = "/{id}")
+    public Result update(@RequestBody Cronjob cronjob, @PathVariable String id) throws ClassNotFoundException, SchedulerException, ParseException {
         String cronjobName = cronjob.getName();
         if (!JOB_CLASS_STRING_WHITELIST_MAP.containsKey(cronjobName)) {
             return new Result(false, StatusCode.ERROR, "修改失败");
@@ -129,6 +129,22 @@ public class CronjobController {
         String cronExpression = cronjob.getCronexpression();
         if (!CronExpression.isValidExpression(cronExpression)) {
             return new Result(false, StatusCode.ERROR, "修改失败：Cron表达式错误");
+        }
+        boolean errIM = lessThanMinInterval("IM通知", cronjobName, cronExpression, 4L);
+        if (errIM) {
+            return new Result(false, StatusCode.ERROR, "IM通知时间间隔不能小于4秒");
+        }
+        boolean errAssetMail = lessThanMinInterval("邮件资产报告", cronjobName, cronExpression, 600L);
+        if (errAssetMail) {
+            return new Result(false, StatusCode.ERROR, "邮件资产报告时间间隔不能小于10分钟");
+        }
+        boolean errVulnMail = lessThanMinInterval("邮件漏洞报告", cronjobName, cronExpression, 600L);
+        if (errVulnMail) {
+            return new Result(false, StatusCode.ERROR, "邮件漏洞报告时间间隔不能小于10分钟");
+        }
+        boolean errHeartbeat = lessThanMinInterval("agent心跳包监控", cronjobName, cronExpression, 60L);
+        if (errHeartbeat) {
+            return new Result(false, StatusCode.ERROR, "时间间隔不能小于1分钟");
         }
         cronjob.setId(id);
         cronjobService.update(cronjob);
@@ -147,12 +163,23 @@ public class CronjobController {
         return new Result(true, StatusCode.OK, "修改成功");
     }
 
+    private boolean lessThanMinInterval(String sourceCronjobName, String targetCronjobName, String cronExpression, Long minInterval) throws ParseException {
+        if (sourceCronjobName.equals(targetCronjobName)) {
+            CronTriggerImpl cronTriggerImpl = new CronTriggerImpl();
+            cronTriggerImpl.setCronExpression(cronExpression);
+            List<Date> dates = TriggerUtils.computeFireTimes(cronTriggerImpl, null, 2);
+            long interval = dates.get(1).getTime() - dates.get(0).getTime();
+            return interval < minInterval * 1000;
+        }
+        return false;
+    }
+
     /**
      * 删除
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) throws SchedulerException {
         //cronjobService.deleteById(id);
         Cronjob cronjob = cronjobService.findById(id);

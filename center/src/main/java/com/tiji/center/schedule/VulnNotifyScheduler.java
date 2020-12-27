@@ -1,5 +1,6 @@
 package com.tiji.center.schedule;
 
+import com.tiji.center.pojo.Notifylog;
 import com.tiji.center.pojo.Projectvulnnotify;
 import com.tiji.center.pojo.Sendmailconfig;
 import com.tiji.center.service.NotifylogService;
@@ -7,6 +8,7 @@ import com.tiji.center.service.ProjectvulnnotifyService;
 import com.tiji.center.service.SendmailconfigService;
 import com.tiji.center.service.TaskipService;
 import com.tiji.center.util.NotifyUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ooxml.POIXMLProperties;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -58,7 +60,8 @@ public class VulnNotifyScheduler implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {
-
+        List<Notifylog> notifyLogList = new ArrayList<>();
+        Date date = new Date();
         try {
             //分页导出资产数据
             long allAssetsCount = taskipService.findAllVulnsCount();
@@ -76,6 +79,10 @@ public class VulnNotifyScheduler implements Job {
                 String author = sendmailconfig.getExcelauthor();
                 String sendtorisk = sendmailconfig.getSendtorisk();
 
+                if(StringUtils.isEmpty(sendtorisk)){
+                    notifylogService.add(new Notifylog(idWorker.nextId() + "", "E", null, null,  null, false, "默认提醒邮箱漏洞报告发送失败，异常消息：风险等级未定义", date));
+                    return;
+                }
                 //设置邮箱信息
                 mailSender.setHost(sendmailconfig.getSendhost());
                 mailSender.setUsername(sendFrom);
@@ -98,29 +105,31 @@ public class VulnNotifyScheduler implements Job {
                 String firstFileNameAll = "所有";
                 String fileNameAll = timePrefix + firstFileNameAll + "-" + lastFileName + ".xlsx";
                 File fileAll = new File(path + fileNameAll);
-                db2Excel(pageSize, author, firstFileNameAll, lastFileName, titleArraysWithContact, fileAll, sendtorisk);
+                db2Excel(pageSize, author, firstFileNameAll, lastFileName, titleArraysWithContact, fileAll, sendtorisk,notifyLogList);
                 //有联系人漏洞报告
                 String firstFileNameAllWithContact = "有项目联系人";
                 String fileNameAllWithContact = timePrefix + firstFileNameAllWithContact + "-" + lastFileName + ".xlsx";
                 File fileAllWithContact = new File(path + fileNameAllWithContact);
-                db2Excel(pageSize, author, firstFileNameAllWithContact, lastFileName, titleArraysWithContact, fileAllWithContact, sendtorisk);
+                db2Excel(pageSize, author, firstFileNameAllWithContact, lastFileName, titleArraysWithContact, fileAllWithContact, sendtorisk,notifyLogList);
                 //无联系人漏洞报告
                 String firstFileNameAllNoContact = "无项目联系人";
                 String fileNameAllNoContact = timePrefix + firstFileNameAllNoContact + "-" + lastFileName + ".xlsx";
                 File fileAllNoContact = new File(path + fileNameAllNoContact);
-                db2Excel(pageSize, author, firstFileNameAllNoContact, lastFileName, titleArraysWithContact, fileAllNoContact, sendtorisk);
+                db2Excel(pageSize, author, firstFileNameAllNoContact, lastFileName, titleArraysWithContact, fileAllNoContact, sendtorisk,notifyLogList);
                 //发邮件
                 Map<String, File> fileMap = new LinkedHashMap<>();
                 fileMap.put(fileAll.getName(), fileAll);
                 fileMap.put(fileAllWithContact.getName(), fileAllWithContact);
                 fileMap.put(fileAllNoContact.getName(), fileAllNoContact);
                 if (!fileMap.isEmpty()) {
-                    //默认提醒不记录发邮件日志
+                    //20201221默认提醒增加提醒日志
                     for (String mail : sendToArray) {
                         try {
-                            NotifyUtil.sendMail(mailSender, sendFrom, mail, sendmailconfigVulnsubject, sendmailconfigVulncontent, fileMap);
+                            NotifyUtil.sendMailWithAttach(mailSender, sendFrom, mail, sendmailconfigVulnsubject, sendmailconfigVulncontent, fileMap);
+                            notifyLogList.add(new Notifylog(idWorker.nextId() + "", "E", null, mail, fileNameAll + " " + fileNameAllWithContact + " " + fileNameAllNoContact, true, null, date));
                             //System.out.println("sending ...");
                         } catch (Exception e) {
+                            notifyLogList.add(new Notifylog(idWorker.nextId() + "", "E", null, mail, fileNameAll + " " + fileNameAllWithContact + " " + fileNameAllNoContact, false, "默认提醒邮箱漏洞报告发送失败，异常消息：" + e.getMessage(), date));
                             logger.info("all vuln notify Exception here: " + e);
                         }
                     }
@@ -230,6 +239,7 @@ public class VulnNotifyScheduler implements Job {
                         workbookInMap.write(fileOutputStream);
                         workbookInMap.close();
                     } catch (IOException e) {
+                        notifyLogList.add(new Notifylog(idWorker.nextId() + "", "E", null, null, null, false, "漏洞报告无法写入文件，异常消息：" + e.getMessage(), date));
                         logger.info("File2disk Vuln owner Exception here: " + e);
                     }
 
@@ -263,12 +273,13 @@ public class VulnNotifyScheduler implements Job {
                 NotifyUtil.sendMail2ProjectOwner(sendFrom, sendmailconfigVulnsubject, sendmailconfigVulncontent, projectInfoAndContactWithFilelistMap, mailSender, notifylogService, idWorker);
             }
         } catch (Exception e) {
+            notifyLogList.add(new Notifylog(idWorker.nextId() + "", "E", null, null, null, false, "默认提醒邮箱漏洞报告发送失败，异常消息：" + e.getMessage(), date));
             logger.error("VulnNotifyScheduler Exception here: " + ExcpUtil.buildErrorMessage(e));
         }
-
+        notifylogService.batchAdd(notifyLogList);
     }
 
-    public void db2Excel(long pageSize, String author, String firstFileName, String lastFileName, String[] titleArraysWithContact, File file, String sendtorisk) {
+    public void db2Excel(long pageSize, String author, String firstFileName, String lastFileName, String[] titleArraysWithContact, File file, String sendtorisk,List<Notifylog> notifyLogList) {
         //分页导出资产数据
         long allAssetsCount = taskipService.findAllVulnsCount();
         if (allAssetsCount > 0) {
@@ -334,6 +345,7 @@ public class VulnNotifyScheduler implements Job {
                 workbook.write(fileOutputStream);
                 workbook.close();
             } catch (IOException e) {
+                notifyLogList.add(new Notifylog(idWorker.nextId() + "", "E", null, null, null, false, "漏洞导出到Excel失败，异常消息：" + e.getMessage(), new Date()));
                 logger.info("vuln report 2Excel Exception here: " + e);
             }
         }

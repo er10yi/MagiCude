@@ -39,7 +39,7 @@ public class DomainwhitelistController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", domainwhitelistService.findAll());
     }
@@ -50,7 +50,7 @@ public class DomainwhitelistController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", domainwhitelistService.findById(id));
     }
@@ -64,7 +64,7 @@ public class DomainwhitelistController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Domainwhitelist> pageList = domainwhitelistService.findSearch(searchMap, page, size);
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Domainwhitelist>(pageList.getTotalElements(), pageList.getContent()));
@@ -76,7 +76,7 @@ public class DomainwhitelistController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", domainwhitelistService.findSearch(searchMap));
     }
@@ -86,7 +86,7 @@ public class DomainwhitelistController {
      *
      * @param domainwhitelist
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Domainwhitelist domainwhitelist) {
         String domain = domainwhitelist.getDomain();
         Domainwhitelist domainInDb = domainwhitelistService.findByDomain(domain);
@@ -103,7 +103,7 @@ public class DomainwhitelistController {
      *
      * @param domainwhitelist
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Domainwhitelist domainwhitelist, @PathVariable String id) {
         domainwhitelist.setId(id);
         domainwhitelistService.update(domainwhitelist);
@@ -115,7 +115,7 @@ public class DomainwhitelistController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         domainwhitelistService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -127,7 +127,7 @@ public class DomainwhitelistController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         domainwhitelistService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -136,7 +136,7 @@ public class DomainwhitelistController {
     /**
      * 批量导域名白名单
      */
-    @RequestMapping(value = "/batchAdd", method = RequestMethod.POST)
+    @PostMapping(value = "/batchAdd")
     public Result batchAdd(@RequestParam("file") MultipartFile file) {
         if (Objects.isNull(file) || file.getSize() == 0) {
             return new Result(false, StatusCode.ERROR, "文件为空");

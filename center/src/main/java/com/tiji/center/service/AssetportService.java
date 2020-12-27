@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import util.IdWorker;
 
 import javax.persistence.criteria.Predicate;
@@ -185,6 +186,10 @@ public class AssetportService {
                 predicateList.add(cb.lessThanOrEqualTo(root.get("changedtime").as(String.class), changedtimeList.get(1)));
             }
 
+            // 标签bitmap
+            if (!StringUtils.isEmpty(searchMap.get("tabbitmap"))) {
+                predicateList.add(cb.like(root.get("tabbitmap").as(String.class), "%" + searchMap.get("tabbitmap") + "%"));
+            }
             return cb.and(predicateList.toArray(new Predicate[predicateList.size()]));
 
         };
@@ -210,6 +215,17 @@ public class AssetportService {
      */
     public Assetport findByAssetipidAndPortAndDowntimeIsNull(String assetipid, String port) {
         return assetportDao.findByAssetipidAndPortAndDowntimeIsNull(assetipid, port);
+    }
+
+    /**
+     * 根据id,assetipid查询未下线的端口
+     *
+     * @param
+     * @param id
+     * @return assetipid
+     */
+    public Assetport findByIdAndAndAssetipidAndDowntimeIsNull(String id, String assetipid) {
+        return assetportDao.findByIdAndAndAssetipidAndDowntimeIsNull(id, assetipid);
     }
 
     /**
@@ -374,5 +390,17 @@ public class AssetportService {
 
         });
         return idAndCount.isEmpty() ? null : idAndCount;
+    }
+
+
+    /**
+     * 根据id将中间表的端口编号置空
+     *
+     * @param id
+     * @return
+     */
+    @Transactional(value = "masterTransactionManager")
+    public void updateMiddByAssetportidSetAssetportid2Null(String id) {
+        assetportDao.updateMiddByAssetportidSetAssetportid2Null(id);
     }
 }

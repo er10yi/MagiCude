@@ -42,7 +42,7 @@ public class DictionaryusernameController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", dictionaryusernameService.findAll());
     }
@@ -53,7 +53,7 @@ public class DictionaryusernameController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", dictionaryusernameService.findById(id));
     }
@@ -67,7 +67,7 @@ public class DictionaryusernameController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Dictionaryusername> pageList = dictionaryusernameService.findSearch(searchMap, page, size);
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Dictionaryusername>(pageList.getTotalElements(), pageList.getContent()));
@@ -79,7 +79,7 @@ public class DictionaryusernameController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", dictionaryusernameService.findSearch(searchMap));
     }
@@ -89,7 +89,7 @@ public class DictionaryusernameController {
      *
      * @param dictionaryusername
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Dictionaryusername dictionaryusername) {
 
         String username = dictionaryusername.getUsername();
@@ -109,7 +109,7 @@ public class DictionaryusernameController {
      *
      * @param dictionaryusername
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Dictionaryusername dictionaryusername, @PathVariable String id) {
         dictionaryusername.setId(id);
         dictionaryusernameService.update(dictionaryusername);
@@ -123,7 +123,7 @@ public class DictionaryusernameController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         dictionaryusernameService.deleteById(id);
         //更新redis缓存
@@ -136,7 +136,7 @@ public class DictionaryusernameController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         dictionaryusernameService.deleteAllByIds(ids);
         //更新redis缓存
@@ -147,7 +147,7 @@ public class DictionaryusernameController {
     /**
      * 批量导入字典
      */
-    @RequestMapping(value = "/batchAdd", method = RequestMethod.POST)
+    @PostMapping(value = "/batchAdd")
     public Result batchAddDictionaryUsername(@RequestParam("file") MultipartFile file) {
         if (Objects.isNull(file) || file.getSize() == 0) {
             return new Result(false, StatusCode.ERROR, "文件为空");

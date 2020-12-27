@@ -36,7 +36,7 @@ public class SolutionController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", solutionService.findAll());
     }
@@ -47,7 +47,7 @@ public class SolutionController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", solutionService.findById(id));
     }
@@ -61,7 +61,7 @@ public class SolutionController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Solution> pageList = solutionService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(Solution -> {
@@ -82,7 +82,7 @@ public class SolutionController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", solutionService.findSearch(searchMap));
     }
@@ -92,7 +92,7 @@ public class SolutionController {
      *
      * @param solution
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Solution solution) {
         solutionService.add(solution);
         return new Result(true, StatusCode.OK, "增加成功");
@@ -103,7 +103,7 @@ public class SolutionController {
      *
      * @param solution
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Solution solution, @PathVariable String id) {
         solution.setId(id);
         solutionService.update(solution);
@@ -115,7 +115,7 @@ public class SolutionController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         solutionService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -126,7 +126,7 @@ public class SolutionController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         solutionService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");

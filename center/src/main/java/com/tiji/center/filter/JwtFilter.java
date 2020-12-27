@@ -10,6 +10,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,7 +25,7 @@ import java.util.Objects;
  * @create 2019-09-05 15:27
  */
 @Component
-public class JwtFilter extends HandlerInterceptorAdapter {
+public class JwtFilter implements HandlerInterceptor {
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -88,7 +89,7 @@ public class JwtFilter extends HandlerInterceptorAdapter {
     //记录日志
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
 
-        super.afterCompletion(request, response, handler, ex);
+        HandlerInterceptor.super.afterCompletion(request, response, handler, ex);
     }
 }
 

@@ -39,7 +39,7 @@ public class TaskipController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", taskipService.findAll());
     }
@@ -50,7 +50,7 @@ public class TaskipController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", taskipService.findById(id));
     }
@@ -64,7 +64,7 @@ public class TaskipController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Taskip> pageList = taskipService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(taskip -> {
@@ -83,7 +83,7 @@ public class TaskipController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", taskipService.findSearch(searchMap));
     }
@@ -93,7 +93,7 @@ public class TaskipController {
      *
      * @param taskip
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Taskip taskip) {
         taskipService.add(taskip);
         return new Result(true, StatusCode.OK, "增加成功");
@@ -104,7 +104,7 @@ public class TaskipController {
      *
      * @param taskip
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Taskip taskip, @PathVariable String id) {
         taskip.setId(id);
         taskipService.update(taskip);
@@ -116,7 +116,7 @@ public class TaskipController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         taskipService.deleteById(id);
         //删除资产端口
@@ -130,7 +130,7 @@ public class TaskipController {
      * @param ids
      * @return
      */
-    @RequestMapping(value = "/ids", method = RequestMethod.POST)
+    @PostMapping(value = "/ids")
     public Result findByAssetIpIds(@RequestBody String[] ids) {
         return new Result(true, StatusCode.OK, "查询成功", taskipService.findByIds(ids));
     }
@@ -140,7 +140,7 @@ public class TaskipController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         taskipService.deleteAllByIds(ids);
         ids.forEach(id -> {

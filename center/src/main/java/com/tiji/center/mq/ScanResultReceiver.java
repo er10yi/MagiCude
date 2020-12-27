@@ -1,8 +1,6 @@
 package com.tiji.center.mq;
 
-import com.tiji.center.pojo.Agent;
-import com.tiji.center.pojo.Nmapconfig;
-import com.tiji.center.pojo.Task;
+import com.tiji.center.pojo.*;
 import com.tiji.center.service.*;
 import com.tiji.center.util.TijiHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -74,6 +72,15 @@ public class ScanResultReceiver {
     private AgentService agentService;
     @Autowired
     private HostService hostService;
+    @Autowired
+    private WebrawdataService webrawdataService;
+    @Autowired
+    private RiskportService riskportService;
+    @Autowired
+    private RiskserviceService riskserviceService;
+    @Autowired
+    private RiskversionService riskversionService;
+
 
     @RabbitHandler
     public void getMessage(Map<String, String> resultMap) {
@@ -175,121 +182,145 @@ public class ScanResultReceiver {
 
                     redisTemplate.expire(taskStatusName, 15, TimeUnit.SECONDS);
                 }
-                if (!Objects.isNull(scanResult) && Objects.isNull(task_status)) {
+                if (Objects.isNull(task_status)) {
                     switch (workType) {
                         case "mass": {
-                            Map<String, Set<String>> massResultMap = TijiHelper.ipAndPortList2Map(scanResult);
-                            //mysql入库
-                            TijiHelper.massScanResult2DB(massResultMap, taskipService, taskportService, idWorker, taskId);
-                            //任务结果，合并到资产库
-                            if (taskService.findById(taskId).getMerge2asset()) {
-                                TijiHelper.massScanResult2AssetDB(assetipService, assetportService, idWorker, massResultMap);
+                            if (!Objects.isNull(scanResult)) {
+                                Set<String> riskPortSet = new HashSet<>();
+                                Set<String> riskServiceSet = new HashSet<>();
+                                Set<String> riskVersionSet = new HashSet<>();
+                                riskInfo2Set(riskPortSet, riskServiceSet, riskVersionSet);
+
+                                Map<String, Set<String>> massResultMap = TijiHelper.ipAndPortList2Map(scanResult);
+                                //mysql入库
+                                TijiHelper.massScanResult2DB(massResultMap, taskipService, taskportService, idWorker, taskId);
+                                //任务结果，合并到资产库
+                                if (taskService.findById(taskId).getMerge2asset()) {
+                                    TijiHelper.massScanResult2AssetDB(assetipService, assetportService, idWorker, rabbitMessagingTemplate, riskPortSet, riskServiceSet, riskVersionSet, massResultMap);
+                                }
                             }
                             break;
                         }
                         case "nmap": {
-                            Map<String, Set<String>> nmapResultMap = TijiHelper.nmapResult2Map(scanResult);
-                            //mysql入库
-                            TijiHelper.nmapScanResult2DB(nmapResultMap, taskipService, taskportService, idWorker, taskId);
-                            //任务结果，合并到资产库
-                            if (taskService.findById(taskId).getMerge2asset()) {
-                                TijiHelper.nmapScanResult2AssetDB(assetipService, assetportService,hostService, idWorker, nmapResultMap);
+                            if (!Objects.isNull(scanResult)) {
+                                Set<String> riskPortSet = new HashSet<>();
+                                Set<String> riskServiceSet = new HashSet<>();
+                                Set<String> riskVersionSet = new HashSet<>();
+                                riskInfo2Set(riskPortSet, riskServiceSet, riskVersionSet);
+
+                                Map<Map<String, String>, Set<String>> nmapResultMap = TijiHelper.nmapResult2Map(scanResult);
+                                //mysql入库
+                                TijiHelper.nmapScanResult2DB(nmapResultMap, taskipService, taskportService, idWorker, taskId);
+                                //任务结果，合并到资产库
+                                if (taskService.findById(taskId).getMerge2asset()) {
+                                    TijiHelper.nmapScanResult2AssetDB(assetipService, assetportService, hostService, idWorker, rabbitMessagingTemplate, riskPortSet, riskServiceSet, riskVersionSet, nmapResultMap);
+                                }
                             }
                             break;
                         }
                         case "mass2Nmap":
-                            //mass
-                            //第一次用mass扫
-                            Map<String, Set<String>> massResultMap1 = TijiHelper.ipAndPortList2Map(scanResult);
-                            //mysql入库
-                            TijiHelper.massScanResult2DB(massResultMap1, taskipService, taskportService, idWorker, taskId);
-                            //任务结果，合并到资产库
-                            if (taskService.findById(taskId).getMerge2asset()) {
-                                TijiHelper.massScanResult2AssetDB(assetipService, assetportService, idWorker, massResultMap1);
-                            }
-                            //当前任务已经结束或未被终止，发送第二次任务
-                            if (secondTaskFlag) {
-                                List<Agent> onlineAgentList = agentService.findAllByOnline(true);
-                                int agentCount;
-                                if (onlineAgentList.isEmpty()) {
-                                    break;
-                                } else {
-                                    agentCount = onlineAgentList.size();
+                            if (!Objects.isNull(scanResult)) {
+                                Set<String> riskPortSet = new HashSet<>();
+                                Set<String> riskServiceSet = new HashSet<>();
+                                Set<String> riskVersionSet = new HashSet<>();
+                                riskInfo2Set(riskPortSet, riskServiceSet, riskVersionSet);
+                                //mass
+                                //第一次用mass扫
+                                Map<String, Set<String>> massResultMap1 = TijiHelper.ipAndPortList2Map(scanResult);
+                                //mysql入库
+                                TijiHelper.massScanResult2DB(massResultMap1, taskipService, taskportService, idWorker, taskId);
+                                //任务结果，合并到资产库
+                                if (taskService.findById(taskId).getMerge2asset()) {
+                                    TijiHelper.massScanResult2AssetDB(assetipService, assetportService, idWorker, rabbitMessagingTemplate, riskPortSet, riskServiceSet, riskVersionSet, massResultMap1);
                                 }
-                                Map<String, String> taskConfig = new HashMap<>();
-                                String sliceIPList = "sliceIPList_" + taskId;
-                                //taskip数据库获取当前任务的ip和端口，即masscan扫描之后的ip和端口
-                                List<String> ipAndPortList = taskipService.findTaskIpAndPort(taskId);
+                                //当前任务已经结束或未被终止，发送第二次任务
+                                if (secondTaskFlag) {
+                                    List<Agent> onlineAgentList = agentService.findAllByOnline(true);
+                                    int agentCount;
+                                    if (onlineAgentList.isEmpty()) {
+                                        break;
+                                    } else {
+                                        agentCount = onlineAgentList.size();
+                                    }
+                                    Map<String, String> taskConfig = new HashMap<>();
+                                    String sliceIPList = "sliceIPList_" + taskId;
+                                    //taskip数据库获取当前任务的ip和端口，即masscan扫描之后的ip和端口
+                                    List<String> ipAndPortList = taskipService.findTaskIpAndPort(taskId);
 
-                                //System.out.println("ipAndPortList:" + ipAndPortList.size());
-                                //ipAndPortList.forEach(System.out::println);
-                                if (ipAndPortList.isEmpty()) {
-                                    //没有扫到端口，结束任务
-                                    Task task = taskService.findById(taskId);
-                                    redisTemplate.delete(totalTaskListName);
-                                    redisTemplate.delete(sliceIPListSizeName);
-                                    task.setEndtime(new Date());
+                                    //System.out.println("ipAndPortList:" + ipAndPortList.size());
+                                    //ipAndPortList.forEach(System.out::println);
+                                    if (ipAndPortList.isEmpty()) {
+                                        //没有扫到端口，结束任务
+                                        Task task = taskService.findById(taskId);
+                                        redisTemplate.delete(totalTaskListName);
+                                        redisTemplate.delete(sliceIPListSizeName);
+                                        task.setEndtime(new Date());
 
-                                    taskConfig.put("status", "removeAccomplishTask");
+                                        taskConfig.put("status", "removeAccomplishTask");
+                                        taskConfig.put("taskId", taskId);
+                                        rabbitMessagingTemplate.convertAndSend("tijifanout", "", taskConfig);
+                                        taskService.update(task);
+                                        break;
+                                    }
+                                    Map<String, Set<String>> ipAndPortResultMap;
+                                    Map<String, Set<String>> ipAndPortRTempMap = new LinkedHashMap<>();
+                                    ipAndPortResultMap = TijiHelper.ipAndPortList2Map(ipAndPortList);
+                                    BlockingQueue<String> ipAndPortQueue = new LinkedBlockingQueue<>();
+                                    TijiHelper.iPWithSamePorts2OneGroup(ipAndPortRTempMap, ipAndPortResultMap, ipAndPortQueue);
+                                    for (Map.Entry<String, Set<String>> entry : ipAndPortRTempMap.entrySet()) {
+                                        String ips = StringUtils.join(entry.getValue(), ",");
+                                        ipAndPortQueue.put(ips.replaceAll(",", " ") + " -p" + entry.getKey());
+                                    }
+                                    for (String ipAndPort : ipAndPortQueue) {
+                                        redisTemplate.opsForList().leftPush(sliceIPList, ipAndPort);
+                                    }
+
+                                    //设置当前分组大小
+                                    redisTemplate.opsForValue().set("sliceIPListSize_" + taskId, String.valueOf(redisTemplate.opsForList().size(sliceIPList)));
+
+                                    taskConfig.put("status", "start");
                                     taskConfig.put("taskId", taskId);
+                                    taskConfig.put("workType", "nmap");
+                                    taskConfig.put("sliceIPList", sliceIPList);
+
+
+                                    Task task = taskService.findById(taskId);
+                                    String taskParentId = task.getTaskparentid();
+                                    String nmapConfigId = taskId;
+                                    if (!Objects.isNull(taskParentId) && !taskParentId.isEmpty()) {
+                                        nmapConfigId = taskParentId;
+                                    }
+                                    Nmapconfig nmapconfig = nmapconfigService.findByTaskid(nmapConfigId);
+                                    taskConfig.put("threadNumber", nmapconfig.getThreadnumber());
+                                    taskConfig.put("singleIpScanTime", nmapconfig.getSingleipscantime());
+                                    taskConfig.put("additionOption", nmapconfig.getAdditionoption());
+
+                                    //分组数存入redis
+                                    double sliceIPListSize = redisTemplate.opsForList().size(sliceIPList);
+                                    //向上取整，确保所有的agent取出的数量大于等于总数
+                                    double maxSliceSize = Math.ceil(sliceIPListSize / agentCount);
+                                    taskConfig.put("maxSliceSize", String.valueOf(maxSliceSize));
+
+                                    //任务丢给MQ
                                     rabbitMessagingTemplate.convertAndSend("tijifanout", "", taskConfig);
-                                    taskService.update(task);
-                                    break;
+
                                 }
-                                Map<String, Set<String>> ipAndPortResultMap;
-                                Map<String, Set<String>> ipAndPortRTempMap = new LinkedHashMap<>();
-                                ipAndPortResultMap = TijiHelper.ipAndPortList2Map(ipAndPortList);
-                                BlockingQueue<String> ipAndPortQueue = new LinkedBlockingQueue<>();
-                                TijiHelper.iPWithSamePorts2OneGroup(ipAndPortRTempMap, ipAndPortResultMap, ipAndPortQueue);
-                                for (Map.Entry<String, Set<String>> entry : ipAndPortRTempMap.entrySet()) {
-                                    String ips = StringUtils.join(entry.getValue(), ",");
-                                    ipAndPortQueue.put(ips.replaceAll(",", " ") + " -p" + entry.getKey());
-                                }
-                                for (String ipAndPort : ipAndPortQueue) {
-                                    redisTemplate.opsForList().leftPush(sliceIPList, ipAndPort);
-                                }
-
-                                //设置当前分组大小
-                                redisTemplate.opsForValue().set("sliceIPListSize_" + taskId, String.valueOf(redisTemplate.opsForList().size(sliceIPList)));
-
-                                taskConfig.put("status", "start");
-                                taskConfig.put("taskId", taskId);
-                                taskConfig.put("workType", "nmap");
-                                taskConfig.put("sliceIPList", sliceIPList);
-
-
-                                Task task = taskService.findById(taskId);
-                                String taskParentId = task.getTaskparentid();
-                                String nmapConfigId = taskId;
-                                if (!Objects.isNull(taskParentId) && !taskParentId.isEmpty()) {
-                                    nmapConfigId = taskParentId;
-                                }
-                                Nmapconfig nmapconfig = nmapconfigService.findByTaskid(nmapConfigId);
-                                taskConfig.put("threadNumber", nmapconfig.getThreadnumber());
-                                taskConfig.put("singleIpScanTime", nmapconfig.getSingleipscantime());
-                                taskConfig.put("additionOption", nmapconfig.getAdditionoption());
-
-                                //分组数存入redis
-                                double sliceIPListSize = redisTemplate.opsForList().size(sliceIPList);
-                                //向上取整，确保所有的agent取出的数量大于等于总数
-                                double maxSliceSize = Math.ceil(sliceIPListSize / agentCount);
-                                taskConfig.put("maxSliceSize", String.valueOf(maxSliceSize));
-
-                                //任务丢给MQ
-                                rabbitMessagingTemplate.convertAndSend("tijifanout", "", taskConfig);
-
                             }
                             break;
                         case "nse":
-                            if (scanResult.contains("-p") && scanResult.contains("Starting")) {
-                                TijiHelper.nseResultParser(assetipService, assetportService, idWorker, pluginconfigService, checkresultService, vulnkeywordService, checkresultVulnService, vulnpluginconfigService, imvulnnotifyService, redisTemplate, rabbitMessagingTemplate, scanResult);
+                            if (!Objects.isNull(scanResult)) {
+                                if (scanResult.contains("-p") && scanResult.contains("Starting")) {
+                                    TijiHelper.nseResultParser(assetipService, assetportService, idWorker, pluginconfigService, checkresultService, vulnkeywordService, checkresultVulnService, vulnpluginconfigService, imvulnnotifyService, redisTemplate, rabbitMessagingTemplate, scanResult);
+                                }
                             }
                             break;
                         case "selfd":
-                            TijiHelper.selfdResultParser(assetipService, assetportService, idWorker, pluginconfigService, checkresultService, vulnkeywordService, checkresultVulnService, vulnpluginconfigService, imvulnnotifyService, redisTemplate, rabbitMessagingTemplate, resultMap, scanResult);
+                            if (!Objects.isNull(scanResult)) {
+                                TijiHelper.selfdResultParser(assetipService, assetportService, idWorker, pluginconfigService, checkresultService, vulnkeywordService, checkresultVulnService, vulnpluginconfigService, imvulnnotifyService, redisTemplate, rabbitMessagingTemplate, resultMap, scanResult);
+                            }
                             break;
                         case "httpp":
-                            TijiHelper.httppResult2Db(webinfoService, urlService, idWorker, titlewhitelistService, domainwhitelistService, resultMap, scanResult);
+                            TijiHelper.httppResult2Db(webinfoService, urlService, idWorker, titlewhitelistService, domainwhitelistService, webrawdataService, resultMap, scanResult);
                             break;
                         default:
                             break;
@@ -300,5 +331,55 @@ public class ScanResultReceiver {
             logger.error("ScanResultReceiver Exception here: " + ExcpUtil.buildErrorMessage(e));
         }
 
+    }
+
+    private void riskInfo2Set(Set<String> riskPortSet, Set<String> riskServiceSet, Set<String> riskVersionSet) {
+        String riskPortSetKey = "riskPortSet";
+        String riskServiceSetKey = "riskServiceSet";
+        String riskVersionSetKey = "riskVersionSet";
+        String riskassetnotifyKey = "riskassetnotify";
+        Boolean riskassetnotifyFlagExist = redisTemplate.hasKey(riskassetnotifyKey);
+        Boolean assetnotifyFlag = false;
+        if (!Objects.isNull(riskassetnotifyFlagExist) && riskassetnotifyFlagExist) {
+            String riskassetnotify = redisTemplate.opsForValue().get(riskassetnotifyKey);
+            if (!Objects.isNull(riskassetnotify) && "true".equals(riskassetnotify)) {
+                assetnotifyFlag = true;
+            }
+        }
+        if (assetnotifyFlag) {
+            Boolean riskPortSetFlagExist = redisTemplate.hasKey(riskPortSetKey);
+            if (!Objects.isNull(riskPortSetFlagExist) && riskPortSetFlagExist) {
+                riskPortSet.addAll(redisTemplate.opsForSet().members(riskPortSetKey));
+            } else {
+                List<Riskport> riskportList = riskportService.findAll();
+                riskportList.parallelStream().forEach(riskport -> {
+                    String port = riskport.getPort();
+                    redisTemplate.opsForSet().add(riskPortSetKey, port);
+                    riskPortSet.add(port);
+                });
+            }
+            Boolean riskServiceSetFlagExist = redisTemplate.hasKey(riskServiceSetKey);
+            if (!Objects.isNull(riskServiceSetFlagExist) && riskServiceSetFlagExist) {
+                riskServiceSet.addAll(redisTemplate.opsForSet().members(riskServiceSetKey));
+            } else {
+                List<Riskservice> riskserviceList = riskserviceService.findAll();
+                riskserviceList.parallelStream().forEach(riskservice -> {
+                    String service = riskservice.getService();
+                    redisTemplate.opsForSet().add(riskServiceSetKey, service);
+                    riskServiceSet.add(service);
+                });
+            }
+            Boolean riskVersionSetFlagExist = redisTemplate.hasKey(riskVersionSetKey);
+            if (!Objects.isNull(riskVersionSetFlagExist) && riskVersionSetFlagExist) {
+                riskVersionSet.addAll(redisTemplate.opsForSet().members(riskVersionSetKey));
+            } else {
+                List<Riskversion> riskversionList = riskversionService.findAll();
+                riskversionList.parallelStream().forEach(riskversion -> {
+                    String service = riskversion.getVersion();
+                    redisTemplate.opsForSet().add(riskVersionSetKey, service);
+                    riskVersionSet.add(service);
+                });
+            }
+        }
     }
 }

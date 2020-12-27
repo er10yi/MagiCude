@@ -32,7 +32,7 @@ public class ProjectController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", projectService.findAll());
     }
@@ -43,7 +43,7 @@ public class ProjectController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", projectService.findById(id));
     }
@@ -57,7 +57,7 @@ public class ProjectController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Project> pageList = projectService.findSearch(searchMap, page, size);
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<Project>(pageList.getTotalElements(), pageList.getContent()));
@@ -69,7 +69,7 @@ public class ProjectController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", projectService.findSearch(searchMap));
     }
@@ -79,7 +79,7 @@ public class ProjectController {
      *
      * @param project
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Project project) {
         String name = project.getName();
         Project projectInDb = projectService.findByIName(name);
@@ -96,7 +96,7 @@ public class ProjectController {
      *
      * @param project
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Project project, @PathVariable String id) {
         project.setId(id);
         projectService.update(project);
@@ -108,7 +108,7 @@ public class ProjectController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         projectService.deleteById(id);
         //删除任务的项目id
@@ -122,7 +122,7 @@ public class ProjectController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         projectService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");

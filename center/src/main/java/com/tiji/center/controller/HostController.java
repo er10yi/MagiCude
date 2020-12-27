@@ -1,12 +1,7 @@
 package com.tiji.center.controller;
 
-import com.tiji.center.pojo.Assetip;
-import com.tiji.center.pojo.Assetport;
-import com.tiji.center.pojo.Checkresult;
-import com.tiji.center.pojo.Host;
-import com.tiji.center.service.AssetipService;
-import com.tiji.center.service.AssetportService;
-import com.tiji.center.service.HostService;
+import com.tiji.center.pojo.*;
+import com.tiji.center.service.*;
 import entity.PageResult;
 import entity.Result;
 import entity.StatusCode;
@@ -46,12 +41,18 @@ public class HostController {
     @Autowired
     private AssetportService assetportService;
 
+    @Autowired
+    private AssetipAppsysHostdomainService assetipAppsysHostdomainService;
+
+    @Autowired
+    private AppsystemService appsystemService;
+
     /**
      * 查询全部数据
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", hostService.findAll());
     }
@@ -62,7 +63,7 @@ public class HostController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", hostService.findById(id));
     }
@@ -76,7 +77,7 @@ public class HostController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+    @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         //根据ip查询主机
         List<String> assetipIdList = new ArrayList<>();
@@ -98,10 +99,23 @@ public class HostController {
             String assetipid = host.getAssetipid();
             if (!StringUtils.isEmpty(assetipid)) {
                 Assetip assetip = assetipService.findById(assetipid);
-                if (!Objects.isNull(assetip)){
+                if (!Objects.isNull(assetip)) {
                     host.setAssetipid(assetip.getIpaddressv4());
                 }
             }
+            StringBuilder appsysNameBuilder = new StringBuilder();
+            List<AssetipAppsysHostdomain> hostdomainList = assetipAppsysHostdomainService.findByAssetipid(assetipid);
+            for (AssetipAppsysHostdomain hostdomain : hostdomainList) {
+                String appsysid = hostdomain.getAppsysid();
+                if (!StringUtils.isEmpty(appsysid)) {
+                    Appsystem appsystem = appsystemService.findById(appsysid);
+                    if (!Objects.isNull(appsystem)) {
+                        String appsystemName = appsystem.getName();
+                        appsysNameBuilder.append(appsystemName).append(",");
+                    }
+                }
+            }
+            host.setAppsysname(appsysNameBuilder.toString());
         });
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<>(pageList.getTotalElements(), pageList.getContent()));
     }
@@ -112,7 +126,7 @@ public class HostController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", hostService.findSearch(searchMap));
     }
@@ -122,7 +136,7 @@ public class HostController {
      *
      * @param host
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Host host) {
         String hostname = host.getHostname();
         Host hostInDb = hostService.findByAssetipidAndHostname(host.getAssetipid(), hostname);
@@ -139,7 +153,7 @@ public class HostController {
      *
      * @param host
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Host host, @PathVariable String id) {
         host.setId(id);
         hostService.update(host);
@@ -151,9 +165,11 @@ public class HostController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         hostService.deleteById(id);
+        //将中间表的域名id置空
+        assetipAppsysHostdomainService.updateMiddByHostidSetHostid2Null(id);
         return new Result(true, StatusCode.OK, "删除成功");
     }
 
@@ -161,7 +177,7 @@ public class HostController {
      * 批量导入ip主机名
      */
 
-    @RequestMapping(value = "/batchAdd", method = RequestMethod.POST)
+    @PostMapping(value = "/batchAdd")
     public Result batchAdd(@RequestParam("file") MultipartFile file) throws IOException {
         if (Objects.isNull(file) || file.getSize() == 0) {
             return new Result(false, StatusCode.ERROR, "文件为空");
@@ -239,7 +255,7 @@ public class HostController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         hostService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");

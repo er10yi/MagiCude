@@ -55,14 +55,13 @@ public class MonitorApplicationRunner implements ApplicationRunner {
     private RedisTemplate<String, String> redisTemplate;
     @Autowired
     private IdWorker idWorker;
+
     @Override
     public void run(ApplicationArguments args) {
 
         try {
             //设置Http辅助验证关键词
             setHttpValidateKey();
-            //dns辅助验证
-            startDNSServer();
 
             //刷新redis中的用户名密码字典
             freshDictUsernameRedisCache();
@@ -104,8 +103,19 @@ public class MonitorApplicationRunner implements ApplicationRunner {
             if (!Objects.isNull(statistics.getCronexpression()) && !statistics.getCronexpression().isEmpty()) {
                 runScheduler(statistics.getCronexpression(), StatisticsScheduler.class);
             }
+            //默认每30秒，取IM消息，并调用钉钉，企微群机器人发送
+            Cronjob imNotify = cronjobService.findByName("IM通知");
+            runScheduler(imNotify.getCronexpression(), IMNotifyScheduler.class);
+
             //恢复所有非子任务的cron任务
             resumeCronTask();
+
+            //dns辅助验证
+            try {
+                startDNSServer();
+            } catch (SocketException e) {
+                logger.error("startDNSServer Exception here: " + ExcpUtil.buildErrorMessage(e));
+            }
         } catch (Exception e) {
             logger.error("MonitorApplicationRunner Exception here: " + ExcpUtil.buildErrorMessage(e));
         }

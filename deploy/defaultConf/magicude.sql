@@ -1,19 +1,3 @@
-/*
- Navicat Premium Data Transfer
-
- Source Server         : docker
- Source Server Type    : MySQL
- Source Server Version : 80021
- Source Host           : 192.168.146.133:3306
- Source Schema         : magicude
-
- Target Server Type    : MySQL
- Target Server Version : 80021
- File Encoding         : 65001
-
- Date: 09/10/2020 20:50:23
-*/
-
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -32,6 +16,33 @@ CREATE TABLE `tb_agent`  (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = 'agent表' ROW_FORMAT = DYNAMIC;
 
+-- ----------------------------
+-- Records of tb_agent
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for tb_appsystem
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_appsystem`;
+CREATE TABLE `tb_appsystem`  (
+  `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
+  `name` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '名称',
+  `accessurl` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '访问地址',
+  `level` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '系统等级',
+  `developdesc` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '研发说明',
+  `deploydesc` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '部署说明',
+  `whitelist` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '白名单访问列表',
+  `remark` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
+  `tabbitmap` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '标签bitmap',
+  `managerid` bigint NULL DEFAULT NULL COMMENT '管理员编号',
+  `devmanagerid` bigint NULL DEFAULT NULL COMMENT '开发负责人编号',
+  `opermanagerid` bigint NULL DEFAULT NULL COMMENT '运维负责人编号',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '应用系统表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_appsystem
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_assetip
@@ -47,11 +58,29 @@ CREATE TABLE `tb_assetip`  (
   `activetime` datetime(0) NULL DEFAULT NULL COMMENT 'ip发现时间',
   `passivetime` datetime(0) NULL DEFAULT NULL COMMENT 'ip下线时间',
   `remark` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
+  `tabbitmap` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '标签bitmap',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '资产ip，用于记录资产ip信息' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_assetip
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for tb_assetip_appsys_hostdomain
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_assetip_appsys_hostdomain`;
+CREATE TABLE `tb_assetip_appsys_hostdomain`  (
+  `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
+  `assetipid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资产ip编号',
+  `assetportid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资产端口编号',
+  `appsysid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '应用系统编号',
+  `hostdomainid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '主机域名编号',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '资产ip域名应用中间表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_assetip_appsys_hostdomain
 -- ----------------------------
 
 -- ----------------------------
@@ -71,12 +100,37 @@ CREATE TABLE `tb_assetport`  (
   `uptime` datetime(0) NULL DEFAULT NULL COMMENT '端口发现时间',
   `downtime` datetime(0) NULL DEFAULT NULL COMMENT '端口关闭时间',
   `changedtime` datetime(0) NULL DEFAULT NULL COMMENT '修改时间',
+  `tabbitmap` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '标签bitmap',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '资产端口，用于记录端口信息' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_assetport
 -- ----------------------------
+
+-- ----------------------------
+-- Table structure for tb_categorycomstru
+-- ----------------------------
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+DROP TABLE IF EXISTS `tb_categorycomstru`;
+CREATE TABLE `tb_categorycomstru`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '编号',
+  `name` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '名称',
+  `email` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '邮箱',
+  `phone` varchar(24) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '电话，座机或手机',
+  `remark` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '公司组织架构分类表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_categorycomstru
+-- ----------------------------
+INSERT INTO `tb_categorycomstru` VALUES (0, 'root', NULL, NULL, NULL);
+INSERT INTO `tb_categorycomstru` VALUES (1, '产品技术中心', NULL, NULL, NULL);
+INSERT INTO `tb_categorycomstru` VALUES (2, 'IT中心', NULL, NULL, NULL);
+INSERT INTO `tb_categorycomstru` VALUES (3, '信息安全部', NULL, NULL, NULL);
+INSERT INTO `tb_categorycomstru` VALUES (4, '运维部', NULL, NULL, NULL);
+INSERT INTO `tb_categorycomstru` VALUES (5, 'it', NULL, NULL, NULL);
 
 -- ----------------------------
 -- Table structure for tb_categorysecond
@@ -168,6 +222,46 @@ INSERT INTO `tb_categorysecond` VALUES ('1252508922875613184', '1252508922858835
 INSERT INTO `tb_categorysecond` VALUES ('1260829552448507904', '1260833385614544896', '拒绝服务');
 
 -- ----------------------------
+-- Table structure for tb_categorytab
+-- ----------------------------
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+DROP TABLE IF EXISTS `tb_categorytab`;
+CREATE TABLE `tb_categorytab`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '编号',
+  `name` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '名称',
+  `description` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '说明',
+  `createtime` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
+  `remark` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '标签分类表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_categorytab
+-- ----------------------------
+INSERT INTO `tb_categorytab` VALUES (0, 'root', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (1, '应用系统等级', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (2, '非常重要', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (3, '重要', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (4, '一般', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (5, '应用系统访问策略', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (6, '需要SSO登录', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (7, '需要账号密码访问', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (8, '可外网访问', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (9, '云厂商', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (10, '阿里云', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (11, '腾讯云', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (12, '华为云', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (13, '机房', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (14, '北京机房', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (15, '上海机房', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (16, '杭州机房', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (17, '广州机房', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (18, '中间件分类', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (19, '数据库', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (20, '消息队列', NULL, NULL, NULL);
+INSERT INTO `tb_categorytab` VALUES (21, '负载均衡', NULL, NULL, NULL);
+
+-- ----------------------------
 -- Table structure for tb_categorytop
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_categorytop`;
@@ -198,6 +292,109 @@ INSERT INTO `tb_categorytop` VALUES ('1252508922586206208', '不严格的数据�
 INSERT INTO `tb_categorytop` VALUES ('1252508922640732160', '业务逻辑');
 INSERT INTO `tb_categorytop` VALUES ('1252508922858835968', '默认');
 INSERT INTO `tb_categorytop` VALUES ('1260833385614544896', '拒绝服务');
+
+-- ----------------------------
+-- Table structure for tb_categorytreecomstru
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_categorytreecomstru`;
+CREATE TABLE `tb_categorytreecomstru`  (
+  `ancestor` bigint NOT NULL COMMENT '祖先',
+  `descendant` bigint NOT NULL COMMENT '子代',
+  `distance` bigint NOT NULL COMMENT '距离',
+  PRIMARY KEY (`descendant`, `ancestor`, `distance`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '公司组织架构分类树表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_categorytreecomstru
+-- ----------------------------
+INSERT INTO `tb_categorytreecomstru` VALUES (0, 0, 0);
+INSERT INTO `tb_categorytreecomstru` VALUES (0, 1, 1);
+INSERT INTO `tb_categorytreecomstru` VALUES (1, 1, 0);
+INSERT INTO `tb_categorytreecomstru` VALUES (0, 2, 1);
+INSERT INTO `tb_categorytreecomstru` VALUES (2, 2, 0);
+INSERT INTO `tb_categorytreecomstru` VALUES (0, 3, 2);
+INSERT INTO `tb_categorytreecomstru` VALUES (1, 3, 1);
+INSERT INTO `tb_categorytreecomstru` VALUES (3, 3, 0);
+INSERT INTO `tb_categorytreecomstru` VALUES (0, 4, 2);
+INSERT INTO `tb_categorytreecomstru` VALUES (1, 4, 1);
+INSERT INTO `tb_categorytreecomstru` VALUES (4, 4, 0);
+INSERT INTO `tb_categorytreecomstru` VALUES (0, 5, 2);
+INSERT INTO `tb_categorytreecomstru` VALUES (2, 5, 1);
+INSERT INTO `tb_categorytreecomstru` VALUES (5, 5, 0);
+
+-- ----------------------------
+-- Table structure for tb_categorytreetab
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_categorytreetab`;
+CREATE TABLE `tb_categorytreetab`  (
+  `ancestor` bigint NOT NULL COMMENT '祖先',
+  `descendant` bigint NOT NULL COMMENT '子代',
+  `distance` bigint NOT NULL COMMENT '距离',
+  PRIMARY KEY (`descendant`, `ancestor`, `distance`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '标签分类树表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_categorytreetab
+-- ----------------------------
+INSERT INTO `tb_categorytreetab` VALUES (0, 0, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 1, 1);
+INSERT INTO `tb_categorytreetab` VALUES (1, 1, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 2, 2);
+INSERT INTO `tb_categorytreetab` VALUES (1, 2, 1);
+INSERT INTO `tb_categorytreetab` VALUES (2, 2, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 3, 2);
+INSERT INTO `tb_categorytreetab` VALUES (1, 3, 1);
+INSERT INTO `tb_categorytreetab` VALUES (3, 3, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 4, 2);
+INSERT INTO `tb_categorytreetab` VALUES (1, 4, 1);
+INSERT INTO `tb_categorytreetab` VALUES (4, 4, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 5, 1);
+INSERT INTO `tb_categorytreetab` VALUES (5, 5, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 6, 2);
+INSERT INTO `tb_categorytreetab` VALUES (5, 6, 1);
+INSERT INTO `tb_categorytreetab` VALUES (6, 6, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 7, 2);
+INSERT INTO `tb_categorytreetab` VALUES (5, 7, 1);
+INSERT INTO `tb_categorytreetab` VALUES (7, 7, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 8, 2);
+INSERT INTO `tb_categorytreetab` VALUES (5, 8, 1);
+INSERT INTO `tb_categorytreetab` VALUES (8, 8, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 9, 1);
+INSERT INTO `tb_categorytreetab` VALUES (9, 9, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 10, 2);
+INSERT INTO `tb_categorytreetab` VALUES (9, 10, 1);
+INSERT INTO `tb_categorytreetab` VALUES (10, 10, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 11, 2);
+INSERT INTO `tb_categorytreetab` VALUES (9, 11, 1);
+INSERT INTO `tb_categorytreetab` VALUES (11, 11, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 12, 2);
+INSERT INTO `tb_categorytreetab` VALUES (9, 12, 1);
+INSERT INTO `tb_categorytreetab` VALUES (12, 12, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 13, 1);
+INSERT INTO `tb_categorytreetab` VALUES (13, 13, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 14, 2);
+INSERT INTO `tb_categorytreetab` VALUES (13, 14, 1);
+INSERT INTO `tb_categorytreetab` VALUES (14, 14, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 15, 2);
+INSERT INTO `tb_categorytreetab` VALUES (13, 15, 1);
+INSERT INTO `tb_categorytreetab` VALUES (15, 15, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 16, 2);
+INSERT INTO `tb_categorytreetab` VALUES (13, 16, 1);
+INSERT INTO `tb_categorytreetab` VALUES (16, 16, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 17, 2);
+INSERT INTO `tb_categorytreetab` VALUES (13, 17, 1);
+INSERT INTO `tb_categorytreetab` VALUES (17, 17, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 18, 1);
+INSERT INTO `tb_categorytreetab` VALUES (18, 18, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 19, 2);
+INSERT INTO `tb_categorytreetab` VALUES (18, 19, 1);
+INSERT INTO `tb_categorytreetab` VALUES (19, 19, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 20, 2);
+INSERT INTO `tb_categorytreetab` VALUES (18, 20, 1);
+INSERT INTO `tb_categorytreetab` VALUES (20, 20, 0);
+INSERT INTO `tb_categorytreetab` VALUES (0, 21, 2);
+INSERT INTO `tb_categorytreetab` VALUES (18, 21, 1);
+INSERT INTO `tb_categorytreetab` VALUES (21, 21, 0);
 
 -- ----------------------------
 -- Table structure for tb_checkresult
@@ -285,6 +482,7 @@ INSERT INTO `tb_cronjob` VALUES ('1216569881969954816', '邮件资产报告', NU
 INSERT INTO `tb_cronjob` VALUES ('1216569922503708672', '邮件漏洞报告', NULL);
 INSERT INTO `tb_cronjob` VALUES ('1216569975163195392', '每天执行一次的任务', '0 21 3 * * ?');
 INSERT INTO `tb_cronjob` VALUES ('1216570003462164488', '统计报表数据', '0 0 6 * * ?');
+INSERT INTO `tb_cronjob` VALUES ('1342118487610494976', 'IM通知', '0/30 * * * * ?');
 
 -- ----------------------------
 -- Table structure for tb_democode
@@ -411,13 +609,14 @@ CREATE TABLE `tb_host`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '主机编号',
   `assetipid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资产ip编号',
   `macaddress` varchar(48) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'mac地址',
-  `hostname` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '主机名',
-  `ostype` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '操作系统类型',
-  `osversion` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '操作系统版本',
-  `type` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '主机类型',
-  `owner` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '主机所有者',
+  `hostname` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `ostype` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `osversion` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `type` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `owner` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `activetime` datetime(0) NULL DEFAULT NULL COMMENT '主机发现时间',
-  `remark` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注，标记非dns反向解析',
+  `remark` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `subdomain` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '子域名',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '主机，用于记录主机信息' ROW_FORMAT = DYNAMIC;
 
@@ -431,23 +630,29 @@ CREATE TABLE `tb_host`  (
 DROP TABLE IF EXISTS `tb_imvulnnotify`;
 CREATE TABLE `tb_imvulnnotify`  (
   `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
-  `notify` tinyint(1) NULL DEFAULT NULL COMMENT '是否开启通知',
-  `notifyall` tinyint(1) NULL DEFAULT NULL COMMENT '是否提醒所有人',
+  `dingtalknotify` tinyint(1) NULL DEFAULT NULL COMMENT '钉钉群机器人是否开启通知',
+  `dingtalknotifyall` tinyint(1) NULL DEFAULT NULL COMMENT '钉钉群机器人是否提醒所有人',
   `secret` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '秘钥',
   `risk` varchar(35) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '风险等级',
-  `receiver` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '接收人列表',
-  `messageurl` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '消息地址',
+  `dingtalkreceiver` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '钉钉群接收人列表',
+  `dingtalkmessageurl` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '钉钉群机器人消息地址',
   `messagetitle` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '消息标题',
   `messageprefix` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '消息前缀',
   `messagesuffix` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '消息后缀',
   `messagecharset` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '消息编码',
+  `wechatnotify` tinyint(1) NULL DEFAULT NULL COMMENT '企微群机器人是否开启通知',
+  `wechatnotifyall` tinyint(1) NULL DEFAULT NULL COMMENT '企微群机器人是否提醒所有人',
+  `wechatmessageurl` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '企微群机器人消息地址',
+  `wechatreceiver` varchar(2048) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '企微群接收人列表',
+  `riskassetnotify` tinyint(1) NULL DEFAULT NULL COMMENT '新增高危资产实时推送到群',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '即时消息漏洞提醒表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of tb_imvulnnotify
 -- ----------------------------
-INSERT INTO `tb_imvulnnotify` VALUES ('1143092349392524201', 0, 0, '', '低危,中危,高危,严重,致命', '', '', '【魔方】漏洞提醒', '您好', '请及时处理', 'utf-8');
+INSERT INTO `tb_imvulnnotify` VALUES ('1143092349392524201', 0, 0, '', '中危,高危,严重,致命', '', '', '【魔方】实时通知', '您好，以下为【魔方】最新发现的高危资产/漏洞信息', '请及时处理，如需帮助，请联系信息安全部。', 'utf-8', 0, 0, '', NULL, 0);
+
 
 -- ----------------------------
 -- Table structure for tb_ipportwhitelist
@@ -483,26 +688,6 @@ CREATE TABLE `tb_ipwhitelist`  (
 -- ----------------------------
 
 -- ----------------------------
--- Table structure for tb_location
--- ----------------------------
-DROP TABLE IF EXISTS `tb_location`;
-CREATE TABLE `tb_location`  (
-  `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '位置编号',
-  `assetipid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资产ip编号',
-  `country` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '国家',
-  `province` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '省份',
-  `road` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '道路',
-  `building` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '大厦',
-  `floor` varchar(8) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '楼层',
-  `direction` varchar(8) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '方位',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '位置，用于记录位置信息' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of tb_location
--- ----------------------------
-
--- ----------------------------
 -- Table structure for tb_nmapconfig
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_nmapconfig`;
@@ -518,7 +703,6 @@ CREATE TABLE `tb_nmapconfig`  (
 -- ----------------------------
 -- Records of tb_nmapconfig
 -- ----------------------------
-INSERT INTO `tb_nmapconfig` VALUES ('1305055496268550144', '1304327021228331008', '10', '1', '-Pn -sV --max-retries=1 --open');
 
 -- ----------------------------
 -- Table structure for tb_notifylog
@@ -584,7 +768,6 @@ INSERT INTO `tb_pluginassetservice` VALUES ('1298635550496002048', '129863555043
 INSERT INTO `tb_pluginassetservice` VALUES ('1298635551120953344', '1298635551074816000', 'mysql');
 INSERT INTO `tb_pluginassetservice` VALUES ('1298635551552966656', '1298635551494246400', 'ftp');
 INSERT INTO `tb_pluginassetservice` VALUES ('1298635668129452032', '1298635551737516032', 'http');
-INSERT INTO `tb_pluginassetservice` VALUES ('1305054771446681600', '1305054770993696768', 'http');
 
 -- ----------------------------
 -- Table structure for tb_pluginassetversion
@@ -949,20 +1132,6 @@ CREATE TABLE `tb_task`  (
 -- ----------------------------
 -- Records of tb_task
 -- ----------------------------
-INSERT INTO `tb_task` VALUES ('1304326239309402112', NULL, NULL, 'nmap常规端口-demo', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -sV --max-retries=1 --open', NULL, '127.0.0.1', 'regular', NULL, '255', NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1304326543249641472', NULL, NULL, 'nmap所有端口-demo', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -sV --max-retries=1 --open', NULL, '127.0.0.1', NULL, NULL, '255', '1000', 0, 1);
-INSERT INTO `tb_task` VALUES ('1304326778726256640', NULL, NULL, 'nmap指定端口-demo', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -sV --max-retries=1 --open', NULL, '127.0.0.1', '80,443,6379', NULL, '255', NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1304326944082497536', NULL, NULL, 'mass全端口-demo', '指定端口扫描与nmap指定端口-demo类似', NULL, 0, NULL, NULL, 'mass', NULL, '4', '1', '', '1000', '127.0.0.1', NULL, NULL, '1', NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1304327021228331008', NULL, NULL, 'mass2Nmap全端口-demo', '指定端口扫描与nmap指定端口-demo类似', NULL, 0, NULL, NULL, 'mass2Nmap', NULL, '4', '1', '', '1000', '127.0.0.1', NULL, NULL, '1', NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1304327091386454016', NULL, NULL, 'nse启用所有插件-demo', NULL, NULL, 0, NULL, NULL, 'nse', NULL, '4', '1', '-Pn -sV --max-retries=1 --open', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1304327185506635776', NULL, NULL, 'nse启用smb-vuln-ms08-067插件-demo', NULL, NULL, 0, NULL, NULL, 'nse', NULL, '4', '1', '-Pn -sV --max-retries=1 --open', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1304327417707499520', NULL, NULL, 'selfd启用所有插件-demo', NULL, NULL, 0, NULL, NULL, 'selfd', NULL, '4', '1', '', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1304327508270911488', NULL, NULL, 'selfd启用JavaRedisWeakPass插件-demo', NULL, NULL, 0, NULL, NULL, 'selfd', NULL, '4', '1', '', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1304328077727371264', NULL, NULL, 'httpp任务-demo', NULL, NULL, 0, NULL, NULL, 'httpp', NULL, '4', '1', '', NULL, 'assetip', NULL, NULL, NULL, NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1321449808837349376', NULL, NULL, 'nmap ping', '目标不会分组，建议目标以一个B段或者C段为单位，结果得到存活的主机，可与nmap模式的ipNoPort配合端口扫描', NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-sn', NULL, '127.0.0.1', NULL, NULL, '255', '1000', 0, 1);
-INSERT INTO `tb_task` VALUES ('1321450057333084160', NULL, NULL, 'nmap无端口的ip', '扫描所有没有端口的ip，结合ping主机发现做周期扫描', NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -sV --max-retries=1 --open', NULL, 'ipNoPort', NULL, NULL, '64', '1000', 0, 1);
-INSERT INTO `tb_task` VALUES ('1321450285897486336', NULL, NULL, 'nmap更新未知端口服务', NULL, NULL, 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -sV --max-retries=1', NULL, 'unknownPortSerVer', NULL, NULL, NULL, NULL, 0, 1);
-INSERT INTO `tb_task` VALUES ('1321450645160595456', NULL, NULL, 'nmap更新所有端口', '建议半个月或一个月执行一次，如果任务频繁，可能由于网络问题，导致端口状态频繁open和closed', '0 0 0 1/14  * ?', 0, NULL, NULL, 'nmap', NULL, '4', '1', '-Pn -sV --max-retries=1', NULL, 'ipAllPort', NULL, NULL, NULL, NULL, 0, 1);
 
 -- ----------------------------
 -- Table structure for tb_taskip
@@ -995,8 +1164,6 @@ CREATE TABLE `tb_taskpluginconfig`  (
 -- ----------------------------
 -- Records of tb_taskpluginconfig
 -- ----------------------------
-INSERT INTO `tb_taskpluginconfig` VALUES ('1314486172193525760', '1304327185506635776', '1298634979529592832');
-INSERT INTO `tb_taskpluginconfig` VALUES ('1314486238509666304', '1304327508270911488', '1298634973577875456');
 
 -- ----------------------------
 -- Table structure for tb_taskport
@@ -1069,7 +1236,6 @@ CREATE TABLE `tb_user`  (
 -- Records of tb_user
 -- ----------------------------
 INSERT INTO `tb_user` VALUES ('1259704243355521024', 'MagiCude', '$2a$10$7wmPIhsnZS3/I1xrQQOtvep9J/GVt2ofofkF4365cAxoFP8E5Zjd6', 1, 1, '/favicon.ico', '2020-10-09 20:32:27');
-
 -- ----------------------------
 -- Table structure for tb_useragent
 -- ----------------------------
@@ -1250,6 +1416,22 @@ CREATE TABLE `tb_webinfo`  (
 
 -- ----------------------------
 -- Records of tb_webinfo
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for tb_webrawdata
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_webrawdata`;
+CREATE TABLE `tb_webrawdata`  (
+  `id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '编号',
+  `webinfoid` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'webinfo编号',
+  `header` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '响应头',
+  `response` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '响应',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = 'web原始数据表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of tb_webrawdata
 -- ----------------------------
 
 SET FOREIGN_KEY_CHECKS = 1;

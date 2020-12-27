@@ -281,7 +281,6 @@ public class TaskReceiver {
                         }
                         break;
                     case "heartbeat":
-                        System.out.println("receive heartbeat...");
                         //InetAddress addr = InetAddress.getLocalHost();
                         //String agentName = "agent_" + addr.getHostName();
                         Map<String, String> agentConfig = new HashMap<>();
@@ -293,7 +292,6 @@ public class TaskReceiver {
                         //TODO 发送cpu和内存状态
                         if (!agentConfig.isEmpty()) {
                             rabbitMessagingTemplate.convertAndSend("agentconfig", agentConfig);
-                            System.out.println("send to center");
                         }
                         break;
                     default:

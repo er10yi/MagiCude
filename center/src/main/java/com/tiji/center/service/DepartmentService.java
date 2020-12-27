@@ -125,7 +125,7 @@ public class DepartmentService {
      */
     private Specification<Department> createSpecification(Map searchMap) {
 
-        return (Specification<Department>) (root, query, cb) -> {
+        return (root, query, cb) -> {
             List<Predicate> predicateList = new ArrayList<Predicate>();
             // 编号
             if (searchMap.get("id") != null && !"".equals(searchMap.get("id"))) {

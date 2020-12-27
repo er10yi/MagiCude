@@ -30,5 +30,7 @@ public interface ProjectinfoDao extends JpaRepository<Projectinfo, String>, JpaS
     @Query(value = "DELETE FROM `tb_projectinfo` WHERE id IN(?1)", nativeQuery = true)
     void deleteAllByIds(List<String> ids);
 
-
+    @Modifying
+    @Query(value = "UPDATE tb_projectinfo SET departmentid =NULL WHERE departmentid=?1", nativeQuery = true)
+    void updateProjectInfoByDepartidSetDepartid2Null(String departid);
 }

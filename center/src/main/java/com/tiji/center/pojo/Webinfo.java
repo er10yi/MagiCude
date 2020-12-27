@@ -28,6 +28,12 @@ public class Webinfo implements Serializable {
     @Transient
     private String assetport;//端口
 
+    @Transient
+    private String header;
+    @Transient
+    private String response;
+
+
     private String portid;//端口编号
     private String titlewhitelistid;//标题白名单编号
     private String title;//页面标题
@@ -188,5 +194,19 @@ public class Webinfo implements Serializable {
         this.crawltime = crawltime;
     }
 
+    public String getHeader() {
+        return header;
+    }
 
+    public void setHeader(String header) {
+        this.header = header;
+    }
+
+    public String getResponse() {
+        return response;
+    }
+
+    public void setResponse(String response) {
+        this.response = response;
+    }
 }

@@ -1,6 +1,7 @@
 package com.tiji.center.controller;
 
 import com.tiji.center.pojo.*;
+import com.tiji.center.pojo.category.CategoryTab;
 import com.tiji.center.service.*;
 import com.tiji.center.util.TijiHelper;
 import entity.PageResult;
@@ -8,6 +9,7 @@ import entity.Result;
 import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,13 +51,25 @@ public class AssetipController {
     private UrlService urlService;
     @Autowired
     private ProjectinfoService projectinfoService;
+    @Autowired
+    private WebrawdataService webrawdataService;
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Autowired
+    private CategoryTabService categoryTabService;
+    @Autowired
+    private AssetipAppsysHostdomainService assetipAppsysHostdomainService;
+    @Autowired
+    private AppsystemService appsystemService;
+    private String categoryCacheKey = "categoryTabCache";
+    private String categoryIdNameKey = "categoryTabIdNameCache";
 
     /**
      * 查询全部数据
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", assetipService.findAll());
     }
@@ -66,7 +80,7 @@ public class AssetipController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         Assetip assetip = assetipService.findById(id);
         String projectinfoid = assetip.getProjectinfoid();
@@ -74,6 +88,49 @@ public class AssetipController {
             Projectinfo projectinfo = projectinfoService.findById(projectinfoid);
             assetip.setProjectname(projectinfo.getProjectname());
         }
+
+        String tabbitmap = assetip.getTabbitmap();
+        List<CategoryTab> categoryTabList = new ArrayList<>();
+        if (!StringUtils.isEmpty(tabbitmap)) {
+            List<String> resultList = new ArrayList<>();
+            String[] splitTabs = tabbitmap.split(",");
+            if (redisTemplate.hasKey(categoryIdNameKey)) {
+                for (String tabid : splitTabs) {
+                    resultList.add((String) redisTemplate.opsForHash().get(categoryIdNameKey, tabid));
+                }
+            } else {
+                for (String tabid : splitTabs) {
+                    CategoryTab categoryTab = categoryTabService.findById(Long.parseLong(tabid));
+                    if (!Objects.isNull(categoryTab)) {
+                        String categoryTabName = categoryTab.getName();
+                        if (!StringUtils.isEmpty(categoryTabName)) {
+                            resultList.add(categoryTabName);
+                        }
+                    }
+                }
+            }
+            for (String tabid : splitTabs) {
+                CategoryTab categoryTab = categoryTabService.findById(Long.parseLong(tabid));
+                categoryTabList.add(categoryTab);
+            }
+            assetip.setTabname(String.valueOf(resultList).replaceAll("[\\[\\]]", ""));
+        }
+
+        StringBuilder appsysNameBuilder = new StringBuilder();
+        List<AssetipAppsysHostdomain> hostdomainList = assetipAppsysHostdomainService.findByAssetipid(id);
+        for (AssetipAppsysHostdomain hostdomain : hostdomainList) {
+            String appsysid = hostdomain.getAppsysid();
+            if (!StringUtils.isEmpty(appsysid)) {
+                Appsystem appsystem = appsystemService.findById(appsysid);
+                if (!Objects.isNull(appsystem)) {
+                    String appsystemName = appsystem.getName();
+                    appsysNameBuilder.append(appsystemName).append(",");
+                }
+            }
+        }
+        assetip.setAppsysname(appsysNameBuilder.toString());
+
+        assetip.setTabList(categoryTabList);
         return new Result(true, StatusCode.OK, "查询成功", assetip);
     }
 
@@ -85,9 +142,10 @@ public class AssetipController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+    @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Assetip> pageList = assetipService.findSearch(searchMap, page, size);
+        Map<String, String> idNameMap = new HashMap<>();
         pageList.stream().parallel().forEach(assetip -> {
             String projectinfoid = assetip.getProjectinfoid();
             if (!StringUtils.isEmpty(projectinfoid)) {
@@ -98,19 +156,42 @@ public class AssetipController {
             }
             String assetipId = assetip.getId();
 
-            List<String> resultList = assetipService.findCountByIds(Collections.singletonList(assetipId));
+            List<String> countResultList = assetipService.findCountByIds(Collections.singletonList(assetipId));
             String ipaddressv4 = assetip.getIpaddressv4();
             if (!StringUtils.isEmpty(ipaddressv4)) {
                 assetip.setIpaddressv4(ipaddressv4);
             }
-            if (!"0:0:0:0".equals(resultList.get(0))) {
-                assetip.setStatistic(resultList.get(0));
+            if (!"0:0:0:0".equals(countResultList.get(0))) {
+                assetip.setStatistic(countResultList.get(0));
             } else {
                 assetip.setIpaddressv4(ipaddressv4);
             }
-
+            String tabbitmap = assetip.getTabbitmap();
+            if (!StringUtils.isEmpty(tabbitmap)) {
+                List<String> resultList = new ArrayList<>();
+                String[] splitTabs = tabbitmap.split(",");
+                if (redisTemplate.hasKey(categoryIdNameKey)) {
+                    for (String id : splitTabs) {
+                        resultList.add((String) redisTemplate.opsForHash().get(categoryIdNameKey, id));
+                    }
+                } else {
+                    for (String id : splitTabs) {
+                        CategoryTab categoryTab = categoryTabService.findById(Long.parseLong(id));
+                        if (!Objects.isNull(categoryTab)) {
+                            String categoryTabName = categoryTab.getName();
+                            if (!StringUtils.isEmpty(categoryTabName)) {
+                                resultList.add(categoryTabName);
+                                idNameMap.put(id, categoryTabName);
+                            }
+                        }
+                    }
+                }
+                assetip.setTabname(String.valueOf(resultList).replaceAll("[\\[\\]]", ""));
+            }
         });
-
+        if (!idNameMap.isEmpty()) {
+            redisTemplate.opsForHash().putAll(categoryIdNameKey, idNameMap);
+        }
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<>(pageList.getTotalElements(), pageList.getContent()));
     }
 
@@ -120,7 +201,7 @@ public class AssetipController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", assetipService.findSearch(searchMap));
     }
@@ -130,7 +211,7 @@ public class AssetipController {
      *
      * @param assetip
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Assetip assetip) {
         if (Objects.isNull(assetip.getPassivetime())) {
             String ipaddressv4 = assetip.getIpaddressv4();
@@ -151,9 +232,15 @@ public class AssetipController {
      *
      * @param assetip
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Assetip assetip, @PathVariable String id) {
         assetip.setId(id);
+        String sourceTabbitMap = assetip.getTabbitmap();
+        if (!StringUtils.isEmpty(sourceTabbitMap)) {
+            String[] strings = sourceTabbitMap.split(",");
+            Set<String> set = new TreeSet<>(Arrays.asList(strings));
+            assetip.setTabbitmap(set.toString().replaceAll("[\\[\\]\\s]", ""));
+        }
         assetipService.update(assetip);
         return new Result(true, StatusCode.OK, "修改成功");
     }
@@ -165,9 +252,11 @@ public class AssetipController {
      * @param id
      */
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         assetipService.deleteById(id);
+        //删除中间表
+        assetipAppsysHostdomainService.deleteAllByAssetipid(id);
         //删除资产端口
         List<Assetport> assetportList = assetportService.deleteAllByAssetipid(id);
         //删除主机信息
@@ -186,6 +275,8 @@ public class AssetipController {
             //删除url信息
             webinfoList.forEach(webinfo -> {
                 String webinfoId = webinfo.getId();
+                //删除原始响应和头信息
+                webrawdataService.deleteAllByWebinfoid(webinfoId);
                 urlService.deleteAllByWebinfoid(webinfoId);
             });
         });
@@ -195,7 +286,7 @@ public class AssetipController {
     /**
      * 批量导入ip端口
      */
-    @RequestMapping(value = "/batchAdd", method = RequestMethod.POST)
+    @PostMapping(value = "/batchAdd")
     public Result batchAdd(@RequestParam("file") MultipartFile file) {
         if (Objects.isNull(file) || file.getSize() == 0) {
             return new Result(false, StatusCode.ERROR, "文件为空");
@@ -248,7 +339,7 @@ public class AssetipController {
         } catch (IOException ignored) {
         }
         if (!resultMap.isEmpty()) {
-            TijiHelper.nmapScanResult2AssetDB(assetipService, assetportService, hostService, idWorker, resultMap);
+            TijiHelper.batchNmapScanResult2AssetDB(assetipService, assetportService, hostService, idWorker, resultMap);
         }
         if (!ipSet.isEmpty()) {
             ipSet.forEach(ip -> {
@@ -271,7 +362,7 @@ public class AssetipController {
      * @param ids
      * @return
      */
-    @RequestMapping(value = "/ids", method = RequestMethod.POST)
+    @PostMapping(value = "/ids")
     public Result findByAssetIpIds(@RequestBody String[] ids) {
         return new Result(true, StatusCode.OK, "查询成功", assetipService.findByIds(ids));
     }
@@ -348,10 +439,12 @@ public class AssetipController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         assetipService.deleteAllByIds(ids);
         ids.forEach(id -> {
+            //删除中间表
+            assetipAppsysHostdomainService.deleteAllByAssetipid(id);
             //删除资产端口
             List<Assetport> assetportList = assetportService.deleteAllByAssetipid(id);
             //删除主机信息
@@ -370,6 +463,8 @@ public class AssetipController {
                 //删除url信息
                 webinfoList.forEach(webinfo -> {
                     String webinfoId = webinfo.getId();
+                    //删除原始响应和头信息
+                    webrawdataService.deleteAllByWebinfoid(webinfoId);
                     urlService.deleteAllByWebinfoid(webinfoId);
                 });
             });

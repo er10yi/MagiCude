@@ -249,4 +249,15 @@ public class ProjectinfoService {
     public void addContact(String[] projectinfoIdAndContactId) {
         contactProjectinfoService.add(new ContactProjectinfo(idWorker.nextId()+"",projectinfoIdAndContactId[1],projectinfoIdAndContactId[0]));
     }
+
+    /**
+     * 根据departid将departid置空
+     *
+     * @param departid
+     * @return
+     */
+    @Transactional(value = "masterTransactionManager")
+    public void updateProjectInfoByDepartidSetDepartid2Null(String departid) {
+        projectinfoDao.updateProjectInfoByDepartidSetDepartid2Null(departid);
+    }
 }

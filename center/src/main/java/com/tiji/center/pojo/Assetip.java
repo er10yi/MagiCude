@@ -1,11 +1,14 @@
 package com.tiji.center.pojo;
 
+import com.tiji.center.pojo.category.CategoryTab;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * assetip实体类
@@ -32,8 +35,17 @@ public class Assetip implements Serializable {
     private java.util.Date activetime;//ip发现时间
     private java.util.Date passivetime;//ip下线时间
     private String remark;//备注
-
-
+    //标签bitmap
+    private String tabbitmap;
+    //标签名
+    @Transient
+    private String tabname;
+    //标签
+    @Transient
+    private List<CategoryTab> tabList;
+    @Transient
+    //应用系统名称
+    private String appsysname;
     public Assetip() {
     }
 
@@ -137,4 +149,35 @@ public class Assetip implements Serializable {
         this.remark = remark;
     }
 
+    public String getTabbitmap() {
+        return tabbitmap;
+    }
+
+    public void setTabbitmap(String tabbitmap) {
+        this.tabbitmap = tabbitmap;
+    }
+
+    public String getTabname() {
+        return tabname;
+    }
+
+    public void setTabname(String tabname) {
+        this.tabname = tabname;
+    }
+
+    public List<CategoryTab> getTabList() {
+        return tabList;
+    }
+
+    public void setTabList(List<CategoryTab> tabList) {
+        this.tabList = tabList;
+    }
+
+    public String getAppsysname() {
+        return appsysname;
+    }
+
+    public void setAppsysname(String appsysname) {
+        this.appsysname = appsysname;
+    }
 }

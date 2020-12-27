@@ -31,7 +31,7 @@ public class AgentController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", agentService.findAll());
     }
@@ -42,7 +42,7 @@ public class AgentController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", agentService.findById(id));
     }
@@ -56,7 +56,7 @@ public class AgentController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Agent> pageList = agentService.findSearch(searchMap, page, size);
         return new Result(true, StatusCode.OK, "查询成功", new PageResult<>(pageList.getTotalElements(), pageList.getContent()));
@@ -68,7 +68,7 @@ public class AgentController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", agentService.findSearch(searchMap));
     }
@@ -78,7 +78,7 @@ public class AgentController {
      *
      * @param agent
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Agent agent) {
         agentService.add(agent);
         return new Result(true, StatusCode.OK, "增加成功");
@@ -89,7 +89,7 @@ public class AgentController {
      *
      * @param agent
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Agent agent, @PathVariable String id) {
         agent.setId(id);
         agentService.update(agent);
@@ -101,7 +101,7 @@ public class AgentController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         agentService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -113,7 +113,7 @@ public class AgentController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         agentService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");

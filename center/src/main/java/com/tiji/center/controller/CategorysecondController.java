@@ -36,7 +36,7 @@ public class CategorysecondController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", categorysecondService.findAll());
     }
@@ -47,7 +47,7 @@ public class CategorysecondController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", categorysecondService.findById(id));
     }
@@ -61,7 +61,7 @@ public class CategorysecondController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Categorysecond> pageList = categorysecondService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(categorysecond -> {
@@ -82,7 +82,7 @@ public class CategorysecondController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", categorysecondService.findSearch(searchMap));
     }
@@ -92,7 +92,7 @@ public class CategorysecondController {
      *
      * @param categorysecond
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Categorysecond categorysecond) {
         //categorysecondService.add(categorysecond);
         //return new Result(true, StatusCode.OK,"增加成功");
@@ -111,7 +111,7 @@ public class CategorysecondController {
      *
      * @param categorysecond
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Categorysecond categorysecond, @PathVariable String id) {
         categorysecond.setId(id);
         categorysecondService.update(categorysecond);
@@ -123,7 +123,7 @@ public class CategorysecondController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         categorysecondService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -135,7 +135,7 @@ public class CategorysecondController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         categorysecondService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -147,7 +147,7 @@ public class CategorysecondController {
      * @param ids
      * @return
      */
-    @RequestMapping(value = "/ids", method = RequestMethod.POST)
+    @PostMapping(value = "/ids")
     public Result findByCategorysecondIds(@RequestBody String[] ids) {
         return new Result(true, StatusCode.OK, "查询成功", categorysecondService.findByIds(ids));
     }

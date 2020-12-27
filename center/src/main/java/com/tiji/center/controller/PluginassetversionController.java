@@ -42,7 +42,7 @@ public class PluginassetversionController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", pluginassetversionService.findById(id));
     }
@@ -56,7 +56,7 @@ public class PluginassetversionController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Pluginassetversion> pageList = pluginassetversionService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(Pluginassetversion -> {
@@ -77,7 +77,7 @@ public class PluginassetversionController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", pluginassetversionService.findSearch(searchMap));
     }
@@ -87,7 +87,7 @@ public class PluginassetversionController {
      *
      * @param assetversion
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Pluginassetversion assetversion) {
         pluginassetversionService.add(assetversion);
         return new Result(true, StatusCode.OK, "增加成功");
@@ -98,7 +98,7 @@ public class PluginassetversionController {
      *
      * @param assetversion
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Pluginassetversion assetversion, @PathVariable String id) {
         assetversion.setId(id);
         pluginassetversionService.update(assetversion);
@@ -110,7 +110,7 @@ public class PluginassetversionController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         pluginassetversionService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -122,7 +122,7 @@ public class PluginassetversionController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         pluginassetversionService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");

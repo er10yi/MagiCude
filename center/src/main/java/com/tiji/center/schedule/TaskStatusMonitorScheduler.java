@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import util.ExcpUtil;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -56,7 +53,8 @@ public class TaskStatusMonitorScheduler implements Job {
                     String workingTaskListNameTotal = "workingTaskList_" + taskIdTotal;
 
                     System.out.println("TaskStatusMonitorScheduler running for taskId: " + taskIdTotal);
-                    if (redisTemplate.hasKey(sliceIPListSizeNameTotal)) {
+                    Boolean aBoolean = redisTemplate.hasKey(sliceIPListSizeNameTotal);
+                    if (!Objects.isNull(aBoolean) && aBoolean) {
                         long accomplishTaskListSizeTotal = redisTemplate.opsForList().size(accomplishTaskListNameTotal);
                         long sliceIPListSizeTotal = Long.parseLong(redisTemplate.opsForValue().get(sliceIPListSizeNameTotal));
                         System.out.println("accomplishTaskListSizeTotal: " + accomplishTaskListSizeTotal);

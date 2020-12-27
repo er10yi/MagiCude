@@ -21,6 +21,8 @@ public interface HostDao extends JpaRepository<Host, String>, JpaSpecificationEx
 
     Host findByHostname(String hostname);
 
+    Host findByMacaddress(String macaddress);
+
     List<Host> findAllByAssetipid(String assetipid);
 
     Host findByAssetipidAndHostname(String assetipid, String hostname);

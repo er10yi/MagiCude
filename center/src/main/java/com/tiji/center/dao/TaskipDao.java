@@ -43,7 +43,7 @@ public interface TaskipDao extends JpaRepository<Taskip, String>, JpaSpecificati
     List<String> findByTaskidAndServiceIsNullAndCheckwhitelistIsFalse(String taskId);
 
 
-    @Query(value =``
+    @Query(value =
             "SELECT " +
                     "ta.ipaddressv4,tp.`port`,tp.service,tp.version " +
                     "FROM tb_taskip ta,tb_taskport tp " +

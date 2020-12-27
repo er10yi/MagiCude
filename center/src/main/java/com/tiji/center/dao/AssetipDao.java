@@ -58,4 +58,5 @@ public interface AssetipDao extends JpaRepository<Assetip, String>, JpaSpecifica
 
     @Query(value = "SELECT tp.assetipid,COUNT(*) as vulnCount FROM tb_assetport tp,tb_checkresult tcl  WHERE tcl.assetportid IN(tp.id)  and tp.assetipid IN (?1) and ISNULL(tcl.passivetime) GROUP BY tp.assetipid", nativeQuery = true)
     List<String> findVulnCountOnlineByIds(List<String> ids);
+
 }

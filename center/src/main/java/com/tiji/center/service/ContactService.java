@@ -2,8 +2,6 @@ package com.tiji.center.service;
 
 import com.tiji.center.dao.ContactDao;
 import com.tiji.center.pojo.Contact;
-import com.tiji.center.pojo.ContactProjectinfo;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -129,8 +127,8 @@ public class ContactService {
      */
     private Specification<Contact> createSpecification(Map searchMap) {
 
-        return (Specification<Contact>) (root, query, cb) -> {
-            List<Predicate> predicateList = new ArrayList<Predicate>();
+        return (root, query, cb) -> {
+            List<Predicate> predicateList = new ArrayList<>();
             // 编号
             if (searchMap.get("id") != null && !"".equals(searchMap.get("id"))) {
                 predicateList.add(cb.like(root.get("id").as(String.class), "%" + searchMap.get("id") + "%"));

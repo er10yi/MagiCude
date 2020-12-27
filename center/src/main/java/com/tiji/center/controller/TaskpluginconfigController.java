@@ -45,7 +45,7 @@ public class TaskpluginconfigController {
      *
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Result findAll() {
         return new Result(true, StatusCode.OK, "查询成功", taskpluginconfigService.findAll());
     }
@@ -56,7 +56,7 @@ public class TaskpluginconfigController {
      * @param id ID
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     public Result findById(@PathVariable String id) {
         return new Result(true, StatusCode.OK, "查询成功", taskpluginconfigService.findById(id));
     }
@@ -70,7 +70,7 @@ public class TaskpluginconfigController {
      * @param size      页大小
      * @return 分页结果
      */
-    @RequestMapping(value = "/search/{page}/{size}", method = RequestMethod.POST)
+     @PostMapping(value = "/search/{page}/{size}")
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size) {
         Page<Taskpluginconfig> pageList = taskpluginconfigService.findSearch(searchMap, page, size);
         pageList.stream().parallel().forEach(taskpluginconfig -> {
@@ -98,7 +98,7 @@ public class TaskpluginconfigController {
      * @param searchMap
      * @return
      */
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    @PostMapping(value = "/search")
     public Result findSearch(@RequestBody Map searchMap) {
         return new Result(true, StatusCode.OK, "查询成功", taskpluginconfigService.findSearch(searchMap));
     }
@@ -108,7 +108,7 @@ public class TaskpluginconfigController {
      *
      * @param taskpluginconfig
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public Result add(@RequestBody Taskpluginconfig taskpluginconfig) {
         String taskid = taskpluginconfig.getTaskid();
         String pluginconfigid = taskpluginconfig.getPluginconfigid();
@@ -126,7 +126,7 @@ public class TaskpluginconfigController {
      *
      * @param taskpluginconfig
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Result update(@RequestBody Taskpluginconfig taskpluginconfig, @PathVariable String id) {
         String taskid = taskpluginconfig.getTaskid();
         String pluginconfigid = taskpluginconfig.getPluginconfigid();
@@ -145,7 +145,7 @@ public class TaskpluginconfigController {
      *
      * @param id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     public Result delete(@PathVariable String id) {
         taskpluginconfigService.deleteById(id);
         return new Result(true, StatusCode.OK, "删除成功");
@@ -156,7 +156,7 @@ public class TaskpluginconfigController {
      *
      * @param ids
      */
-    @RequestMapping(value = "/deleteids", method = RequestMethod.POST)
+    @PostMapping(value = "/deleteids")
     public Result deleteAllByIds(@RequestBody List<String> ids) {
         taskpluginconfigService.deleteAllByIds(ids);
         return new Result(true, StatusCode.OK, "删除成功");
