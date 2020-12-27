@@ -22,9 +22,9 @@
 3. 优化IM实时通知
 
 #### bug fixes
-1.修复 JavaSambaWeakPass无法使用的问题
-2.修复 域名不规范时，ip端口信息无法入库问题
-3.修复 httpp任务可能无法结束的问题
+1. 修复 JavaSambaWeakPass无法使用的问题
+2. 修复 域名不规范时，ip端口信息无法入库问题
+3. 修复 httpp任务可能无法结束的问题
 
 #### alter
 1. ip项目组相关信息，移动到资产管理
