@@ -23,6 +23,8 @@
 9. 扫描任务管理：实时任务状态，便捷的任务操作
 10. 白名单机制：项目组端口白名单、ip端口扫描白名单、提醒白名单、页面标题白名单、链接域名白名单
 
+这个项目能解决什么[需求和痛点](https://github.com/er10yi/MagiCude/wiki/Best-Practice#%E9%9C%80%E6%B1%82%E5%8F%8A%E7%97%9B%E7%82%B9 )
+
 ## 简述
 
 center：数据库、redis、MQ、[管理前端](https://github.com/er10yi/MagiCude-admin )、任务控制和分发；任务进redis，并由MQ发送。
