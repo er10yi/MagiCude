@@ -24,7 +24,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>15</java.version>
         <spring-cloud.version>2020.0.0</spring-cloud.version>
-        <jsoup.version>1.13.1</jsoup.version>
+        <jsoup.version>1.14.2</jsoup.version>
     </properties>
 
     <dependencies>
