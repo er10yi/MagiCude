@@ -36,7 +36,8 @@ agent：端口扫描任务、插件任务、http页面抓取任务执行；从re
 实时推送：钉钉群机器人、企微群机器人。
 
 ## 安装指南
-
+### 可尝试最新版的预览版2
+[魔方-MagiCude2.2 Preview2](https://github.com/er10yi/MagiCude/releases/tag/v2.2-preview2)
 ### 要求说明
 
 1. 所有内容编码均为utf-8
@@ -45,7 +46,7 @@ agent：端口扫描任务、插件任务、http页面抓取任务执行；从re
 
 ### 生成配置文件
 
-1. [Releases页面](https://github.com/er10yi/MagiCude/releases )下载最新部署包。（可尝试最新的预览版[前端架构更新预览版](https://github.com/er10yi/MagiCude/releases/tag/v2.2-preview )）
+1. [Releases页面](https://github.com/er10yi/MagiCude/releases )下载最新部署包。
 2. 解压后，[deploy目录](https://github.com/er10yi/MagiCude/wiki/UserPass-Table-Deploy-Structure )下双击`GenPass.bat`（Windows下，*uinx/Mac直接执行`GenPass.bat`里面的内容），将在当前目录生成**newPass.txt（请注意备份）**，新的配置文件和初始化脚本会自动复制到**MagiCude（后面部署都是用这个目录）** 目录下。
 
 ### center和agent部署在同一台服务器
