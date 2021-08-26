@@ -1,5 +1,11 @@
 ## ChangeLog
 
+### v2.2 Preview2 - 20210828
+#### 后端重构预览版
+1. 相关源码暂未更新
+2. 更多，查看release的[readme](https://github.com/er10yi/MagiCude/releases/tag/v2.2-preview2)
+
+
 ### v2.2 Preview - 20210223
 #### 前端重构预览版
 1. 相关源码暂未更新
