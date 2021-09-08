@@ -1,5 +1,0 @@
-admin
-root
-tomcat
-administrator
-test
