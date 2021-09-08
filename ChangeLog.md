@@ -1,5 +1,12 @@
 ## ChangeLog
 
+### v2.2 Preview3 - 20210908
+#### 预览版3
+1. 相关源码暂未更新
+2. 优化数据导入模板，优化插件格式，完成批量导入TODO
+3. 更多，查看release的[readme](https://github.com/er10yi/MagiCude/releases/tag/v2.2-preview3)
+
+
 ### v2.2 Preview2 - 20210828
 #### 后端重构预览版
 1. 相关源码暂未更新
