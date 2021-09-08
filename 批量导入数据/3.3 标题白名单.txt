@@ -1,0 +1,9 @@
+# 一行一条数据，# 开头的那行会被忽略
+# 如果web页面的title在标题白名单中, 则任务结果和资产web信息不记录该页面的body内容
+# 实际的web title，包含该字符的title的web相关信息不记录
+# Welcome to nginx
+# Apache Tomcat
+# 以下为实际数据
+
+Welcome to nginx
+Apache Tomcat

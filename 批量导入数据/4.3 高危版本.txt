@@ -1,0 +1,9 @@
+# 一行一条数据，# 开头的那行会被忽略
+# 具体的版本，资产报告会根据这个标记高危版本
+# 统计页-高危资产由这个得出
+# 相同才是高危
+# 以下为实际数据
+
+Redis key-value store
+Redis key-value store 3.0.7
+Memcached

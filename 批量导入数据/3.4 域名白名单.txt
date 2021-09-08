@@ -1,0 +1,16 @@
+# 一行一条数据，# 开头的那行会被忽略
+# 如果web页面的链接在域名白名单中, 则任务结果和资产web信息的url不记录该域名的链接
+# 实际的域名，如果是根域名，则包含根域名的链接都不会记录
+# 以下为实际数据
+
+microsoft.com
+centos.org
+apache.org
+qq.com
+github.com
+nginx.net
+baidu.com
+google.com
+firefox.com
+gitlab.com
+vmware.com

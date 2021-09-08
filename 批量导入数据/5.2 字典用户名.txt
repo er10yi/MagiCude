@@ -1,0 +1,10 @@
+# 一行一条数据，# 开头的那行会被忽略
+# 字典用户名，区分大小写，python的WeakPass插件可以调用字典用户名
+# 以下为实际数据
+
+admin
+Admin
+root
+tomcat
+administrator
+test

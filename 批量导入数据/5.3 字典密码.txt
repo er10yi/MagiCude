@@ -1,0 +1,30 @@
+# 一行一条数据，# 开头的那行会被忽略
+# 字典密码，区分大小写，python的WeakPass插件调用字典密码
+# 以下为实际数据
+
+root
+1qaz@WSX
+admin123456
+1qaz2wsx
+root123456
+root@123
+root123
+password
+admin123!@#
+!QAZ@WSX
+abc123!@#
+P@ssw0rd
+qwer1234
+admin123
+root123!@#
+test
+postgres
+12345678
+admin@123
+admin
+tomcat
+administrator
+toor
+123456
+Root
+Admin

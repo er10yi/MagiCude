@@ -1,0 +1,16 @@
+# 一行一个插件，#号开头的那行会被忽略
+# 可在一个文件中导入多个插件
+# 名称|参数|风险|类型|超时|端口|服务|版本|关键字|漏洞名称
+# 风险: 信息, 低危, 中危, 高危, 严重, 致命
+# 如果暂时没有漏洞与插件对应，漏洞名称填默认，不然无法发漏洞报告
+# 对应多个端口，服务，版本，关键字，需要多条配置
+# 以下为实际数据
+
+memcached-info||中危|nse||11211|memcached|Memcached 1.4.5|Process ID|Memcached未授权访问
+x11-access||高危|nse||||x11||X server access is granted|默认
+mysql-vuln-cve2012-2122||严重|nse|||3306|mysql||VULNERABLE|默认
+rdp-vuln-ms12-020||高危|nse||||ms-wbt-server|Microsoft Terminal Service|VULNERABLE|默认
+smb-vuln-ms08-067||高危|nse|||445|microsoft-ds||VULNERABLE|默认
+smb-vuln-ms17-010||高危|nse|||445|microsoft-ds|Microsoft Windows Server 2008 R2 - 2012 microsoft-ds|VULNERABLE|默认
+mysql-empty-password||严重|nse|||3306|mysql|MySQL 5.6.26|account has empty password|MySQL弱密码/未授权访问
+redis-info||高危|nse||6379|redis|Redis key-value store|Process ID|Redis弱密码/未授权访问
