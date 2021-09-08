@@ -36,8 +36,9 @@ agent：端口扫描任务、插件任务、http页面抓取任务执行；从re
 实时推送：钉钉群机器人、企微群机器人。
 
 ## 安装指南
-### 可尝试最新版的预览版2
-[魔方-MagiCude2.2 Preview2](https://github.com/er10yi/MagiCude/releases/tag/v2.2-preview2)，预览版与当前正式版有较大区别，readme和wiki中部分文档已过时。
+### 可尝试最新版的预览版3
+[魔方-MagiCude2.2 Preview3](https://github.com/er10yi/MagiCude/releases/tag/v2.2-preview3)，**预览版与当前正式版有较大区别，readme和wiki中部分文档已过时。**
+
 ### 要求说明
 
 1. 所有内容编码均为utf-8
