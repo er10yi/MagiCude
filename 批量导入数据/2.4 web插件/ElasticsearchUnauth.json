@@ -1,0 +1,15 @@
+// 这里是注释，// 开头的那行会被忽略
+// 行尾也可以用 //注释
+{
+    "name": "ElasticsearchUnauth", //插件名称
+    "risk": "高危", //风险级别
+    "method": "get", //请求方法
+    "url": "/_cat", //请求url
+    "header": null, //使用[扫描配置-爬虫ua]中的头
+    "body": null, // 没有参数
+    "port": "9200", //端口
+    "service": "Elasticsearch", //服务
+    "version": null, //没有指定版本
+    "keyword": "/_cat/allocation,/_cat/count", //漏洞关键词
+    "vulname": "默认" //对应漏洞wiki中的漏洞
+}
