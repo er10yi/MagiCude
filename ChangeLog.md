@@ -1,5 +1,12 @@
 ## ChangeLog
 
+### v2.2 Preview4(docker版) - 20220110
+#### 预览版4
+1. 相关源码暂未更新
+2. 优化部署，支持docker方式部署
+3. 更多，查看release的[readme](https://github.com/er10yi/MagiCude/releases/tag/v2.2-preview4)
+
+
 ### v2.2 Preview3 - 20210908
 #### 预览版3
 1. 相关源码暂未更新
