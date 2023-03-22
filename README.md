@@ -54,11 +54,11 @@ agent：端口扫描任务、插件任务、http页面抓取任务执行；从re
 
 2. 服务器上执行`sh initCenterEnvironmentAndStart.sh`，初始化环境和数据并启动系统，按提示**手动选择center的ip地址**即可。
 
-3. 安装结束时，如果没有错误信息，则成功安装，稍等几分钟[前端登录](https://github.com/er10yi/MagiCude/blob/master-old/README.md#%E5%89%8D%E7%AB%AF%E7%99%BB%E5%BD%95 )即可。
+3. 安装结束时，如果没有错误信息，则成功安装，稍等几分钟[前端登录](https://github.com/er10yi/MagiCude/blob/v2.1/README.md#%E5%89%8D%E7%AB%AF%E7%99%BB%E5%BD%95 )即可。
 
 ### agent分布式部署
 
-1. 需要先执行上述步骤[center和agent部署在同一台服务器](https://github.com/er10yi/MagiCude/blob/master-old/README.md#center%E5%92%8Cagent%E9%83%A8%E7%BD%B2%E5%9C%A8%E5%90%8C%E4%B8%80%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%99%A8 )部署center，完成之后。
+1. 需要先执行上述步骤[center和agent部署在同一台服务器](https://github.com/er10yi/MagiCude/blob/v2.1/README.md#center%E5%92%8Cagent%E9%83%A8%E7%BD%B2%E5%9C%A8%E5%90%8C%E4%B8%80%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%99%A8 )部署center，完成之后。
 
 2. agent服务器的```root```目录下新建```MagiCude```目录。
 
@@ -89,7 +89,7 @@ agent：端口扫描任务、插件任务、http页面抓取任务执行；从re
 密码：见newPass.txt（admin那行，用户名是MagiCude，不是admin）
 ```
 
-![登录页面](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE1/%E7%99%BB%E5%BD%95%E9%A1%B5%E9%9D%A2.png)
+![登录页面](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE1/%E7%99%BB%E5%BD%95%E9%A1%B5%E9%9D%A2.png)
 
 ### 快速上手指南
 
@@ -117,73 +117,73 @@ agent：端口扫描任务、插件任务、http页面抓取任务执行；从re
 
 扫描下方二维码，关注公众号，回复**自己的微信号+魔方**，即刻拥有！
 
-![公众号二维码](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE1/qrcode_for_Septemberend.jpg)
+![公众号二维码](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE1/qrcode_for_Septemberend.jpg)
 
 ## 部分功能截图
 
 ### 首页
 
-![首页](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/1%E9%A6%96%E9%A1%B5.png)
+![首页](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/1%E9%A6%96%E9%A1%B5.png)
 
 ### 统计
 
 资产统计1
 
-![资产统计1](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/3%E8%B5%84%E4%BA%A7%E7%BB%9F%E8%AE%A1.png)
+![资产统计1](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/3%E8%B5%84%E4%BA%A7%E7%BB%9F%E8%AE%A1.png)
 
 资产统计2
 
-![资产统计2](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/3%E8%B5%84%E4%BA%A7%E7%BB%9F%E8%AE%A12.png)
+![资产统计2](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/3%E8%B5%84%E4%BA%A7%E7%BB%9F%E8%AE%A12.png)
 
 高危统计
 
-![高危](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/4%E9%AB%98%E5%8D%B1.png)
+![高危](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/4%E9%AB%98%E5%8D%B1.png)
 
 ### 任务
 
-![任务](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/2%E4%BB%BB%E5%8A%A1.png)
+![任务](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/2%E4%BB%BB%E5%8A%A1.png)
 
 ### 资产
 
 资产ip所有信息
 
-![ip所有信息](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE1/%E8%B5%84%E4%BA%A7ip.png)
+![ip所有信息](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE1/%E8%B5%84%E4%BA%A7ip.png)
 
 资产端口
 
-![资产端口](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE1/%E8%B5%84%E4%BA%A7%E7%AB%AF%E5%8F%A3.png)
+![资产端口](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE1/%E8%B5%84%E4%BA%A7%E7%AB%AF%E5%8F%A3.png)
 
 ### 检测结果、提醒日志
 
 web信息
 
-![webinfo](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/7_1webinfo.png)
+![webinfo](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/7_1webinfo.png)
 
 web信息和url
 
-![webinfo和url](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/7_webinfo%E5%92%8Curl.png)
+![webinfo和url](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/7_webinfo%E5%92%8Curl.png)
 
 检测结果和提醒日志
 
-![检测结果和提醒日志](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/8%E6%A3%80%E6%B5%8B%E7%BB%93%E6%9E%9C%E5%92%8C%E6%8F%90%E9%86%92%E6%97%A5%E5%BF%97.png)
+![检测结果和提醒日志](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/8%E6%A3%80%E6%B5%8B%E7%BB%93%E6%9E%9C%E5%92%8C%E6%8F%90%E9%86%92%E6%97%A5%E5%BF%97.png)
 
 ### 邮件报告及钉钉群推送
 
 邮件所有资产报告（默认提醒邮箱），项目负责人只会收到属于自己项目的资产报告
 
-![邮件资产报告](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/%E9%82%AE%E4%BB%B6%E8%B5%84%E4%BA%A7%E6%8A%A5%E5%91%8A.png)
+![邮件资产报告](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/%E9%82%AE%E4%BB%B6%E8%B5%84%E4%BA%A7%E6%8A%A5%E5%91%8A.png)
 
 邮件所有漏洞报告（默认提醒邮箱），项目负责人只会收到属于自己项目的漏洞报告
 
-![邮件漏洞报告](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/%E9%82%AE%E4%BB%B6%E6%BC%8F%E6%B4%9E%E6%8A%A5%E5%91%8A.png)
+![邮件漏洞报告](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/%E9%82%AE%E4%BB%B6%E6%BC%8F%E6%B4%9E%E6%8A%A5%E5%91%8A.png)
 
 钉钉群推送
 
 电脑客户端
 
-![钉钉群推送2](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/%E9%92%89%E9%92%89%E7%BE%A4%E6%8E%A8%E9%80%812.png)
+![钉钉群推送2](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/%E9%92%89%E9%92%89%E7%BE%A4%E6%8E%A8%E9%80%812.png)
 
 手机端
 
-![钉钉群推送1](https://github.com/er10yi/MagiCude/raw/master-old/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/%E9%92%89%E9%92%89%E7%BE%A4%E6%8E%A8%E9%80%811.png)
+![钉钉群推送1](https://github.com/er10yi/MagiCude/raw/v2.1/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E%E5%9B%BE/%E9%92%89%E9%92%89%E7%BE%A4%E6%8E%A8%E9%80%811.png)
 
